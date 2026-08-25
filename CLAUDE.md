@@ -84,7 +84,7 @@ backend/
       Identity/                    single project, platform-owned, see below [platform]
       Identity.Tests/                                                        [platform]
     <Name>/
-      <Name>.Api/                  API controllers, HTTP request/response types
+      <Name>.Api/                  API controllers, speaking Application DTOs
       <Name>.Application/          services, DTOs, mapper profile (AutoMapper), port interfaces
       <Name>.Contracts/            inter-module interface, where modules interact through RPC
       <Name>.Domain/               entities, value objects, domain services, invariants
@@ -226,14 +226,19 @@ Actions return `ActionResult<T>`, never bare `IActionResult`: the OpenAPI docume
 generated from the action signatures, and the frontend's `api-types.ts` is generated from
 that document, so an untyped action starves the frontend of types.
 
-HTTP request and response types live here, not in `Application` and never in `Contracts`.
-They are shaped for the wire. Do not return domain entities.
+Controllers bind and return the module's Application DTOs directly; there is no second
+set of request/response types in `Api`. The Application DTO is therefore the wire
+contract, and the frontend's generated types change when it changes. An Api-local record
+is the exception, introduced only when the wire shape genuinely diverges from the
+application shape, and it needs a reason. DTOs never move to `Contracts`, and actions
+never return domain entities (the arch tests enforce the latter).
 
 ## Visibility
 
 `Contracts` and `Api` are the two public surfaces of a module, aimed at different audiences:
-`Contracts` faces other modules, `Api` faces the outside world. Keep them separate. An
-HTTP DTO never belongs in `Contracts`.
+`Contracts` faces other modules, `Api` faces the outside world. Keep them separate. A
+module's own DTOs never belong in `Contracts`; the contract types are separate,
+negotiated, and deliberately minimal.
 
 `Infrastructure` types are `internal` except the `AddXxxModule` extension method. The
 `DbContext`, repositories, query implementations, and EF configurations are all internal,
