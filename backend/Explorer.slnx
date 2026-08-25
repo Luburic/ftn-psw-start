@@ -1,0 +1,46 @@
+<Solution>
+  <Folder Name="/Modules/" />
+  <Folder Name="/Modules/Exploration/">
+    <Project Path="Modules/Exploration/Exploration.Api/Exploration.Api.csproj" />
+    <Project Path="Modules/Exploration/Exploration.Application/Exploration.Application.csproj" />
+    <Project Path="Modules/Exploration/Exploration.Contracts/Exploration.Contracts.csproj" />
+    <Project Path="Modules/Exploration/Exploration.Domain/Exploration.Domain.csproj" />
+    <Project Path="Modules/Exploration/Exploration.Infrastructure/Exploration.Infrastructure.csproj" />
+    <Project Path="Modules/Exploration/Exploration.Tests/Exploration.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Games/">
+    <Project Path="Modules/Games/Games.Api/Games.Api.csproj" />
+    <Project Path="Modules/Games/Games.Application/Games.Application.csproj" />
+    <Project Path="Modules/Games/Games.Contracts/Games.Contracts.csproj" />
+    <Project Path="Modules/Games/Games.Domain/Games.Domain.csproj" />
+    <Project Path="Modules/Games/Games.Infrastructure/Games.Infrastructure.csproj" />
+    <Project Path="Modules/Games/Games.Tests/Games.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Identity/">
+    <Project Path="Modules/Identity/Identity.Tests/Identity.Tests.csproj" />
+    <Project Path="Modules/Identity/Identity/Identity.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Payment/">
+    <Project Path="Modules/Payment/Payment.Api/Payment.Api.csproj" />
+    <Project Path="Modules/Payment/Payment.Application/Payment.Application.csproj" />
+    <Project Path="Modules/Payment/Payment.Contracts/Payment.Contracts.csproj" />
+    <Project Path="Modules/Payment/Payment.Domain/Payment.Domain.csproj" />
+    <Project Path="Modules/Payment/Payment.Infrastructure/Payment.Infrastructure.csproj" />
+    <Project Path="Modules/Payment/Payment.Tests/Payment.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Social/">
+    <Project Path="Modules/Social/Social.Api/Social.Api.csproj" />
+    <Project Path="Modules/Social/Social.Application/Social.Application.csproj" />
+    <Project Path="Modules/Social/Social.Contracts/Social.Contracts.csproj" />
+    <Project Path="Modules/Social/Social.Domain/Social.Domain.csproj" />
+    <Project Path="Modules/Social/Social.Infrastructure/Social.Infrastructure.csproj" />
+    <Project Path="Modules/Social/Social.Tests/Social.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Shared/">
+    <Project Path="Shared/Shared.Api/Shared.Api.csproj" />
+    <Project Path="Shared/Shared.Domain/Shared.Domain.csproj" />
+    <Project Path="Shared/Shared.Infrastructure/Shared.Infrastructure.csproj" />
+  </Folder>
+  <Project Path="Host.Api/Host.Api.csproj" />
+  <Project Path="Host.Tests/Host.Tests.csproj" />
+</Solution>

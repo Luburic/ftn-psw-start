@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Social.Application\Social.Application.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Shared.Api\Shared.Api.csproj" />
+  </ItemGroup>
+
+</Project>

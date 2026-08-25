@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Exploration.Application\Exploration.Application.csproj" />
+    <ProjectReference Include="..\Exploration.Domain\Exploration.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Shared.Infrastructure\Shared.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Exploration.Tests" />
+  </ItemGroup>
+
+</Project>
