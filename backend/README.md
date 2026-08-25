@@ -56,9 +56,9 @@ Modul `Identity` je izuzetak od strukture ostalih modula. To je projekat u vlasn
 Funkcionalni moduli su `Exploration`, `Games`, `Social` i `Payment`. Svaki od njih ima istovetnu strukturu od šest projekata:
 - `<Ime>.Api` sadrži kontrolere koji primaju HTTP zahtev, pozivaju jednu metodu aplikacionog sloja i vraćaju HTTP odgovor.
 - `<Ime>.Application` sadrži aplikacione servise koji opisuju kako se koordinišu domenski objekti i tehničke sposobnosti da se ispuni slučaj korišćenja. Tu su i DTO klase, čije instance prihvataju i vraćaju aplikacioni servisi, profili za transliranje DTO u domenski objekat i obratno, kao i interfejsi od infrastrukturnih servisa.
-- `<Ime>.Contracts` sadrži interfejs koji modul nudi drugim modulima. To je jedini deo modula koji drugi moduli smeju da referenciraju. Sadrži samo interfejse i proste tipove. Svaka izmena ovog projekta je dogovor između dva tima, pa se najavljuje, a ne izvodi tiho.
+- `<Ime>.Contracts` sadrži interfejs koji modul nudi drugim modulima i po potrebi DTO klase čije instance se razumenjuju između modula. To je jedini deo modula koji drugi moduli smeju da referenciraju. Navedene interfejse implementiraju aplikacioni servisi, zbog čega je svaka izmena ovog projekta dogovor između dva tima (vlasnika modula i tima koji želi pojedine podatke iz modula).
 - `<Ime>.Domain` sadrži domenske objekte (koren agregata, entiteti, vrednosni objekti) i domenske servise. Ovde se implementiraju domenski koncepti i pravila.
 - `<Ime>.Infrastructure` sadrži implementacije infrastrukturnih servisa, poput repozitorijuma, konektorskih klasa i tehničkih stručnjačkih klasa koje koriste biblioteke. U njemu su `DbContext`, EF konfiguracije, migracije, implementacije repozitorijuma i upita.
 - `<Ime>.Tests` sadrži testove modula, podeljene na direktorijume `Unit` i `Integration`. Jedinični testovi proveravaju ponašanje agregata i domenskih servisa, a integracioni testovi šalju prave HTTP zahteve i proveravaju rad severske aplikacije u interakciji sa testnom bazom podataka.
 
-Ovih šest projekata menja tim koji je vlasnik modula, pri svakom razvoju nove funkcionalnosti.
+Ovih šest projekata menja tim koji je vlasnik modula pri svakom razvoju nove funkcionalnosti.
