@@ -79,6 +79,8 @@ backend/
     Shared.Api/                    ClaimsPrincipal.GetUserId()               [platform]
     Shared.Infrastructure/         AddModuleDbContext (Npgsql, schema-per-
                                    module, per-schema migrations history)    [platform]
+    Shared.Tests/                  ExplorerApiFactory (per-assembly test DB,
+                                   reseed, test JWTs), WellKnownUsers        [platform]
   Modules/
     Identity/
       Identity/                    single project, platform-owned, see below [platform]
@@ -253,11 +255,37 @@ line; do not bump to 8 without a licensing discussion). One test project per mod
 `Unit/` and `Integration/` folders.
 
 Integration tests send real HTTP requests: `WebApplicationFactory<Program>` boots the
-host, tests call endpoints with an `HttpClient`. They run against a local PostgreSQL
-database (`explorer-test` by default, overridable with the `EXPLORER_TEST_DATABASE`
-environment variable, which CI could use). Test projects are exempt from the module
-reference rules; they may reference `Host.Api`. `Identity.Tests` is the live example of
-the pattern.
+host, tests call endpoints with an `HttpClient`. Test projects are exempt from the module
+reference rules; they may reference `Host.Api` and `Shared.Tests`. `Identity.Tests` is
+the live example of the pattern.
+
+**Test databases.** `Shared.Tests` owns the mechanism, modules own their data. Each test
+assembly subclasses `ExplorerApiFactory`, which derives a per-assembly database name
+(`explorer-test-<module>`, base connection overridable with `EXPLORER_TEST_DATABASE`),
+drops and recreates that database once per test run, and lets the module initializers
+migrate on host boot. Structure is set up once per run; data is reset per test.
+
+**Seed data.** Each module has a `Seeds/` folder in its test project: one static class of
+named literals per aggregate (`public static readonly Tour FortressWalk = new(...)`, one
+constructor call per line, no methods — a test needing extra state builds it in its own
+arrange step) plus one glue class exposing `All`. Tests reference seeded rows as
+`TourSeed.FortressWalk.Id`; this requires aggregates to generate their ID in the
+constructor (`base(Guid.NewGuid())`), never via EF value generation. Cross-module seed
+rows come from the other module's seeder (test projects may reference each other for
+this).
+
+**Wiring.** Each test project has one `BaseIntegrationTest.cs` bundling three types: the
+factory subclass, a `[CollectionDefinition("Integration")]` with the factory as
+`ICollectionFixture` (one host boot per run, and serial execution — collections are the
+xUnit parallelism unit), and an abstract `BaseIntegrationTest` whose constructor calls
+`factory.Reseed<TContext>(Seed.All)` so every test starts from the identical baseline.
+Integration test folders are per aggregate, with `<Aggregate>CommandTests` and
+`<Aggregate>QueryTests` side by side.
+
+**Auth in tests.** Feature-module tests never touch Identity: `ExplorerApiFactory` mints
+dev-key JWTs directly (`CreateClientFor(userId, role)`), and `WellKnownUsers` holds the
+fixed user IDs seed data refers to. Only `Identity.Tests` exercises the real
+register/login endpoints.
 
 Architecture tests in `Host.Tests` use ArchUnitNET and encode the reference rules above.
 
@@ -346,8 +374,6 @@ frontend/src/app/
   version deliberately when the reference module needs it, as was done for
   FluentAssertions.
 - **Mocking library.** Deferred until the reference module has something to mock.
-- **Test database reset strategy.** Currently tests share `explorer-test` and rely on
-  unique data per run; decide on a reset approach when the first module tests land.
 - **Frontend component library.** Not chosen.
 - **CODEOWNERS and per-module AGENTS.md.** Deliberately not created yet; add when teams
   and the domain are fixed.

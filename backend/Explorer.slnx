@@ -40,6 +40,7 @@
     <Project Path="Shared/Shared.Api/Shared.Api.csproj" />
     <Project Path="Shared/Shared.Domain/Shared.Domain.csproj" />
     <Project Path="Shared/Shared.Infrastructure/Shared.Infrastructure.csproj" />
+    <Project Path="Shared/Shared.Tests/Shared.Tests.csproj" />
   </Folder>
   <Project Path="Host.Api/Host.Api.csproj" />
   <Project Path="Host.Tests/Host.Tests.csproj" />
