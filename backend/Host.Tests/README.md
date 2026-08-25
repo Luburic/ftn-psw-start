@@ -1,60 +1,42 @@
 # Arhitektonski testovi
 
-## Problem koji rešavamo
+## Problem koji rešavaju
 
-Ovaj sistem počiva na pravilima o tome ko sme da zavisi od koga. Domenski model ne sme da
-zna za bazu podataka. Endpoint ne sme direktno da pristupi klasi `DbContext`. Jedan modul
-ne sme da poseže za unutrašnjošću drugog modula. Deo ovih pravila sprovodi sâm kompajler:
-projekat koji nema referencu na EF Core fizički ne može da ga koristi. Ali referenca
-između projekata se dodaje jednom linijom u `.csproj` datoteci, i tu liniju kompajler ne
-brani. Pravilo koje je važilo mesecima nestaje jednom izmenom.
+Dobra arhitektura definiše skup pravila o tome ko sme da zavisi od koga. Na primer:
+- Domenski model ne sme da zna za bazu podataka.
+- Endpoint ne sme direktno da pristupi bazi podataka.
+- Jedan modul ne sme da poseže za unutrašnjošću drugog modula.
 
-Arhitektura se ne narušava krupnim odlukama, već malim prečicama koje u trenutku deluju
-razumno. Rok je blizu, podatak koji vam treba nalazi se u tabeli drugog modula, a
-"ispravan" put kroz njegov javni interfejs deluje kao nepotrebna procedura. Prečica se
-napravi, funkcionalnost proradi. Cena stiže kasnije i pada na nekog drugog: drugi tim
-izmeni svoju šemu baze i vaš kôd prestane da radi, a niko ne razume zašto, jer nigde u
-javnom opisu vašeg modula ne piše da od njihovog zavisite.
+Deo ovih pravila čuva kompajler:
+- Projekat koji nema referencu na EF Core fizički ne može da ga koristi.
+- Projekat koji nema referencu na drugi projekat fizički ne može da koristi njegove tipove.
 
-Ovaj problem jednako pogađa ljude i programerske agente, jer i jedni i drugi uče pravila
-na isti način — čitanjem koda koji već postoji. Student oponaša obrasce koje vidi u
-postojećim modulima; agent radi isto, samo brže i u većem obimu. Jedno kršenje pravila
-koje preživi pregled koda postaje primer koji sledeći autor kopira. Narušavanje se zato
-gomila: drugu prečicu je lakše opravdati nego prvu, jer presedan već postoji. Pravilo
-koje živi samo u dokumentaciji je molba. Da bi važilo, mora da ga proverava mašina, pri
-svakoj izmeni, bez izuzetka.
+Međutim, referenca između projekata se dodaje jednom linijom u `.csproj` datoteci. Takvu izmenu kompajler ne brani.
+
+Tako programer ili agent naprave male prečice koje u trenutku deluju razumno.
+Rok je blizu, a podatak koji vam treba se nalazi u tabeli drugog modula.
+"Ispravan" put kroz njegov javni interfejs deluje kao nepotrebna procedura.
+Prečica se napravi, funkcionalnost proradi i arhitektura se naruši. Cena stiže kasnije.
+Drugi tim izmeni svoju šemu baze i vaš kôd prestane da radi, a niko ne razume zašto.
+Sve postaje uvezano i teško je ispratiti gde se jedna funkcionalnost završava, a druga počinje.
+
+Ovaj problem jednako pogađa ljude i programerske agente, jer i jedni i drugi programiraju tako što čitaju kod koji već postoji.
 
 ## Opšte rešenje
 
-Arhitektonski test pretvara pravilo o zavisnostima u običan test, koji obara build kada
-je pravilo prekršeno.
+Arhitektonski test pretvara pravilo o zavisnostima u automatski test, koji se crveni kada je pravilo prekršeno.
 
-Mehanizam je jednostavan. Kada se C# kôd prevede, uz svaki tip se u prevedenom projektu
-čuvaju metapodaci o njegovim zavisnostima: koje klase nasleđuje, kog tipa su njegova
-polja i parametri, koje metode poziva. Biblioteka za arhitektonsko testiranje (ovde je to
-ArchUnitNET) učitava prevedene projekte, čita te metapodatke i od njih gradi graf: čvorovi
-su svi tipovi u sistemu, a grana postoji od tipa ka svakom tipu od kog on zavisi. Test je
-tada tvrdnja o tom grafu — na primer, "nijedan tip iz projekta `Games.Domain` ne zavisi
-ni od jednog tipa iz projekta `Payment.Infrastructure`" — koju biblioteka proverava
-obilaskom grana i za koju prijavljuje svako pronađeno kršenje.
+Kada kompajler prevede C# kod, uz svaki tip se u prevedenom projektu čuvaju metapodaci o njegovim zavisnostima.
+Za svaku klasu se čuvaju informacije o klasi koju nasleđuje, kog tipa su polja i parametri, koje metode poziva.
 
-Tri osobine čine da ovakva provera bude sprovođenje pravila, a ne predlog:
+Biblioteka za arhitektonsko testiranje (kod nas ArchUnitNET) učitava prevedene projekte,
+čita te metapodatke i od njih gradi graf:
+- čvorovi su svi tipovi u sistemu,
+- grana postoji od tipa ka svakom tipu od kog on zavisi.
+ 
+Automatski test proverava tvrdnje o tom grafu. Na primer, "nijedan tip iz projekta `Games.Domain` ne zavisi ni od jednog tipa iz projekta `Payment.Infrastructure`".
 
-- **Proverava se ono što je prevedeno, a ne ono što je napisano.** Pravila se izvršavaju
-  nad metapodacima prevedenog koda, pa zavisnost nije moguće sakriti načinom pisanja.
-  Ako kôd koristi neki tip, grana u grafu postoji.
-- **Provera se izvršava tamo gde se kôd spaja.** Ovi testovi se pokreću u CI okruženju
-  pri svakom pull request-u. Kršenje pravila nije komentar u pregledu koda oko kog se
-  može raspravljati, već crven build koji ne može da se spoji u glavnu granu.
-- **Greška pokazuje tačno mesto.** Ispis imenuje tip koji je prekršio pravilo i tip od
-  kog nedozvoljeno zavisi, pa ispravka počinje od konkretne lokacije, a ne od apstraktnog
-  principa.
-
-Kompajler i arhitektonski testovi dele posao. Reference između projekata čine da se
-većina nedozvoljenih zavisnosti *ne može ni prevesti*. Arhitektonski testovi hvataju
-preostali slučaj: da neko izmeni `.csproj` datoteku i doda referencu koju pravila
-zabranjuju. Pravila o referencama u `CLAUDE.md` opisuju arhitekturu; ovaj projekat je ono
-što taj opis čini istinitim.
+Kompajler i arhitektonski testovi dele posao. Reference između projekata čine da se većina nedozvoljenih zavisnosti *ne može ni prevesti*. Arhitektonski testovi hvataju slučaj kada neko izmeni `.csproj` datoteku i doda referencu koju pravila zabranjuju.
 
 ## Grupe testova
 
@@ -62,60 +44,34 @@ Svaka klasa u ovom projektu čuva jednu vrstu granice. Sve nasleđuju zajedničk
 
 ### `BaseArchitectureTests`
 
-Osnovna klasa iz koje ne nastaje nijedan test, već zajednička infrastruktura za sve
-ostale: spisak modula, slojeva i `Shared` projekata, graf zavisnosti i pomoćne metode
-`AssertNoDependency` i `AssertNoNamespaceDependency` kojima se pravila iskazuju. Graf se
-gradi jednom po pokretanju, jer je učitavanje svih projekata najskuplji korak, pa je polje
-statičko iako testovi do njega dolaze nasleđivanjem.
-
-Dve posledice zaslužuju pažnju. Prvo, spiskovi modula i slojeva su jedino mesto koje se
-menja kada se sistem proširi: novi modul znači jednu stavku u nizu `Modules`, a sva
-postojeća pravila počinju da važe i za njega. Drugo, pravilo nad projektom koji još nema
-nijedan tip tiho se preskače — prazan projekat nema grana u grafu pa ni šta da prekrši —
-što znači da testovi nad slojevima `Domain`, `Application` i `Contracts` postaju aktivni
-sami od sebe, onog trenutka kada se u tim projektima pojavi prvi kôd.
+Osnovna klasa iz koje ne nastaje nijedan test, već zajednička infrastruktura za ostale. Sadrži:
+- spisak modula (jedino mesto koje se menja uvođenjem novog modula),
+- spisak slojeva unutar stereotipnih modula (Exploration, Games, Social, Payment),
+- spisak `Shared` projekata
+- Pomoćne metode `AssertNoDependency` i `AssertNoNamespaceDependency` kojima se pravila iskazuju.
 
 ### `ModuleLayerTests`
 
-Čuva raspodelu odgovornosti po slojevima *unutar* jednog modula. Sloj `Domain` zavisi
-samo od projekta `Shared.Domain` — bez EF Core-a, bez ASP.NET-a, bez drugih slojeva — pa
-poslovna pravila ostaju odvojena od infrastrukture i mogu da se testiraju bez baze
-podataka. Sloj `Application` ne vidi ni `Infrastructure` ni veb okruženje, čime strelica
-zavisnosti ostaje okrenuta ka unutra: infrastruktura implementira interfejse koje
-aplikacioni sloj propisuje, nikada obrnuto. Sloj `Contracts` ne zavisi ni od čega, jer je
-to površina koju drugi moduli koriste, pa se svaka njegova zavisnost prenosi na sve
-korisnike. Sloj `Api` ne sme da koristi tipove iz sloja `Domain` — iako ih kroz reference
-projekata tranzitivno vidi — pa endpoint ne može da vrati domenski entitet spoljnom svetu
-umesto DTO-a. Sloj `Api` takođe ne može da dohvati `Infrastructure` ni EF Core, i upravo to pravilo
-čini nemogućim da endpoint direktno čita iz baze. Ova pravila preslikavaju reference
-između projekata, pa njihovo kršenje gotovo uvek znači da je izmenjena neka `.csproj`
-datoteka.
+Čuva raspodelu odgovornosti po slojevima *unutar* jednog modula. Na primer:
+- Sloj `Domain` zavisi samo od projekta `Shared.Domain` (bez drugih slojeva i tehnoloških detalja poput EF Core-a i ASP.NET-a)
+- Sloj `Application` ne vidi ni `Infrastructure` ni veb okruženje, kako bi se koraci slučajeva korišćenja apstrahovali od tehnoloških detalja
+- Sloj `Contracts` ne zavisi ni od čega, jer je to površina koju drugi moduli koriste i time se sakriva unutrašnjost modula od drugih modula
+- Sloj `Api` ne sme da koristi tipove iz sloja `Domain` (iako ih kroz reference projekata tranzitivno vidi) kako endpoint ne bi vratio domenski entitet spoljnom svetu umesto DTO-a
 
 ### `ModuleIsolationTests`
 
-Čuva granice *između* modula — razlog zbog kog je ovaj sistem modularni monolit, a ne
-samo monolit. Modul sme da zavisi od `Contracts` projekta drugog modula i ni od čega
-drugog iz njega: ne od njegovih entiteta, ne od njegovog `DbContext`-a, ne od njegovih
-servisa. Na podatak u drugom modulu upućuje se identifikatorom, a dohvata se kroz javni
-interfejs tog modula, nikada direktnim spajanjem tabela ili korišćenjem njegovih tipova.
-Ova grupa takođe proverava da nijedan modul ne zavisi od modula `Identity`: autentifikacija
-je deo platforme, a moduli trenutno prijavljenog korisnika poznaju samo kao vrednost
-`UserId` koja im se prosleđuje.
+Čuva granice *između* modula.
+
+Modul sme da zavisi od `Contracts` projekta drugog modula i ni od čega drugog iz njega.
+
+Ova grupa takođe proverava da nijedan modul ne zavisi od modula `Identity`. Moduli trenutno prijavljenog korisnika poznaju samo kao vrednost `UserId` koju dobijaju kroz JWT.
 
 ### `SharedKernelTests`
 
-Čuva zajednički kôd sa suprotne strane. Projekti u folderu `Shared` nalaze se ispod svih
-modula, pa svaku zavisnost koju dobiju nasleđuje ceo sistem. Ovi testovi proveravaju da
-nijedan `Shared` projekat ne zavisi ni od jednog modula — onog trenutka kada zajednički
-kôd sazna za funkcionalnost jednog tima, on prestaje da bude zajednički i postaje
-skriveno mesto sprege — kao i da `Shared.Domain`, osnova koju nasleđuje svaki domenski
-model, ostaje bez EF Core-a i ASP.NET-a. Za razliku od ostalih grupa, ova čuva sistem od
-grešaka platformskog tima, a ne timova koji razvijaju module.
+Ovi testovi proveravaju da nijedan `Shared` projekat ne zavisi ni od jednog modula.
+Ako bi zajednički kod znao za funkcionalnost jednog tima, prestao bi da bude zajednički.
 
 ### `HostCompositionTests`
 
-Čuva projekat `Host.Api`, jedini kome je dozvoljeno da referencira sve module. On je zato
-mesto gde je najlakše prokrijumčariti logiku koja pripada nekom modulu. Ova grupa
-proverava da host dodiruje modul isključivo kroz njegove dve tačke povezivanja — metode
-`AddXxxModule` i `AddXxxControllers` — i da nikada ne koristi tipove iz slojeva `Domain`,
-`Application` ili `Contracts`. Host sklapa aplikaciju; on u njoj ne učestvuje.
+Čuva projekat `Host.Api`, jedini kome je dozvoljeno da referencira sve module.
+Ova grupa proverava da host dodiruje modul isključivo kroz njegove dve tačke povezivanja, a to su metode `AddXxxModule` i `AddXxxControllers`.
