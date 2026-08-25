@@ -1,0 +1,34 @@
+# Build output (.NET)
+bin/
+obj/
+artifacts/
+TestResults/
+
+# Build output / deps (Angular, Node)
+node_modules/
+dist/
+.angular/
+coverage/
+*.tsbuildinfo
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# VS Code
+.vscode/
+
+# AI tooling
+**/.claude/settings.local.json
+.codex/
+CLAUDE.local.md
+
+# Secrets and local env
+.env
+.env.*
+!.env.example
+
+# OS cruft
+.DS_Store
+Thumbs.db
