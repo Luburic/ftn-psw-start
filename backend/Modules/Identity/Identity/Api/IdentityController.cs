@@ -27,11 +27,8 @@ public sealed class IdentityController : ControllerBase
         var result = await _userManager.CreateAsync(user, dto.Password);
         if (!result.Succeeded)
         {
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError(error.Code, error.Description);
-            }
-            return ValidationProblem(ModelState);
+            var reasons = string.Join(" ", result.Errors.Select(error => error.Description));
+            return Problem(statusCode: StatusCodes.Status400BadRequest, title: reasons);
         }
 
         await _userManager.AddToRoleAsync(user, "explorer");
