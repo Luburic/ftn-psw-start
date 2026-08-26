@@ -5,16 +5,23 @@ using Microsoft.Extensions.Hosting;
 
 namespace Identity.Infrastructure;
 
-internal sealed class IdentityModuleInitializer(IServiceProvider serviceProvider) : IHostedService
+internal sealed class IdentityModuleInitializer : IHostedService
 {
     internal static readonly string[] Roles = ["administrator", "explorer"];
 
+    private readonly IServiceProvider _serviceProvider;
+
+    public IdentityModuleInitializer(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
+
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        using var scope = serviceProvider.CreateScope();
+        using var scope = _serviceProvider.CreateScope();
 
         var dbContext = scope.ServiceProvider.GetRequiredService<IdentityModuleDbContext>();
-        await dbContext.Database.MigrateAsync(cancellationToken);
+        await dbContext.Database.MigrateAsync();
 
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
         foreach (var role in Roles)

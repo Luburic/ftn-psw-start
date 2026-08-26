@@ -5,9 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Identity.Infrastructure;
 
-internal sealed class IdentityModuleDbContext(DbContextOptions<IdentityModuleDbContext> options)
-    : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
+internal sealed class IdentityModuleDbContext
+    : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
 {
+    public IdentityModuleDbContext(DbContextOptions<IdentityModuleDbContext> options) : base(options)
+    {
+    }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

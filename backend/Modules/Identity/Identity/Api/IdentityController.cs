@@ -1,28 +1,30 @@
 using Identity.Core;
+using Identity.Core.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Identity.Api;
 
-public sealed record RegisterRequest(string Email, string Password);
-
-public sealed record LoginRequest(string Email, string Password);
-
-public sealed record AccessTokenResponse(string AccessToken);
-
 [ApiController]
 [Route("api/identity")]
-public sealed class IdentityController(
-    UserManager<ApplicationUser> userManager,
-    JwtTokenFactory tokenFactory) : ControllerBase
+public sealed class IdentityController : ControllerBase
 {
-    [HttpPost("register")]
-    public async Task<ActionResult<AccessTokenResponse>> Register(RegisterRequest request)
-    {
-        var user = new ApplicationUser { UserName = request.Email, Email = request.Email };
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly JwtTokenFactory _tokenFactory;
 
-        var result = await userManager.CreateAsync(user, request.Password);
+    public IdentityController(UserManager<ApplicationUser> userManager, JwtTokenFactory tokenFactory)
+    {
+        _userManager = userManager;
+        _tokenFactory = tokenFactory;
+    }
+
+    [HttpPost("register")]
+    public async Task<ActionResult<AccessTokenDto>> Register(RegisterDto dto)
+    {
+        var user = new ApplicationUser { UserName = dto.Email, Email = dto.Email };
+
+        var result = await _userManager.CreateAsync(user, dto.Password);
         if (!result.Succeeded)
         {
             foreach (var error in result.Errors)
@@ -32,20 +34,20 @@ public sealed class IdentityController(
             return ValidationProblem(ModelState);
         }
 
-        await userManager.AddToRoleAsync(user, "explorer");
+        await _userManager.AddToRoleAsync(user, "explorer");
 
-        return new AccessTokenResponse(tokenFactory.CreateToken(user, await userManager.GetRolesAsync(user)));
+        return new AccessTokenDto(_tokenFactory.CreateToken(user, await _userManager.GetRolesAsync(user)));
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<AccessTokenResponse>> Login(LoginRequest request)
+    public async Task<ActionResult<AccessTokenDto>> Login(LoginDto dto)
     {
-        var user = await userManager.FindByEmailAsync(request.Email);
-        if (user is null || !await userManager.CheckPasswordAsync(user, request.Password))
+        var user = await _userManager.FindByEmailAsync(dto.Email);
+        if (user is null || !await _userManager.CheckPasswordAsync(user, dto.Password))
         {
             return Problem(statusCode: StatusCodes.Status401Unauthorized, title: "Invalid email or password.");
         }
 
-        return new AccessTokenResponse(tokenFactory.CreateToken(user, await userManager.GetRolesAsync(user)));
+        return new AccessTokenDto(_tokenFactory.CreateToken(user, await _userManager.GetRolesAsync(user)));
     }
 }
