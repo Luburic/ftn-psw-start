@@ -30,7 +30,7 @@ unless asked otherwise.
 ```
 backend/          .NET solution (Explorer.slnx)
 frontend/         Angular workspace  (not yet created)
-docs/
+docs/             knowledge base (course material, in Serbian), see below
 .github/          CI workflow: restore, build, test (with a Postgres service container)
 .config/          dotnet tool manifest (dotnet-ef)
 ```
@@ -54,6 +54,26 @@ frontend/src/app/modules/<name>/
 - All modules are pre-scaffolded so students never edit central registration files,
   project files, or the solution. Every new dependency goes through the platform team,
   because versions are pinned centrally in a platform-owned file.
+
+## Knowledge base
+
+`docs/knowledge-base/` holds the course material students learn from, written in
+Serbian and owned by the platform team. Every document opens with a status header of
+one of two kinds:
+
+- **Normativan** (normative): the examples mirror the real code and are the mandatory
+  pattern. `docs/knowledge-base/tests/xunit.md` is one. When a platform change alters
+  a pattern, updating the affected normative document is part of that change.
+- **Lekcija** (lesson): concept teaching whose examples are deliberately simplified
+  and do NOT follow this project's conventions. Never copy code from a lesson into the
+  project.
+
+Which documents to load depends on the kind of session:
+
+- For direct engineering tasks (writing or changing code), consult only normative
+  documents; lessons are background theory, not patterns.
+- For discussions, explanations, and learning sessions with students, draw on both
+  kinds, and keep the distinction explicit whenever quoting lesson code.
 
 ---
 
@@ -305,6 +325,12 @@ Architecture tests in `Host.Tests` use ArchUnitNET and encode the reference rule
   in `appsettings.json`.
 - The OpenAPI document is at `/openapi/v1.json`; Scalar's browsable UI is at `/scalar`
   in development.
+- No C# primary constructors. Dependencies are assigned to `readonly` fields in an
+  explicitly written constructor, because constructor injection in that form is the
+  prior knowledge students arrive with.
+- No `CancellationToken` parameters in our own code, and tokens are not forwarded to
+  framework calls. They appear only where a framework interface forces them into a
+  signature (e.g. `IHostedService`), where they are accepted and ignored.
 
 ---
 
