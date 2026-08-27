@@ -8,9 +8,7 @@ namespace Identity.Infrastructure;
 internal sealed class IdentityModuleDbContext
     : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
 {
-    public IdentityModuleDbContext(DbContextOptions<IdentityModuleDbContext> options) : base(options)
-    {
-    }
+    public IdentityModuleDbContext(DbContextOptions<IdentityModuleDbContext> options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

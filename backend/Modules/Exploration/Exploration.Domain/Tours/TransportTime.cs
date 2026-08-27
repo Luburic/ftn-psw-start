@@ -7,9 +7,7 @@ public sealed record TransportTime
     public TransportMode Transport { get; private init; }
     public int Minutes { get; private init; }
 
-    private TransportTime()
-    {
-    }
+    private TransportTime() { }
 
     public TransportTime(TransportMode transport, int minutes)
     {

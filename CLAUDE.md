@@ -337,13 +337,43 @@ drops and recreates that database once per test run, and lets the module initial
 migrate on host boot. Structure is set up once per run; data is reset per test.
 
 **Seed data.** Each module has a `Seeds/` folder in its test project: one static class of
-named literals per aggregate (`public static readonly Tour FortressWalk = new(...)`, one
-constructor call per line, no methods — a test needing extra state builds it in its own
-arrange step) plus one glue class exposing `All`. Tests reference seeded rows as
-`TourSeed.FortressWalk.Id`; this requires aggregates to generate their ID in the
-constructor (`base(Guid.NewGuid())`), never via EF value generation. Cross-module seed
-rows come from the other module's seeder (test projects may reference each other for
-this).
+named instances per aggregate plus one glue class exposing `All`. An instance is built
+through the domain — a constructor call, optionally followed by domain method calls in the
+static constructor when the test needs a state beyond the initial one — with the state
+encoded in the name (`FortressWalk` is a fresh draft, `PublishedVineyards` was published
+through `Publish()`). Linear statements only: no branching, no helper methods, no
+parameters; a variation is a new named instance. Because instances only ever pass through
+real constructors and domain methods, every seeded state is a state the system can
+actually reach. Tests reference seeded rows as `TourSeed.FortressWalk.Id`; this requires
+aggregates to generate their ID in the constructor (`base(Guid.NewGuid())`), never via EF
+value generation. Cross-module seed rows come from the other module's seeder (test
+projects may reference each other for this).
+
+**Three channels.** In an integration test, each concern has exactly one channel, each
+one-directional: state goes in through seeds (`Reseed` is the only write path to the
+database), actions go through HTTP (the Act is the only request the test sends), and
+observation goes through the database (`Factory.CreateContext<TContext>()`, read-only).
+Never arrange state by calling other endpoints — a bug in one feature must fail only that
+feature's tests — and never write through the context, which would bypass every domain
+invariant. Nothing structurally enforces this (the context is right there); it is held by
+convention and review, like the frontend import rules.
+
+Contexts are always fresh and short-lived: one opened in Arrange for a baseline read, a
+separate one opened in Assert, each in a `using`. Reusing a context across the Act
+boundary serves stale tracked entities.
+
+**Asserting commands.** Assert the response first (status code, returned DTO where there
+is one), then open a context and verify the persisted side effect — including its absence
+in rejection tests that reach the domain. This keeps command tests independent of the
+query classes and works for commands whose effects no current query projects. Counts are
+asserted as deltas: read the count in Arrange, assert `countBefore + 1` (or unchanged) in
+Assert.
+
+**Asserting queries.** Query tests stay on HTTP — the projection is what they test — and
+never state a count as a literal, because every literal census breaks when anyone adds a
+seed row. Derive expected counts from the seed class (`TourSeed.All.Count(...)`; `All` is
+typed as the aggregate array for this) or assert shape and membership (`OnlyContain`,
+`Contain`/`NotContain` by seeded ID) instead.
 
 **Wiring.** Each test project has one `BaseIntegrationTest.cs` bundling three types: the
 factory subclass, a `[CollectionDefinition("Integration")]` with the factory as

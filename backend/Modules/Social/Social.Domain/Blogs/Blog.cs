@@ -5,14 +5,13 @@ namespace Social.Domain.Blogs;
 
 public sealed class Blog : AggregateRoot
 {
-    private readonly List<Comment> _comments = [];
-
     public Guid AuthorId { get; private set; }
     public string Title { get; private set; }
     public string Description { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public List<string> Images { get; private set; }
     public BlogStatus Status { get; private set; }
+    private readonly List<Comment> _comments = [];
     public IReadOnlyList<Comment> Comments => _comments;
 
     private Blog()
@@ -50,16 +49,6 @@ public sealed class Blog : AggregateRoot
         }
 
         Status = BlogStatus.Published;
-    }
-
-    public void Close()
-    {
-        if (Status != BlogStatus.Published)
-        {
-            throw new DomainException("Only a published blog can be closed.");
-        }
-
-        Status = BlogStatus.Closed;
     }
 
     public void AddComment(Guid userId, string text)

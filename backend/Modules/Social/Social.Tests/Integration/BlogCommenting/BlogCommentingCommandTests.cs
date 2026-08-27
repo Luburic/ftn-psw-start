@@ -1,10 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using Shared.Domain;
 using Shared.Tests;
 using Social.Application.BlogCommenting;
-using Social.Application.Blogs;
+using Social.Infrastructure.Persistence;
 using Social.Tests.Integration.Seeds;
 using Xunit;
 
@@ -12,24 +11,21 @@ namespace Social.Tests.Integration.BlogCommenting;
 
 public class BlogCommentingCommandTests : BaseIntegrationTest
 {
-    public BlogCommentingCommandTests(SocialApiFactory factory) : base(factory)
-    {
-    }
+    public BlogCommentingCommandTests(SocialApiFactory factory) : base(factory) { }
 
     [Fact]
     public async Task AddComment_stores_the_comment_on_a_published_blog()
     {
-        var author = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
-        await author.PostAsync($"/api/social/blogs/{BlogSeed.FortressImpressions.Id}/publish", null);
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+        var request = new CreateCommentDto("Odličan blog!");
 
-        var response = await client.PostAsJsonAsync($"/api/social/blogs/{BlogSeed.FortressImpressions.Id}/comments",
-            new CreateCommentDto("Odličan blog!"));
+        var response = await client.PostAsJsonAsync($"/api/social/blogs/{BlogSeed.PublishedRiverbank.Id}/comments",
+            request);
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
-        var published = await client.GetFromJsonAsync<PageResult<BlogDto>>("/api/social/blogs/published", JsonOptions);
-        var blog = published!.Items.Single(blog => blog.Id == BlogSeed.FortressImpressions.Id);
-        blog.Comments.Should().ContainSingle(comment =>
+        using var assertContext = Factory.CreateContext<SocialDbContext>();
+        var stored = assertContext.Blogs.Single(blog => blog.Id == BlogSeed.PublishedRiverbank.Id);
+        stored.Comments.Should().ContainSingle(comment =>
             comment.UserId == WellKnownUsers.Administrator && comment.Text == "Odličan blog!");
     }
 
@@ -37,57 +33,46 @@ public class BlogCommentingCommandTests : BaseIntegrationTest
     public async Task UpdateComment_changes_the_callers_own_comment()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
-        var commentId = await PublishAndCommentAsync(client);
+        var commentId = BlogSeed.CommentedMuseumVisit.Comments.Single().Id;
+        var request = new UpdateCommentDto("Ipak prosečan blog.");
 
         var response = await client.PutAsJsonAsync(
-            $"/api/social/blogs/{BlogSeed.FortressImpressions.Id}/comments/{commentId}",
-            new UpdateCommentDto("Ipak prosečan blog."));
+            $"/api/social/blogs/{BlogSeed.CommentedMuseumVisit.Id}/comments/{commentId}", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
-        var published = await client.GetFromJsonAsync<PageResult<BlogDto>>("/api/social/blogs/published", JsonOptions);
-        var blog = published!.Items.Single(blog => blog.Id == BlogSeed.FortressImpressions.Id);
-        blog.Comments.Single().Text.Should().Be("Ipak prosečan blog.");
+        using var assertContext = Factory.CreateContext<SocialDbContext>();
+        var stored = assertContext.Blogs.Single(blog => blog.Id == BlogSeed.CommentedMuseumVisit.Id);
+        stored.Comments.Single().Text.Should().Be("Ipak prosečan blog.");
     }
 
     [Fact]
     public async Task UpdateComment_rejects_another_users_comment()
     {
-        var commenter = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
-        var commentId = await PublishAndCommentAsync(commenter);
         var client = Factory.CreateClientFor(Guid.NewGuid(), "explorer");
+        var commentId = BlogSeed.CommentedMuseumVisit.Comments.Single().Id;
+        var request = new UpdateCommentDto("Izmena tuđeg komentara.");
 
         var response = await client.PutAsJsonAsync(
-            $"/api/social/blogs/{BlogSeed.FortressImpressions.Id}/comments/{commentId}",
-            new UpdateCommentDto("Izmena tuđeg komentara."));
+            $"/api/social/blogs/{BlogSeed.CommentedMuseumVisit.Id}/comments/{commentId}", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        using var assertContext = Factory.CreateContext<SocialDbContext>();
+        var stored = assertContext.Blogs.Single(blog => blog.Id == BlogSeed.CommentedMuseumVisit.Id);
+        stored.Comments.Single().Text.Should().Be("Odlična preporuka!");
     }
 
     [Fact]
     public async Task DeleteComment_removes_the_callers_own_comment()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
-        var commentId = await PublishAndCommentAsync(client);
+        var commentId = BlogSeed.CommentedMuseumVisit.Comments.Single().Id;
 
         var response = await client.DeleteAsync(
-            $"/api/social/blogs/{BlogSeed.FortressImpressions.Id}/comments/{commentId}");
+            $"/api/social/blogs/{BlogSeed.CommentedMuseumVisit.Id}/comments/{commentId}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
-        var published = await client.GetFromJsonAsync<PageResult<BlogDto>>("/api/social/blogs/published", JsonOptions);
-        var blog = published!.Items.Single(blog => blog.Id == BlogSeed.FortressImpressions.Id);
-        blog.Comments.Should().BeEmpty();
-    }
-
-    private async Task<Guid> PublishAndCommentAsync(HttpClient commenter)
-    {
-        var author = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
-        await author.PostAsync($"/api/social/blogs/{BlogSeed.FortressImpressions.Id}/publish", null);
-
-        await commenter.PostAsJsonAsync($"/api/social/blogs/{BlogSeed.FortressImpressions.Id}/comments",
-            new CreateCommentDto("Odličan blog!"));
-
-        var published = await commenter.GetFromJsonAsync<PageResult<BlogDto>>("/api/social/blogs/published", JsonOptions);
-        var blog = published!.Items.Single(blog => blog.Id == BlogSeed.FortressImpressions.Id);
-        return blog.Comments.Single().Id;
+        using var assertContext = Factory.CreateContext<SocialDbContext>();
+        var stored = assertContext.Blogs.Single(blog => blog.Id == BlogSeed.CommentedMuseumVisit.Id);
+        stored.Comments.Should().BeEmpty();
     }
 }

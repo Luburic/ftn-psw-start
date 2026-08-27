@@ -6,9 +6,7 @@ namespace Social.Infrastructure.Persistence;
 
 internal sealed class SocialDbContext : DbContext, IUnitOfWork
 {
-    public SocialDbContext(DbContextOptions<SocialDbContext> options) : base(options)
-    {
-    }
+    public SocialDbContext(DbContextOptions<SocialDbContext> options) : base(options) { }
 
     public DbSet<Blog> Blogs => Set<Blog>();
 

@@ -78,26 +78,6 @@ public class BlogTests
     }
 
     [Fact]
-    public void Close_closes_a_published_blog()
-    {
-        var blog = CreatePublishedBlog();
-
-        blog.Close();
-
-        blog.Status.Should().Be(BlogStatus.Closed);
-    }
-
-    [Fact]
-    public void Close_rejects_a_draft_blog()
-    {
-        var blog = CreateBlog();
-
-        var closing = () => blog.Close();
-
-        closing.Should().Throw<DomainException>();
-    }
-
-    [Fact]
     public void AddComment_stores_the_comment_on_a_published_blog()
     {
         var blog = CreatePublishedBlog();
@@ -106,17 +86,6 @@ public class BlogTests
 
         blog.Comments.Should().ContainSingle(comment =>
             comment.UserId == WellKnownUsers.Administrator && comment.Text == "Odlična tura!");
-    }
-
-    [Fact]
-    public void AddComment_rejects_a_closed_blog()
-    {
-        var blog = CreatePublishedBlog();
-        blog.Close();
-
-        var addition = () => blog.AddComment(WellKnownUsers.Administrator, "Odlična tura!");
-
-        addition.Should().Throw<DomainException>();
     }
 
     [Theory]

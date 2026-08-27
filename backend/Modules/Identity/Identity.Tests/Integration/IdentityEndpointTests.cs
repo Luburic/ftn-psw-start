@@ -11,9 +11,7 @@ namespace Identity.Tests.Integration;
 
 public sealed class IdentityEndpointTests : BaseIntegrationTest
 {
-    public IdentityEndpointTests(IdentityApiFactory factory) : base(factory)
-    {
-    }
+    public IdentityEndpointTests(IdentityApiFactory factory) : base(factory) { }
 
     [Fact]
     public async Task Register_returns_a_token_for_a_new_user()

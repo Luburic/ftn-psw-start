@@ -102,15 +102,22 @@ Svaki modul nasleđuje ovu klasu jednom praznom klasom, na primer `public sealed
 
 Početni podaci (engl. *seed*) su skup podataka koji se upisuje u testnu bazu pre svakog testa. Početni podaci rešavaju problem poznatog polaznog stanja. Test koji čita podatke mora unapred da zna šta se u bazi nalazi, a test koji menja podatke ne sme da ošteti polazno stanje narednih testova. Zato se pre svakog testa sve tabele modula prazne i pune istim početnim podacima, pozivom metode `Reseed` iz klase `ExplorerApiFactory`.
 
-Početni podaci se pišu u direktorijumu `Integration/Seeds` test projekta. Za svaki agregat postoji po jedna statička klasa koja sadrži imenovane instance, po jednu naredbu za svaku instancu. Pored njih postoji jedna klasa koja ih okuplja u jedinstven spisak.
+Početni podaci se pišu u direktorijumu `Integration/Seeds` test projekta. Za svaki agregat postoji po jedna statička klasa koja sadrži imenovane instance. Instanca nastaje kroz domen: pozivom konstruktora, a kada je testu potrebno stanje koje konstruktor ne daje, i pozivima domenskih metoda u statičkom konstruktoru klase. Stanje instance zapisano je u njenom imenu. Pored ovih klasa postoji jedna klasa koja sve instance okuplja u jedinstven spisak. U nastavku je skraćen prikaz klase `TourSeed`.
 
 ```csharp
 internal static class TourSeed
 {
     public static readonly Tour FortressWalk = new(WellKnownUsers.Explorer, "Šetnja tvrđavom", "Šetnja počinje na Gornjem platou Petrovaradinske tvrđave, vodi pored Sahat kule i podzemnih vojnih galerija, a završava se pogledom na Dunav.", TourDifficulty.Easy, ["istorija", "priroda"]);
-    public static readonly Tour CityStroll = new(WellKnownUsers.Explorer, "Šetnja centrom", "Kratak opis gradske šetnje.", TourDifficulty.Moderate, ["grad"]);
+    public static readonly Tour PublishedVineyards;
 
-    public static object[] All => [FortressWalk, CityStroll];
+    static TourSeed()
+    {
+        PublishedVineyards = new(WellKnownUsers.Explorer, "Vinogradi Sremskih Karlovaca", "Tura vodi kroz vinograde na obroncima Fruške gore, uz obilazak dva porodična podruma i degustaciju bermeta u Sremskim Karlovcima.", TourDifficulty.Moderate, ["vino", "priroda"]);
+        PublishedVineyards.AddTransportTime(TransportMode.Bicycle, 60);
+        PublishedVineyards.Publish();
+    }
+
+    public static Tour[] All => [FortressWalk, PublishedVineyards];
 }
 
 internal static class ExplorationSeed
@@ -120,9 +127,10 @@ internal static class ExplorationSeed
 ```
 
 U primeru treba uočiti sledeće.
-- Svaka instanca ima ime. Testovi se pozivaju na instancu preko imena, na primer `TourSeed.FortressWalk.Id`, i nikada ne zapisuju identifikatore.
-- Instance nastaju pozivom pravih konstruktora domenskih klasa, pa početni podaci ne mogu da naruše domenska pravila.
-- Klase početnih podataka sadrže samo podatke, bez metoda. Kada je testu potrebno stanje koje početni podaci ne sadrže, test ga sam pravi u svom koraku Arrange. Ovo pravilo sprečava da klase početnih podataka vremenom narastu.
+- Svaka instanca ima ime, a ime beleži stanje instance. `FortressWalk` je sveža tura u izradi, dok je `PublishedVineyards` objavljena pozivom metode `Publish`. Testovi se pozivaju na instancu preko imena, na primer `TourSeed.FortressWalk.Id`, i nikada ne zapisuju identifikatore.
+- Instance nastaju isključivo pozivima pravih konstruktora i domenskih metoda, pa je svako posejano stanje ono koje sistem zaista može da dostigne. Početni podaci ne mogu da naruše domenska pravila.
+- Klase početnih podataka sadrže samo linearne naredbe: bez grananja, bez pomoćnih metoda i bez parametara. Kada je potrebna varijacija postojeće instance, dodaje se nova imenovana instanca. Ovo pravilo sprečava da klase početnih podataka vremenom prerastu u pomoćni kod.
+- Spisak `All` je tipiziran nizom agregata, pa testovi iz njega izvode očekivane brojeve, na primer `TourSeed.All.Count(tour => tour.Status == TourStatus.Published)`.
 
 ### Povezivanje
 
@@ -166,26 +174,84 @@ Većina krajnjih tačaka zahteva prijavljenog korisnika. Umesto da test registru
 
 ```csharp
 [Fact]
-public async Task Create_stores_a_draft_tour()
+public async Task Create_requires_the_explorer_role()
 {
-    var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+    var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
+    var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Easy, ["planina"]);
 
-    var response = await client.PostAsJsonAsync("/api/exploration/tours",
-        new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Hard, ["planina"]));
+    var response = await client.PostAsJsonAsync("/api/exploration/tours", request);
 
-    response.StatusCode.Should().Be(HttpStatusCode.OK);
-    var tour = await response.Content.ReadFromJsonAsync<TourDto>(JsonOptions);
-    tour!.Status.Should().Be(TourStatus.Draft);
+    response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
 }
 ```
 
 Ovakav pristup je ispravan jer funkcionalni moduli korisnika poznaju samo preko njegovog identifikatora, pa korisnik ne mora da postoji u bazi modula Identity. Krajnje tačke registracije i prijave testira jedino projekat `Identity.Tests`, jer su tamo one predmet testa.
 
+### Tri kanala integracionog testa
+
+Integracioni test komunicira sa sistemom kroz tri kanala, a svaki kanal ima jedan smer. Stanje ulazi u bazu isključivo kroz početne podatke. Akcija se izvršava isključivo HTTP zahtevom u koraku Act; telo zahteva se priprema u koraku Arrange, a test nikada ne priprema stanje pozivom drugih krajnjih tačaka, jer bi tada greška u jednoj funkcionalnosti obarala i testove drugih funkcionalnosti. Ishod se posmatra isključivo čitanjem baze kroz kontekst modula; test nikada ne piše kroz kontekst, jer bi takav upis zaobišao domenska pravila. Nijedan alat ne sprečava kršenje ove podele, pa se ona, kao i struktura Arrange, Act, Assert, održava konvencijom i pregledom koda.
+
+Kontekst za posmatranje vraća metoda `CreateContext<TContext>()` klase `ExplorerApiFactory`. Test otvara svež kontekst na mestu upotrebe, unutar naredbe `using`: jedan u koraku Arrange kada čita polazno stanje i poseban u koraku Assert. Kontekst otvoren pre koraka Act ne sme se čitati posle njega, jer EF prati jednom učitane objekte i vratio bi zastarelo stanje.
+
+```csharp
+[Fact]
+public async Task Publish_publishes_a_complete_tour()
+{
+    var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+
+    var response = await client.PostAsync($"/api/exploration/tours/{TourSeed.PublishableRiverside.Id}/publish", null);
+
+    response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+    var stored = assertContext.Tours.Single(tour => tour.Id == TourSeed.PublishableRiverside.Id);
+    stored.Status.Should().Be(TourStatus.Published);
+    stored.PublishedAt.Should().NotBeNull();
+}
+```
+
+U primeru treba uočiti sledeće.
+- Korak Assert prvo proverava odgovor, a zatim upisano stanje. Provera nad bazom potvrđuje da se sporedni efekat komande zaista dogodio, i radi i za komande čiji efekat nijedan postojeći upit ne prikazuje.
+- Instanca `PublishableRiverside` je posejana sa dovoljno dugim opisom i unetim vremenom transporta, pa je korak Act jedini zahtev koji test šalje.
+- Test ne poziva krajnju tačku za pregled objavljenih tura, pa greška u upitnoj klasi ne obara komandne testove.
+
+Kada komandni test proverava broj redova, broj se ne zapisuje kao konstanta, već kao razlika: test u koraku Arrange pročita zatečeni broj, a u koraku Assert proveri da se broj promenio za očekivanu razliku. Isti obrazac, sa razlikom nula, proverava da odbijena komanda nije ostavila trag u bazi.
+
+```csharp
+[Fact]
+public async Task Create_stores_a_draft_tour()
+{
+    var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+    var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Hard, ["planina"]);
+    using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
+    var tourCountBefore = arrangeContext.Tours.Count();
+
+    var response = await client.PostAsJsonAsync("/api/exploration/tours", request);
+
+    response.StatusCode.Should().Be(HttpStatusCode.OK);
+    var created = await response.Content.ReadFromJsonAsync<TourDto>(JsonOptions);
+    created!.AuthorId.Should().Be(WellKnownUsers.Explorer);
+    using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+    assertContext.Tours.Count().Should().Be(tourCountBefore + 1);
+    var stored = assertContext.Tours.Single(tour => tour.Id == created.Id);
+    stored.Status.Should().Be(TourStatus.Draft);
+    stored.TransportTimes.Should().BeEmpty();
+}
+```
+
+Upitni test i dalje proverava odgovor krajnje tačke, jer je projekcija podataka upravo ono što on testira. Ni upitni test ne zapisuje broj redova kao konstantu, jer bi svaki novi red u početnim podacima oborio nepovezane testove. Očekivani broj se izvodi iz klase početnih podataka, a pripadnost rezultata proverava preko identifikatora imenovanih instanci.
+
+```csharp
+tours!.Items.Should().OnlyContain(tour => tour.Status == TourStatus.Published);
+tours.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
+tours.Items.Should().NotContain(tour => tour.Id == TourSeed.FortressWalk.Id);
+tours.TotalCount.Should().Be(TourSeed.All.Count(tour => tour.Status == TourStatus.Published));
+```
+
 ## Organizacija testova modula
 
 Testovi modula žive u projektu `<Ime>.Tests`, u dva direktorijuma. Direktorijum `Unit` sadrži jedinične testove agregata i domenskih servisa. Ti testovi ne koriste bazu ni HTTP i ne nasleđuju `BaseIntegrationTest`. Direktorijum `Integration` sadrži integracione testove, početne podatke i datoteku `BaseIntegrationTest.cs`.
 
-Integracioni testovi se grupišu po grupi slučajeva upotrebe i prate podelu aplikacionog sloja. Za svaku komandnu klasu postoji po jedna test klasa, na primer `TourAuthoringCommandTests` za `TourAuthoringService`. Za svaku upitnu klasu postoji po jedna test klasa, na primer `TourBrowsingQueryTests` za `TourBrowsingQueries`. Komandni test menja stanje i proverava ishod promene. Upitni test čita početne podatke i ne menja ništa.
+Integracioni testovi se grupišu po grupi slučajeva upotrebe i prate podelu aplikacionog sloja. Za svaku komandnu klasu postoji po jedna test klasa, na primer `TourAuthoringCommandTests` za `TourAuthoringService`. Za svaku upitnu klasu postoji po jedna test klasa, na primer `TourBrowsingQueryTests` za `TourBrowsingQueries`. Komandni test menja stanje kroz krajnju tačku i proverava ishod nad bazom. Upitni test čita početne podatke kroz krajnju tačku i ne menja ništa.
 
 ## Pokretanje testova
 

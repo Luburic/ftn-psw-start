@@ -61,6 +61,18 @@ public abstract class ExplorerApiFactory : WebApplicationFactory<Program>
     }
 
     /// <summary>
+    /// Creates a fresh context for observing the database from a test: reading a count in
+    /// Arrange, verifying a side effect in Assert. Never used to write; state enters the
+    /// database only through <see cref="Reseed{TContext}"/> and the endpoint under test.
+    /// The caller disposes the context; the backing scope is left to the garbage collector.
+    /// </summary>
+    public TContext CreateContext<TContext>() where TContext : DbContext
+    {
+        var scope = Services.CreateScope();
+        return scope.ServiceProvider.GetRequiredService<TContext>();
+    }
+
+    /// <summary>
     /// Creates a client whose requests are authenticated as the given user. The token is
     /// signed with the development key, so no Identity registration is needed; feature
     /// modules only ever see the user ID.
