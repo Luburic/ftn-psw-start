@@ -166,7 +166,7 @@ Većina krajnjih tačaka zahteva prijavljenog korisnika. Umesto da test registru
 
 ```csharp
 [Fact]
-public async Task Create_stores_a_draft_tour_with_price_zero()
+public async Task Create_stores_a_draft_tour()
 {
     var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
@@ -176,7 +176,6 @@ public async Task Create_stores_a_draft_tour_with_price_zero()
     response.StatusCode.Should().Be(HttpStatusCode.OK);
     var tour = await response.Content.ReadFromJsonAsync<TourDto>(JsonOptions);
     tour!.Status.Should().Be(TourStatus.Draft);
-    tour.Price.Should().Be(0m);
 }
 ```
 
@@ -186,7 +185,7 @@ Ovakav pristup je ispravan jer funkcionalni moduli korisnika poznaju samo preko 
 
 Testovi modula žive u projektu `<Ime>.Tests`, u dva direktorijuma. Direktorijum `Unit` sadrži jedinične testove agregata i domenskih servisa. Ti testovi ne koriste bazu ni HTTP i ne nasleđuju `BaseIntegrationTest`. Direktorijum `Integration` sadrži integracione testove, početne podatke i datoteku `BaseIntegrationTest.cs`.
 
-Integracioni testovi se grupišu po agregatu. Za svaki agregat postoje dve test klase, jedna za komande i jedna za upite, na primer `TourCommandTests` i `TourQueryTests`. Komandni test menja stanje i proverava ishod promene. Upitni test čita početne podatke i ne menja ništa. Ova podela prati podelu aplikacionog sloja na komandnu klasu `TourService` i upitni port `ITourQueries`.
+Integracioni testovi se grupišu po grupi slučajeva upotrebe i prate podelu aplikacionog sloja. Za svaku komandnu klasu postoji po jedna test klasa, na primer `TourAuthoringCommandTests` za `TourAuthoringService`. Za svaku upitnu klasu postoji po jedna test klasa, na primer `TourBrowsingQueryTests` za `TourBrowsingQueries`. Komandni test menja stanje i proverava ishod promene. Upitni test čita početne podatke i ne menja ništa.
 
 ## Pokretanje testova
 

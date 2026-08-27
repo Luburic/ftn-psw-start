@@ -71,6 +71,17 @@ Ova grupa takođe proverava da nijedan modul ne zavisi od modula `Identity`. Mod
 Ovi testovi proveravaju da nijedan `Shared` projekat ne zavisi ni od jednog modula.
 Ako bi zajednički kod znao za funkcionalnost jednog tima, prestao bi da bude zajednički.
 
+### `ApplicationConventionTests`
+
+Za razliku od prethodnih grupa, koje čuvaju zavisnosti između projekata, ova grupa čuva
+konvencije na nivou klasa.
+
+Prvo pravilo: klasa čije se ime završava na `Queries` ne sme da zavisi od interfejsa
+`IUnitOfWork`. Upit ne menja stanje i nikada ne čuva izmene, pa upitna klasa nema šta da
+traži od jedinice posla. Konvencija je opisana u dokumentu
+`docs/knowledge-base/server/arhitektura/komande-i-upiti.md`, a ovaj test je pretvara u
+crveni build umesto primedbe na pregledu koda.
+
 ### `HostCompositionTests`
 
 Čuva projekat `Host.Api`, jedini kome je dozvoljeno da referencira sve module.

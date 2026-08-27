@@ -13,7 +13,7 @@ public abstract class BaseArchitectureTests
     protected static readonly string[] Layers = ["Api", "Application", "Contracts", "Domain", "Infrastructure"];
     protected static readonly string[] SharedProjects = ["Shared.Domain", "Shared.Api", "Shared.Infrastructure"];
 
-    private static readonly Architecture Architecture = new ArchLoader()
+    protected static readonly Architecture Architecture = new ArchLoader()
         .LoadAssemblies(Modules
             .SelectMany(module => Layers.Select(layer => Assembly.Load($"{module}.{layer}")))
             .Append(Assembly.Load("Identity"))

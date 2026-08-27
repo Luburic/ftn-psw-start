@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Exploration.Api;
 using Exploration.Infrastructure;
 using Games.Api;
@@ -19,6 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 builder.Services.AddControllers()
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
     .AddIdentityControllers()
     .AddExplorationControllers()
     .AddGamesControllers()

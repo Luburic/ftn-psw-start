@@ -94,8 +94,8 @@ backend/
                                    exception middleware, OpenAPI + Scalar    [platform]
   Host.Tests/                      ArchUnitNET architecture tests            [platform]
   Shared/
-    Shared.Domain/                 Entity, AggregateRoot, DomainException,
-                                   NotFoundException                        [platform]
+    Shared.Domain/                 Entity, AggregateRoot, PageResult,
+                                   DomainException, NotFoundException       [platform]
     Shared.Api/                    ClaimsPrincipal.GetUserId()               [platform]
     Shared.Infrastructure/         AddModuleDbContext (Npgsql, schema-per-
                                    module, per-schema migrations history)    [platform]
@@ -110,7 +110,9 @@ backend/
       <Name>.Application/          services, DTOs, mapper profile (AutoMapper), port interfaces
       <Name>.Contracts/            inter-module interface, where modules interact through RPC
       <Name>.Domain/               entities, value objects, domain services, invariants
-      <Name>.Infrastructure/       DbContext, EF config, port implementations, DI
+      <Name>.Infrastructure/       Persistence/ (DbContext, EF config, repositories,
+                                   migrations, module initializer), DI. Future non-persistence
+                                   adapters (e.g. an external API client) get sibling folders
       <Name>.Tests/                Unit/ and Integration/ folders
 ```
 
@@ -174,13 +176,34 @@ Migrations are added with `dotnet ef` (tool manifest in `.config/`), e.g.
 as a structuring discipline: a method either changes state and returns little, or returns
 data and changes nothing. Never both.
 
-Each module has, per aggregate:
+The application layer is organized by use case, not as a mirror of the domain. Below the
+application layer the code is shaped by data: aggregates own the domain, the persistence,
+and the test seeds. From the application layer outward it is shaped by use cases:
+application classes, controllers, and integration tests.
 
-- `<Aggregate>Service` for commands. Public sealed class, no interface. Constructor
-  injects the repository and `IUnitOfWork`. A command method loads the aggregate, calls a
-  method on it, and saves once.
-- `<Aggregate>Queries` for reads. Public sealed class, no interface. Depends on the
-  module's read port and returns DTOs.
+Related use cases form a group with its own folder and use-case-named classes:
+
+- `<UseCaseGroup>Service` for commands. Public sealed class, no interface. Constructor
+  injects `I<Aggregate>Repository` and `IUnitOfWork`. A command method loads the
+  aggregate, calls a method on it, and saves once.
+- `<UseCaseGroup>Queries` for reads. Public sealed class, no interface. Constructor
+  injects `I<Aggregate>ReadRepository`, plus `I<Aggregate>Repository` when a read needs a
+  domain-computed value, plus other modules' contracts when it composes data across
+  modules. Returns DTOs, never mutates, never saves (an architecture test forbids a
+  `*Queries` class from depending on `IUnitOfWork`).
+
+In Exploration the groups are `TourAuthoring` (create, add transport time, publish, my
+tours) and `TourBrowsing` (published tours). Use cases are naturally tied to aggregates,
+so group names often start with the aggregate name, but that is a consequence, not the
+rule; a group spanning aggregates is named after the use case alone. Controllers only
+ever inject these service and queries classes; command/query separation lives one level
+down, in the two repository interfaces.
+
+**DTO placement.** The aggregate-named folder (`Application/Tours/`) holds the module's
+shared data language: the two repository interfaces and the DTOs used by more than one
+use-case group. A DTO is born in the use-case folder that accepts or returns it and moves
+to the aggregate folder only when a second group needs it — the same promotion rule as
+for `Shared`, one level down.
 
 Business rules live in the domain, not in the service. A service method that contains an
 `if` about business state is a smell; move it into the aggregate.
@@ -193,8 +216,8 @@ there is nothing to invert and the interface hides nothing.
 Interfaces that do belong, all declared in `Application` and implemented in
 `Infrastructure`:
 
-- `I<Aggregate>Repository` for the write side
-- `I<Name>Queries` for the read side
+- `I<Aggregate>Repository` for the write side, returning aggregates
+- `I<Aggregate>ReadRepository` for the read side, returning DTOs
 - `IUnitOfWork`
 
 Plus `I<Name>Api` in `Contracts`, implemented in `Application`.
@@ -210,13 +233,31 @@ Commands call it exactly once, at the end. This is the transaction boundary.
 Explain it to students in two sentences: everything changed since loading is written in one
 transaction when you save, and that pattern has a name. Do not turn it into a lecture.
 
-**Read side.** `I<Name>Queries` is implemented in `Infrastructure` using `AsNoTracking` and
-projecting directly to DTOs. Read methods never load an aggregate and never mutate.
+**Read side.** `I<Aggregate>ReadRepository` is implemented in `Infrastructure` using
+`AsNoTracking` and projecting directly to DTOs. Aggregates may also expose side-effect-free
+query methods that return values derived from their own state; commands use them as guards,
+and a read use case may reuse them instead of duplicating the derivation in SQL.
 
-**Fat service guard.** Keep the folder structure feature-first
-(`Application/Orders/PlaceOrder/`), not layer-first. If a service passes roughly seven
-public methods, raise it: the team should split by use case rather than keep growing one
-class.
+Deciding how to answer a request, in order:
+
+1. Does it change state? Command: the service loads the aggregate, calls a method on it,
+   saves once.
+2. Is it a list or view of things to display? Query: project through the read repository.
+   Never load aggregates to display them.
+3. Is it a derived value one aggregate can answer from its own state? Query: load the
+   aggregate through `I<Aggregate>Repository` inside the queries class, call its query
+   method, wrap the value in a DTO, and do not save.
+
+The hard rule behind all three: queries never mutate and never call `SaveChangesAsync`.
+Do not write a `CanX()` next to every command speculatively; the command throwing is the
+check, and the query method appears only when a real read use case asks for it.
+
+A list query whose result can grow unbounded returns `PageResult<T>` from `Shared.Domain`
+and takes `page` and `pageSize` parameters; the queries class clamps them before
+delegating. A list that is naturally small (an author's own tours) may stay unpaged.
+
+**Fat service guard.** If a service passes roughly seven public methods, raise it: the
+use-case group has grown too broad and should split into smaller groups.
 
 ## Validation and errors
 
@@ -235,13 +276,23 @@ No domain events, no integration events, no in-process bus. If a real cross-modu
 reaction need appears mid-semester, introducing a bus is a platform-team decision at that
 point, not machinery installed in advance.
 
+A contract may expose commands as well as queries. A cross-module command runs in the
+callee's own transaction, so there is no atomicity across modules. This is a known and
+deliberately accepted trade-off: it keeps inter-module calls on the RPC model students
+already know, and the consistency gap is planned course material mid-semester, alongside
+distributed transactions. Do not introduce compensating machinery for it.
+
 ## Controllers
 
-Attribute-routed API controllers in `<Name>.Api`, one per aggregate, marked
-`[ApiController]` and routed under `api/<name>/...`. Each `Api` project exposes one
+Attribute-routed API controllers in `<Name>.Api`, one per use-case group, marked
+`[ApiController]` and routed under `api/<name>/...`. Controllers serving the same
+aggregate share its route prefix (`TourAuthoringController` and `TourBrowsingController`
+both route under `api/exploration/tours`); two controllers on one prefix must never
+declare the same verb and route, which ASP.NET rejects at request time and any
+integration test on that route catches. Each `Api` project exposes one
 `Add<Name>Controllers(this IMvcBuilder)` extension that registers its assembly as an
 application part; `Host.Api` calls `AddControllers()` once and chains these. Controllers
-inject the application service or queries class directly. An action does exactly three
+inject the application service or the queries class directly. An action does exactly three
 things: bind the request, call one application method, map the result to an HTTP response.
 
 Actions return `ActionResult<T>`, never bare `IActionResult`: the OpenAPI document is
