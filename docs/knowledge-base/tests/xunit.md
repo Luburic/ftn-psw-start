@@ -20,9 +20,9 @@ Test metoda je metoda koja proverava jedno ponašanje koda. Test metoda se ozna�
 public class TourTests
 {
     [Fact]
-    public void Constructor_rejects_a_negative_price()
+    public void Constructor_rejects_empty_tags()
     {
-        var creation = () => new Tour("Tvrđava", WellKnownUsers.Explorer, -10m);
+        var creation = () => new Tour(WellKnownUsers.Explorer, "Šetnja tvrđavom", "Opis ture.", TourDifficulty.Easy, []);
 
         creation.Should().Throw<DomainException>();
     }
@@ -44,7 +44,7 @@ Parametrizovani test je test metoda koja se izvršava više puta, svaki put sa d
 [InlineData("   ")]
 public void Constructor_rejects_a_blank_name(string name)
 {
-    var creation = () => new Tour(name, WellKnownUsers.Explorer, 10m);
+    var creation = () => new Tour(WellKnownUsers.Explorer, name, "Opis ture.", TourDifficulty.Easy, ["istorija"]);
 
     creation.Should().Throw<DomainException>();
 }
@@ -107,15 +107,15 @@ Početni podaci se pišu u direktorijumu `Integration/Seeds` test projekta. Za s
 ```csharp
 internal static class TourSeed
 {
-    public static readonly Tour FortressWalk = new("Šetnja tvrđavom", WellKnownUsers.Explorer, 25m);
-    public static readonly Tour DanubeCycling = new("Biciklom uz Dunav", WellKnownUsers.Explorer, 40m);
+    public static readonly Tour FortressWalk = new(WellKnownUsers.Explorer, "Šetnja tvrđavom", "Šetnja počinje na Gornjem platou Petrovaradinske tvrđave, vodi pored Sahat kule i podzemnih vojnih galerija, a završava se pogledom na Dunav.", TourDifficulty.Easy, ["istorija", "priroda"]);
+    public static readonly Tour CityStroll = new(WellKnownUsers.Explorer, "Šetnja centrom", "Kratak opis gradske šetnje.", TourDifficulty.Moderate, ["grad"]);
 
-    public static object[] All => [FortressWalk, DanubeCycling];
+    public static object[] All => [FortressWalk, CityStroll];
 }
 
 internal static class ExplorationSeed
 {
-    public static object[] All => [.. TourSeed.All, .. KeypointSeed.All];
+    public static object[] All => [.. TourSeed.All];
 }
 ```
 
@@ -137,6 +137,11 @@ public sealed class IntegrationCollection : ICollectionFixture<ExplorationApiFac
 [Collection("Integration")]
 public abstract class BaseIntegrationTest
 {
+    protected static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter() }
+    };
+
     protected readonly ExplorationApiFactory Factory;
     protected readonly HttpClient Client;
 
@@ -153,6 +158,7 @@ U primeru treba uočiti sledeće.
 - Kolekcija `Integration` obezbeđuje da se aplikacija i testna baza pripreme jednom za ceo test projekat i da se test klase izvršavaju jedna za drugom.
 - Konstruktor osnovne klase izvršava se pre svakog testa, jer test okvir pravi novu instancu test klase za svaku test metodu. Poziv metode `Reseed` zato pre svakog testa vraća bazu na početno stanje.
 - Test klase modula nasleđuju `BaseIntegrationTest` i time dobijaju spreman `HttpClient` i poznato stanje baze, bez sopstvene pripreme.
+- Server serijalizuje enumeracije kao niske, pa test koji čita odgovor prosleđuje `JsonOptions` sa istim konverterom, na primer `ReadFromJsonAsync<TourDto>(JsonOptions)`.
 
 ### Prijavljeni korisnik u testu
 
@@ -160,13 +166,17 @@ Većina krajnjih tačaka zahteva prijavljenog korisnika. Umesto da test registru
 
 ```csharp
 [Fact]
-public async Task Create_stores_a_tour_for_the_caller()
+public async Task Create_stores_a_draft_tour_with_price_zero()
 {
     var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
-    var response = await client.PostAsJsonAsync("/api/exploration/tours", new { name = "Nova tura", price = 30m });
+    var response = await client.PostAsJsonAsync("/api/exploration/tours",
+        new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Hard, ["planina"]));
 
     response.StatusCode.Should().Be(HttpStatusCode.OK);
+    var tour = await response.Content.ReadFromJsonAsync<TourDto>(JsonOptions);
+    tour!.Status.Should().Be(TourStatus.Draft);
+    tour.Price.Should().Be(0m);
 }
 ```
 
@@ -176,7 +186,7 @@ Ovakav pristup je ispravan jer funkcionalni moduli korisnika poznaju samo preko 
 
 Testovi modula žive u projektu `<Ime>.Tests`, u dva direktorijuma. Direktorijum `Unit` sadrži jedinične testove agregata i domenskih servisa. Ti testovi ne koriste bazu ni HTTP i ne nasleđuju `BaseIntegrationTest`. Direktorijum `Integration` sadrži integracione testove, početne podatke i datoteku `BaseIntegrationTest.cs`.
 
-Integracioni testovi se grupišu po agregatu. Za svaki agregat postoje dve test klase, jedna za komande i jedna za upite, na primer `TourCommandTests` i `TourQueryTests`. Komandni test menja stanje i proverava ishod promene. Upitni test čita početne podatke i ne menja ništa. Ova podela prati podelu aplikacionog sloja na klase `TourService` i `TourQueries`.
+Integracioni testovi se grupišu po agregatu. Za svaki agregat postoje dve test klase, jedna za komande i jedna za upite, na primer `TourCommandTests` i `TourQueryTests`. Komandni test menja stanje i proverava ishod promene. Upitni test čita početne podatke i ne menja ništa. Ova podela prati podelu aplikacionog sloja na komandnu klasu `TourService` i upitni port `ITourQueries`.
 
 ## Pokretanje testova
 

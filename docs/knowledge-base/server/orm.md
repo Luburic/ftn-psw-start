@@ -1,4 +1,4 @@
-> **Status: lekcija.** Primeri u ovom dokumentu su pojednostavljeni radi učenja koncepta i ne prate konvencije ovog projekta. Merodavan obrazac za pisanje koda su referentni modul i normativni dokumenti.
+> **Tip: lekcija.** Primeri u dokumentu su pojednostavljeni radi učenja koncepta i ne prate konvencije projekta do kraja. Merodavan obrazac za pisanje koda su moduli i normativni dokumenti.
 
 Do sada ste se upoznali sa ADO.NET bibliotekom, koju ste koristili za rad sa bazom podataka. Pisali ste repozitorijumske klase u kojima se nalazio sav kod koji je potreban za rad sa bazom podataka.
 

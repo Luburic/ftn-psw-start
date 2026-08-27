@@ -1,4 +1,4 @@
-> **Status: lekcija.** Primeri u ovom dokumentu su pojednostavljeni radi učenja koncepta i ne prate konvencije ovog projekta. Merodavan obrazac za pisanje koda su referentni modul i normativni dokumenti.
+> **Tip: lekcija.** Primeri u dokumentu su pojednostavljeni radi učenja koncepta i ne prate konvencije projekta do kraja. Merodavan obrazac za pisanje koda su moduli i normativni dokumenti.
 
 U JavaScriptu smo koristili callback, Promise i async/await mehanizme da podržimo asinhrone operacije. Asinhrone operacije su nam veoma interesantne prilikom slanja HTTP zahteva i prihvatanja HTTP odgovora. Između ova dva događaja se dešava sledeće:
 1. HTTP poruka putuje kroz električne i optičke kablove od našeg računara do servera koji se nalazi u drugoj državi, pa možda i na drugom kontinentu. U gorem slučaju ovaj put može da traje pola sekunde.
