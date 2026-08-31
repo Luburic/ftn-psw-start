@@ -1,4 +1,4 @@
-> **Tip: lekcija.** Primeri u dokumentu su pojednostavljeni radi učenja koncepta i ne prate konvencije projekta do kraja. Merodavan obrazac za pisanje koda su moduli i normativni dokumenti.
+> **Tip: lekcija.** Primeri u dokumentu su pojednostavljeni radi učenja koncepta i ne prate konvencije projekta do kraja.
 
 ASP.NET Core nudi kontejner zavisnosti kao komponentu radnog okvira koja pravi objekte i popunjava njihove zavisnosti na osnovu registrovanih klasa. Pitanje je kako kontejner radi, koliko dugo žive objekti koje pravi i koje oblike registracije koristimo.
 

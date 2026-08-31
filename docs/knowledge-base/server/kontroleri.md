@@ -1,4 +1,4 @@
-> **Tip: lekcija.** Primeri u dokumentu su pojednostavljeni radi učenja koncepta i ne prate konvencije projekta do kraja. Merodavan obrazac za pisanje koda su moduli i normativni dokumenti.
+> **Tip: lekcija.** Primeri u dokumentu su pojednostavljeni radi učenja koncepta i ne prate konvencije projekta do kraja.
 
 ASP.NET Core uvodi koncept kontrolera kao klasu čije javne metode, koje zovemo akcije, obrađuju HTTP zahteve. Radni okvir kroz rutiranje bira akciju, automatski popunjava njene parametre i pretvara njenu povratnu vrednost u HTTP odgovor. Ovde detaljnije razmatramo pravila po kojima se svaki od ovih koraka dešava. Na kraju uvodimo middleware, mehanizam u kom možemo da centralizujemo obradu koja je zajednička za sve akcije.
 

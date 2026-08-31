@@ -1,4 +1,4 @@
-> **Tip: lekcija.** Primeri u dokumentu su pojednostavljeni radi učenja koncepta i ne prate konvencije projekta do kraja. Merodavan obrazac za pisanje koda su moduli i normativni dokumenti.
+> **Tip: lekcija.** Primeri u dokumentu su pojednostavljeni radi učenja koncepta i ne prate konvencije projekta do kraja.
 
 U klijent-server arhitekturi, često koristimo HTTP za komunikaciju između ove dve strane. Tako klijent šalje HTTP zahtev, a server obrađuje zahtev, pokreće određenu logiku spram njega i formira HTTP odgovor koji klijent može da obradi.
 
