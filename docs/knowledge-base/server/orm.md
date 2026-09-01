@@ -6,7 +6,7 @@ Podsetimo se primera jednog repozitorijuma koji koristi ADO.NET za upravljanje k
 
 <hr></hr>
 <details>
-<summary><b>Kliknite da vidite kod BookDbRepository klase</b></summary>
+<summary><b>Klikni da vidiš kod BookDbRepository klase</b></summary>
 
 ```csharp
 public class BookDbRepository

@@ -58,22 +58,23 @@ frontend/src/app/modules/<name>/
 ## Knowledge base
 
 `docs/knowledge-base/` holds the course material students learn from, written in
-Serbian and owned by the platform team. Every document opens with a status header of
-one of two kinds:
+Serbian and owned by the platform team. Every document is a lesson: concept teaching
+whose examples are deliberately simplified and do NOT follow this project's
+conventions. Expect the knowledge base and the real code to differ; that divergence
+is by design, not an error to fix. Never copy code from the knowledge base into the
+project.
 
-- **Normativan** (normative): the examples mirror the real code and are the mandatory
-  pattern. `docs/knowledge-base/tests/xunit.md` is one. When a platform change alters
-  a pattern, updating the affected normative document is part of that change.
-- **Lekcija** (lesson): concept teaching whose examples are deliberately simplified
-  and do NOT follow this project's conventions. Never copy code from a lesson into the
-  project.
+Consult the knowledge base only when the session is about understanding: a student
+asking to learn, discuss, or examine a concept or trade-off. Start from
+`docs/knowledge-base/INDEX.md`, which lists every document with a one-line
+description and its prerequisites, and load only the documents relevant to the
+discussion. Do not read `docs/knowledge-base/mapa.html`; it is a human-facing view
+of the same material.
 
-Which documents to load depends on the kind of session:
-
-- For direct engineering tasks (writing or changing code), consult only normative
-  documents; lessons are background theory, not patterns.
-- For discussions, explanations, and learning sessions with students, draw on both
-  kinds, and keep the distinction explicit whenever quoting lesson code.
+For engineering tasks (writing or changing code), do not load knowledge-base
+documents; the mandatory patterns live in this file and in READMEs placed next to
+the code they govern. When a platform change alters a mandatory pattern, updating
+the affected README is part of that change.
 
 ---
 

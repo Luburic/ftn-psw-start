@@ -211,20 +211,20 @@ h1{font-size:18px;font-weight:600;margin:0 0 16px;letter-spacing:-.01em}
 <h1>Mapa znanja</h1>
 <div class="monolith">
     <div class="frame-title" style="margin:0 2px 10px">
-      <span class="box-title">Modularan monolit</span>
+      <span class="box-title title-node" data-note="modularni-monolit">Modularan monolit</span>
       <span class="tag" data-note="aspnet">ASP.NET radni okvir</span>
     </div>
     <div class="module">
       <div class="module-shadow"></div>
       <div class="frame-title" style="margin:0 2px 10px">
         <span class="box-title">Feature modul <span class="box-sub">jedan od više</span></span>
-        <span class="pr">prati Čistu arhitekturu</span>
+        <span class="pr" data-note="cista-arhitektura">prati Čistu arhitekturu</span>
       </div>
-      <div class="layer"><div class="lname">Javni API sloj<span>API</span></div><div class="lbody"><span class="chip" data-note="kontroleri">Kontroler</span><span class="tag" data-note="aspnet">ASP.NET</span></div></div>
-      <div class="layer"><div class="lname">Interni API sloj<span>Contracts, vidljiv drugim modulima</span></div><div class="lbody"><span class="chip">Interfejs dostupan drugim modulima</span></div></div>
-      <div class="layer"><div class="lname">Aplikacioni sloj<span>Application</span></div><div class="lbody"><span class="chip">Aplikacioni servis</span><span class="chip">DTO</span><span class="chip">Profil maperi</span><span class="chip">Interfejsi infrastrukturnih servisa</span><span class="pr" data-note="komande-i-upiti">CQS</span><span class="pr" data-note="asinhrono-programiranje">asinhrono programiranje</span></div></div>
-      <div class="layer"><div class="lname">Domenski sloj<span>Domain</span></div><div class="lbody"><span class="chip">Entiteti</span><span class="chip">Agregati</span><span class="chip">Vrednosni objekti</span><span class="chip">Domenski servisi</span></div></div>
-      <div class="layer"><div class="lname">Infrastrukturni sloj<span>Infrastructure</span></div><div class="lbody"><span class="chip">Repozitorijumi</span><span class="chip">Konektor klase</span><span class="chip">Lokalni tehnički eksperti</span><span class="pr" data-note="orm">ORM</span><span class="tag">Entity Framework</span></div></div>
+      <div class="layer"><div class="lname" data-note="api-sloj">Javni API sloj<span>API</span></div><div class="lbody"><span class="chip" data-note="kontroleri">Kontroler</span><span class="tag" data-note="aspnet">ASP.NET</span></div></div>
+      <div class="layer"><div class="lname" data-note="kontrakti">Interni API sloj<span>Contracts, vidljiv drugim modulima</span></div><div class="lbody"><span class="chip">Interfejs dostupan drugim modulima</span></div></div>
+      <div class="layer"><div class="lname" data-note="aplikacioni-sloj">Aplikacioni sloj<span>Application</span></div><div class="lbody"><span class="chip">Aplikacioni servis</span><span class="chip">DTO</span><span class="chip" data-note="maperi">Profil maperi</span><span class="chip">Interfejsi infrastrukturnih servisa</span><span class="pr" data-note="komande-i-upiti">CQS</span><span class="pr" data-note="asinhrono-programiranje">asinhrono programiranje</span></div></div>
+      <div class="layer"><div class="lname" data-note="domenski-sloj">Domenski sloj<span>Domain</span></div><div class="lbody"><span class="chip" data-note="entitet">Entiteti</span><span class="chip" data-note="agregat">Agregati</span><span class="chip" data-note="vrednosni-objekat">Vrednosni objekti</span><span class="chip" data-note="domenski-servis">Domenski servisi</span></div></div>
+      <div class="layer"><div class="lname" data-note="infrastrukturni-sloj">Infrastrukturni sloj<span>Infrastructure</span></div><div class="lbody"><span class="chip">Repozitorijumi</span><span class="chip">Konektor klase</span><span class="chip">Lokalni tehnički eksperti</span><span class="pr" data-note="orm">ORM</span><span class="tag" data-note="orm">Entity Framework</span></div></div>
       <div class="layer"><div class="lname">Sloj testova<span>Tests</span></div><div class="lbody"><span class="pr">automatizovani testovi</span><span class="pr">kvalitet testova</span><span class="tag" data-note="xunit">xUnit</span></div></div>
     </div>
     <div class="top-row">
@@ -275,7 +275,21 @@ const NOTES = {
   'komande-i-upiti':         { title: 'Komande i upiti',         path: 'server/arhitektura/komande-i-upiti.md' },
   'asinhrono-programiranje': { title: 'Asinhrono programiranje', path: 'server/asinhrono-programiranje.md' },
   'orm':                     { title: 'ORM',                     path: 'server/orm.md' },
-  'xunit':                   { title: 'xUnit',                   path: 'testovi/xunit.md' }
+  'xunit':                   { title: 'xUnit',                   path: 'testovi/xunit.md' },
+  'modularni-monolit':       { title: 'Modularni monolit',       path: 'server/arhitektura/modularni-monolit.md' },
+  'cista-arhitektura':       { title: 'Čista arhitektura',       path: 'server/arhitektura/čista-arhitektura.md' },
+  'domenski-sloj':           { title: 'Domenski sloj',           path: 'server/arhitektura/slojevi/1-domenski-sloj.md' },
+  'aplikacioni-sloj':        { title: 'Aplikacioni sloj',        path: 'server/arhitektura/slojevi/2-aplikacioni-sloj.md' },
+  'infrastrukturni-sloj':    { title: 'Infrastrukturni sloj',    path: 'server/arhitektura/slojevi/3-infrastrukturni-sloj.md' },
+  'api-sloj':                { title: 'API sloj',                path: 'server/arhitektura/slojevi/4-api-sloj.md' },
+  'kontrakti':               { title: 'Kontrakti',               path: 'server/arhitektura/kontrakti.md' },
+  'vrednosni-objekat':       { title: 'Vrednosni objekat',       path: 'server/arhitektura/ddd/2-vrednosni-objekat.md' },
+  'entitet':                 { title: 'Entitet',                 path: 'server/arhitektura/ddd/3-entitet.md' },
+  'agregat':                 { title: 'Agregat',                 path: 'server/arhitektura/ddd/4-agregat.md' },
+  'domenski-servis':         { title: 'Domenski servis',         path: 'server/arhitektura/ddd/5-domenski-servis.md' },
+  'maperi':                  { title: 'Profil mapera',           path: 'server/maperi.md' },
+  'gradivni-elementi':       { title: 'Gradivni elementi',       path: 'server/arhitektura/gradivni-elementi.md' },
+  'arhitekturalni-testovi':  { title: 'Arhitektonski testovi',   path: 'server/arhitektura/arhitektonski-testovi.md' }
 };
 
 const readerPane = document.getElementById('readerPane');
