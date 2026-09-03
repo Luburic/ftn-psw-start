@@ -41,7 +41,7 @@ Metode ovih klasa se javljaju u tri oblika. Komanda je jedan oblik, a upiti se j
 Telo komande ima tri koraka:
 1. Učitavanje agregata koje slučaj korišćenja zahteva putem repozitorijuma,
 2. Poziv metoda korena agregata da se izvrši kontrolisana izmena stanja,
-3. Čuvanje izmene putem repozitorijuma i jedinice rada.
+3. Čuvanje izmene pozivom jedinice posla, pri čemu se nov agregat prethodno dodaje u repozitorijum.
 
 Sledeći kod prikazuje komandu koja evidentira odgovor ispitanika, gde pravilo o prihvatanju odgovora povezuje dva agregata:
 
@@ -69,7 +69,7 @@ public sealed class SurveyRespondingService
 
     var answer = new Answer(answerDto.QuestionId, answerDto.Value);
     if (!survey.CanAccept(answer))
-      throw new InvalidOperationException("Anketa ne prihvata prosleđeni odgovor.");
+      throw new DomainException("Anketa ne prihvata prosleđeni odgovor.");
 
     surveyResponse.Record(answer);
     await _unitOfWork.SaveChangesAsync();
@@ -81,7 +81,7 @@ U datom kodu treba uočiti sledeće:
 
 - Repozitorijum vraća ceo agregat ili `null` kada agregat ne postoji. Komanda nepostojeći agregat prijavljuje izuzetkom `NotFoundException`, koji middleware prevodi u odgovor sa statusnim kodom 404.
 - Ulazna DTO struktura se prevodi u vrednosni objekat `Answer` pre nego što bilo koji agregat vidi podatke. Konstruktor vrednosnog objekta proverava svoja pravila, pa agregati rade sa već ispravnim odgovorom.
-- Pravilo da li anketa prihvata odgovor živi u metodi `Survey.CanAccept`, a pravilo kada se odgovor sme evidentirati u metodi `SurveyResponse.Record`. Komanda samo povezuje pitanje jednom agregatu sa nalogom drugom. Kada `Record` odbije promenu, izuzetak iz agregata prolazi kroz komandu nepromenjen.
+- Pravilo da li anketa prihvata odgovor živi u metodi `Survey.CanAccept`, a pravilo kada se odgovor sme evidentirati u metodi `SurveyResponse.Record`. Komanda samo prosleđuje odgovor jednog agregata drugom. Kada `Record` odbije promenu, izuzetak iz agregata prolazi kroz komandu nepromenjen.
 - Poziv `SaveChangesAsync` je jedini poziv koji upisuje u skladište. Izmenjen `SurveyResponse` agregat se upisuje u toj transakciji, a `Survey` agregat, koji nije menjan, ne proizvodi nijedan upis.
 
 ## Slučaj 2: čist upit
@@ -105,7 +105,7 @@ public sealed class SurveyBrowsingQueries
 }
 ```
 
-Kako se implementira repozitorijum za čitanje ćemo videti u infrastrukturnom sloju.
+Implementaciju repozitorijuma za čitanje obrađuje [lekcija o repozitorijumima](../3-infrastrukturni-sloj/3-repozitorijumi-i-jedinica-posla.md).
 
 ## Slučaj 3: upit koji koristi agregat
 

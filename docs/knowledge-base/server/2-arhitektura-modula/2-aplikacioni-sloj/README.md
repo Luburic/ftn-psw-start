@@ -9,5 +9,7 @@ Tri lekcije ovog direktorijuma redom obrađuju pravilo po kom oblikujemo metode 
 ## Mapa direktorijuma
 
 1. [Komande i upiti](1-komande-i-upiti.md) - Princip razdvajanja metoda koje menjaju stanje (engl. *command*) od metoda koje vraćaju podatke (engl. *query*) i oblik koji to pravilo daje klasama u ovom sloju. Preduslov je za naredne dve lekcije.
-2. [Aplikacioni servis](2-aplikacioni-servis.md) - Konkretizacija principa razdvajanja komandi i upita na primeru aplikacionih servisa koje ćemo praviti u projektu, gde razmatramo i različite vrste interfejsa infrastrukturnih servisa.
+2. [Aplikacioni servis](2-aplikacioni-servis.md) - Struktura aplikacionog sloja u projektu i tri oblika metoda aplikacionog servisa, komanda, čist upit i upit koji koristi agregat, sa postupkom kojim za nov zahtev biramo oblik.
 3. [DTO strukture i mapiranje](3-dto-i-mapiranje.md) - Zašto podaci preko granice sloja putuju u DTO strukturama, kako se ulazna struktura prevodi u domenski objekat, a izlazna popunjava projekcijom ili maperom.
+
+Nakon ovog direktorijuma čitalac zna kako aplikacioni servis koordiniše slučaj korišćenja i kojim podacima se granica sloja prelazi. Interfejse koje ovaj sloj deklariše implementira [infrastrukturni sloj](../3-infrastrukturni-sloj/README.md).

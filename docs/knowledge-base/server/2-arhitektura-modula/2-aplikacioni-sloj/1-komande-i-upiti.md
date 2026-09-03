@@ -1,4 +1,4 @@
-Pri projektovanju aplikacionih servisa u složenom softveru, često u praksi pratimo princip razdvajanja komandi od upita, koji diktira šta jedna metoda sme da radi. Praćenje ovog principa čini kod lakšim za održavanje.
+Pri projektovanju aplikacionih servisa u složenom softveru, često u praksi pratimo princip razdvajanja komandi od upita, koji diktira šta jedna metoda sme da radi.
 
 ## Princip razdvajanja
 
@@ -7,7 +7,7 @@ Pri projektovanju aplikacionih servisa u složenom softveru, često u praksi pra
 Pravilo garantuje tri stvari:
 1. Metoda tipa *upit* se sme pozvati bilo kada, bilo koliko puta i sa bilo kog mesta, a stanje sistema se ne menja. Zato osvežavanje stranice, prikaz spiska ili generisanje izveštaja mogu da čitaju podatke bez neželjenih posledica.
 2. Metoda tipa *komanda* ima samo dva moguća ishoda: ili je promenila stanje, ili je bacila izuzetak. Pozivalac mora da zna da li je promena upisana.
-3. Kod za čitanje (query) i kod za pisanje (command) su razdvojeni, pa svaki može koristi model podataka koji mu odgovara: pisanje radi nad agregatom, a čitanje nad podacima spremnim za prikaz.
+3. Kod upita i kod komandi su razdvojeni, pa svaki može koristiti model podataka koji mu odgovara: pisanje radi nad agregatom, a čitanje nad podacima spremnim za prikaz.
 
 Posmatrajmo metodu koju bismo bez ovog pravila prirodno napisali. Ispitanik otvara anketu i treba mu njegov odgovor na tu anketu, sa dosadašnjim odgovorima na pitanja. Ako odgovor još ne postoji, jer ispitanik prvi put otvara anketu, metoda ga pravi:
 
@@ -19,6 +19,7 @@ public async Task<SurveyResponseDto> GetResponseAsync(long surveyId, long userId
   {
     surveyResponse = new SurveyResponse(surveyId, userId);
     _surveyResponseRepository.Add(surveyResponse);
+    await _unitOfWork.SaveChangesAsync();
   }
   return MapToDto(surveyResponse);
 }
@@ -27,7 +28,7 @@ public async Task<SurveyResponseDto> GetResponseAsync(long surveyId, long userId
 U datom kodu treba uočiti sledeće:
 
 - Metoda se zove i izgleda kao upit, a u jednoj grani pravi nov agregat. Svako ko je pozove da bi nešto pogledao, može da promeni stanje sistema.
-- Autor koji želi da pogleda anketu koju je upravo napravio iz perspektive ispitanika, generiše odgovor u svoje ime bez da je nameravao da odgovori. Stranica sa spiskom anketa, koja za svaku anketu prikazuje napredak korisnika, pravi po jedan odgovor za svaku anketu koju je korisnik samo video. Izveštaj o broju započetih anketa broji i te odgovore.
+- Autor koji želi da pogleda anketu koju je upravo napravio iz perspektive ispitanika, generiše odgovor u svoje ime, a da nije nameravao da odgovori. Stranica sa spiskom anketa, koja za svaku anketu prikazuje napredak korisnika, pravi po jedan odgovor za svaku anketu koju je korisnik samo video. Izveštaj o broju započetih anketa broji i te odgovore.
 - Test koji proverava prikaz odgovora mora prvo da pripremi odgovor u skladištu ili će ga metoda napraviti sama i test će proći iz pogrešnog razloga.
 - Klasa koja sadrži ovu metodu mora da prima repozitorijum koji ume da upisuje, pa iz njenog konstruktora niko ne može da zaključi da klasa samo čita.
 
@@ -45,7 +46,11 @@ Isto pravilo važi i u drugom smeru. Komanda koja evidentira odgovor na pitanje 
 
 ## Oblik komandne i upitne klase
 
-Pravilo razdvajanja ne govori gde metode žive. Komande i upiti mogu da stoje u istoj klasi, u dve odvojene klase, ili svaka metoda u sopstvenoj klasi. U našem projektu se držimo pristupa da aplikacioni servis sadrži samo komande za grupu slučajeva korišćenja (ove klase imaju sufiks `Service`) ili samo upite (sufiks `Queries`). Sledeći kod prikazuje kostur dve klase ispitaničke grupe, gde su tela metoda izostavljena:
+Pravilo razdvajanja ne govori gde metode žive. Komande i upiti mogu da stoje u istoj klasi, u dve odvojene klase, ili svaka metoda u sopstvenoj klasi. U našem projektu se držimo pristupa da aplikacioni servis sadrži samo komande za grupu slučajeva korišćenja (ove klase imaju sufiks `Service`) ili samo upite (sufiks `Queries`).
+
+Ove klase kroz konstruktor primaju tri vrste interfejsa. **Repozitorijum agregata** je interfejs čije metode učitavaju i dodaju cele agregate, jer spoljni kod samo kroz koren agregata sme da menja njegovo stanje. **Jedinica posla** (engl. *unit of work*) je interfejs čija metoda `SaveChangesAsync` upisuje u skladište sve izmene agregata učitanih tokom obrade jednog zahteva, u jednoj transakciji. **Repozitorijum za čitanje** (engl. *read repository*) je interfejs čije metode vraćaju DTO strukture spremne za prikaz, bez učitavanja agregata. Sva tri su deklarisana u aplikacionom sloju, a implementirana u infrastrukturnom, kao i svaki drugi interfejs tehničke sposobnosti ([Repozitorijumi i jedinica posla](../3-infrastrukturni-sloj/3-repozitorijumi-i-jedinica-posla.md)).
+
+Sledeći kod prikazuje kostur dve klase ispitaničke grupe, gde su tela metoda izostavljena:
 
 ```cs
 public sealed class SurveyRespondingService
@@ -76,15 +81,9 @@ public sealed class SurveyRespondingQueries
 
 U datom kodu treba uočiti sledeće:
 
-- Komandna klasa kroz konstruktor prima:
-  - **Repozitorijume agregata**, koji vraćaju cele agregate, jer spoljni kod može samo kroz koren agregata da menja stanje agregata.
-  - **Jedinicu posla** (engl. *unit of work*), što je interfejs čija metoda `SaveChangesAsync` upisuje u skladište sve izmene agregata učitanih tokom obrade jednog zahteva, u jednoj transakciji. Komanda je poziva tačno jednom, na kraju. Problem koji jedinica posla rešava ćemo videti u infrastrukturnom sloju.
-- Upitna klasa kroz konstruktor prima:
-   - **Repozitorijum za čitanje** (engl. *read repository*), što je interfejs čije metode vraćaju DTO strukture spremne za prikaz, bez učitavanja agregata.
-   - Ređe repozitorijume agregata, kada upit učitava agregat da bi pozvao metodu koja izvodi domenski značajnu informaciju iz njegovog stanja. Kada se koji oblik upita piše obrađuje [lekcija o aplikacionom servisu](2-aplikacioni-servis.md).
+- Komandna klasa prima repozitorijume agregata i jedinicu posla. Svaka komanda poziva `SaveChangesAsync` tačno jednom, na kraju.
+- Upitna klasa prima repozitorijum za čitanje. Ređe prima i repozitorijum agregata, kada upit učitava agregat da bi pozvao metodu koja izvodi domenski značajnu informaciju iz njegovog stanja. Kada se koji oblik upita piše obrađuje [lekcija o aplikacionom servisu](2-aplikacioni-servis.md).
 - Upitna klasa nikada ne prima jedinicu posla, što je sprečava da čuva izmene stanja.
-
-Sva četiri interfejsa su deklarisana u aplikacionom sloju, a implementirana u infrastrukturnom, kao i svaki drugi interfejs tehničke sposobnosti ([Infrastrukturni sloj](../3-infrastrukturni-sloj/README.md)).
 
 ## Put dva zahteva
 
