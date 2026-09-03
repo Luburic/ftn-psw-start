@@ -1,5 +1,3 @@
-> **Tip: lekcija.** Primeri u dokumentu su pojednostavljeni radi učenja koncepta i ne prate konvencije projekta do kraja.
-
 ASP.NET Core uvodi koncept kontrolera kao klasu čije javne metode, koje zovemo akcije, obrađuju HTTP zahteve. Radni okvir kroz rutiranje bira akciju, automatski popunjava njene parametre i pretvara njenu povratnu vrednost u HTTP odgovor. Ovde detaljnije razmatramo pravila po kojima se svaki od ovih koraka dešava. Na kraju uvodimo middleware, mehanizam u kom možemo da centralizujemo obradu koja je zajednička za sve akcije.
 
 ## Rutiranje
@@ -58,13 +56,13 @@ public ActionResult<Book> Update([FromRoute] int id, [FromBody] Book book)
 U datom kodu treba uočiti sledeće:
 - Zahtev `GET /api/books/search?author=Andric&page=2` poziva akciju `Search`, gde parametar `author` dobija vrednost `Andric`, a parametar `page` vrednost `2`.
 - Zahtev `PUT /api/books/5` poziva akciju `Update`, gde parametar `id` dobija vrednost `5` iz adrese, a parametar `book` nastaje pretvaranjem JSON zapisa iz tela zahteva u objekat klase `Book`.
-- Imena parametara akcije se poklapaju sa imenom promenljivog dela adrese, odnosno sa imenima upitnih parametara. Po tom imenu radni okvir zna koju vrednost gde smešta.
+- Nazivi parametara akcije se poklapaju sa nazivom promenljivog dela adrese, odnosno sa nazivima parametra upita. Po tom nazivu radni okvir zna koju vrednost gde smešta.
 
 Atributi se mogu i izostaviti. Tada radni okvir primenjuje podrazumevana pravila:
-- Parametar prostog tipa se vezuje za parametar putanje istog imena ako postoji, a inače za parametar upita istog imena.
+- Parametar prostog tipa se vezuje za parametar putanje istog naziv ako postoji, a inače za parametar upita istog naziva.
 - Parametar složenog tipa, odnosno klase, se vezuje za telo zahteva.
 
-Preporuka je da se koriste izričit atribut jer čine izvor vidljivim čitaocu koda.
+Preporuka je da se eksplicitno navode atributi jer povećavaju analizabilnost koda.
 
 ## Povratna vrednost akcije
 
@@ -179,3 +177,5 @@ Redosled izvršavanja ovog lanca kada pristigne zahtev je:
 7. Vraćanje `Authentication`, koji u ovom smeru ništa ne radi
 8. Vraćanje `Logging`, koji u ovom smeru može da evidentira odgovor u log datoteku
 9. Vraćanje `ErrorHandling` middleware-u, koji ništa ne radi ako je sve prošlo uredno. Ako je neki deo aplikacije bacio izuzetak, on se propagira do mesta njegove obrade, što je ovaj middleware. Tada se formira HTTP odgovor spram izuzetka.
+
+[Sledeći video](https://youtu.be/jT5Yq44Q790) dodatno približava kako izgleda tok podataka kada imamo više middleware-a.

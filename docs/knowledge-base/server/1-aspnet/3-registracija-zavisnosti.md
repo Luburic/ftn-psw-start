@@ -1,5 +1,3 @@
-> **Tip: lekcija.** Primeri u dokumentu su pojednostavljeni radi učenja koncepta i ne prate konvencije projekta do kraja.
-
 ASP.NET Core nudi kontejner zavisnosti kao komponentu radnog okvira koja pravi objekte i popunjava njihove zavisnosti na osnovu registrovanih klasa. Pitanje je kako kontejner radi, koliko dugo žive objekti koje pravi i koje oblike registracije koristimo.
 
 ## Kako kontejner radi
@@ -9,7 +7,7 @@ U datoteci `Program.cs`, pre pokretanja aplikacije, registruju se klase koje rad
 2. Koja klasa se za njega instancira i
 3. Koliko dugo napravljen objekat živi.
 
-Kontejner je spisak ovakvih uputstava. Objekti nastaju tek tokom obrade zahteva. Kada rutiranje izabere akciju, kontejner instancira njen kontroler. Pri tome čita konstruktor kontrolera i za svaki parametar traži uputstvo u spisku registracija. Ako klasa iz uputstva i sama ima zavisnosti u konstruktoru, kontejner ponavlja isti postupak za njih, sve dok ne napravi i poveže ceo lanac. Ako za neki parametar ne postoji registracija, aplikacija pri obradi zahteva baca izuzetak koji navodi tip koji nedostaje. Kada je zahtev obrađen i odgovor poslat, kontejner oslobađa objekte koje je za taj zahtev napravio.
+Kontejner je spisak ovakvih uputstava. Objekti nastaju tek tokom obrade zahteva. Kada rutiranje izabere akciju, kontejner instancira njen kontroler. Pri tome čita konstruktor kontrolera i za svaki parametar traži uputstvo u spisku registracija. Ako klasa iz uputstva i sama ima zavisnosti u konstruktoru, kontejner ponavlja isti postupak za njih, sve dok ne napravi i poveže ceo graf objekata. Ako za neki parametar ne postoji registracija, aplikacija pri obradi zahteva baca izuzetak koji navodi tip koji nedostaje. Kada je zahtev obrađen i odgovor poslat, kontejner oslobađa objekte koje je za taj zahtev napravio.
 
 Podrazumevano se objekti prave iznova za svaki zahtev, ali to nije jedino moguće ponašanje. Koliko dugo objekat živi određujemo pri registraciji.
 
@@ -25,7 +23,7 @@ builder.Services.AddSingleton<BookService>();
 
 U datom kodu vidimo:
 - `AddTransient` znači da kontejner pravi po jedan nov objekat za svako mesto gde je potreban. Kada dve klase u istom zahtevu zavise od iste registrovane klase, svaka dobija svoj objekat.
-- `AddScoped` znači da kontejner pravi jedan objekat po HTTP zahtevu. Sve klase u lancu istog zahteva dele taj objekat, a naredni zahtev dobija nov objekat.
+- `AddScoped` znači da kontejner pravi jedan objekat po HTTP zahtevu. Sve klase u grafu istog zahteva dele taj objekat, a naredni zahtev dobija nov objekat.
 - `AddSingleton` znači da kontejner pravi jedan objekat za ceo život aplikacije. Taj objekat dele svi zahtevi svih korisnika.
 
 Za aplikacione i infrastrukturne servisne klase je uobičajen izbor `AddScoped`. Životni vek `AddSingleton` biramo retko i pažljivo, jer objekat koji dele svi zahtevi ne sme da čuva podatke koji su potrebni zahtevima pojedinačnih korisnika.
@@ -46,9 +44,9 @@ Registracija oblika `AddScoped<IBookRepository, BookDbRepository>()` određuje k
 
 Sve dosadašnje registracije prave objekte tokom obrade zahteva. Neki poslovi, međutim, nisu vezani ni za jedan zahtev. Primer je priprema baze podataka pri pokretanju aplikacije, gde se definiše šema baze podataka i upisuju početni podaci pre nego što prvi zahtev stigne.
 
-**Pozadinski servis** (engl. *hosted service*) je klasa koju radni okvir sam instancira i poziva pri pokretanju i gašenju aplikacije. Pozadinski servis implementira interfejs `IHostedService`, koji propisuje metode `StartAsync` i `StopAsync`. Radni okvir pri pokretanju aplikacije instancira svaki registrovani pozadinski servis i poziva njegovu metodu `StartAsync`, redosledom registracije, pre nego što aplikacija počne da obrađuje zahteve. Objekat zatim ostaje u memoriji do gašenja aplikacije, kada radni okvir poziva metodu `StopAsync`. Po životnom veku pozadinski servis liči na singleton, ali se od njega razlikuje po tome ko ga poziva. Singleton objekat čeka da ga neki zahtev zatraži kao zavisnost i njegov kod se izvršava samo tokom obrade zahteva, dok kod pozadinskog servisa radni okvir izvršava bez ijednog zahteva. Pozadinski servis tako može da odradi jednokratan posao pri pokretanju, ali i da tokom celog rada aplikacije izvršava poslove u pozadini.
+**Pozadinski servis** (engl. *hosted service*) je klasa koju radni okvir sam instancira i poziva pri pokretanju i gašenju aplikacije. Pozadinski servis implementira interfejs `IHostedService`, koji propisuje metode `StartAsync` i `StopAsync`. Radni okvir pri pokretanju aplikacije instancira svaki registrovani pozadinski servis i poziva njegovu metodu `StartAsync`, redosledom registracije, pre nego što aplikacija počne da obrađuje zahteve. Objekat zatim ostaje u memoriji do gašenja aplikacije, kada radni okvir poziva metodu `StopAsync`. Po životnom veku pozadinski servis liči na singleton, ali se od njega razlikuje po tome ko ga poziva. Singleton objekat čeka da ga neki zahtev zatraži kao zavisnost i njegov kod se izvršava samo tokom obrade zahteva, dok kod pozadinskog servisa radni okvir izvršava bez ijednog zahteva. Pozadinski servis tako može da odradi jednokratan posao pri pokretanju, ali i da tokom celog rada aplikacije izvršava poslove u pozadini (npr. da svakog dana u ponoć uradi generisanje izveštaja).
 
-Sledeći kod prikazuje pozadinski servis koji pri pokretanju aplikacije upisuje početne podatke:
+Sledeći kod prikazuje pozadinski servis koji pri pokretanju aplikacije upisuje početne podatke u bazu podataka:
 
 ```cs
 public class BookModuleInitializer : IHostedService

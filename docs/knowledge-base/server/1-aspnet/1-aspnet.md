@@ -1,8 +1,6 @@
-> **Tip: lekcija.** Primeri u dokumentu su pojednostavljeni radi učenja koncepta i ne prate konvencije projekta do kraja.
-
 U klijent-server arhitekturi, često koristimo HTTP za komunikaciju između ove dve strane. Tako klijent šalje HTTP zahtev, a server obrađuje zahtev, pokreće određenu logiku spram njega i formira HTTP odgovor koji klijent može da obradi.
 
-Razmotrimo posao koji stoji iza jednog poziva, na primer `GET /api/books/5`. Serverska aplikacija mora da:
+Razmotrimo posao koji stoji iza jednog zahteva poput `GET /api/books/5`. Serverska aplikacija mora da:
 1. Sluša na mrežnom portu i prihvati dolaznu konekciju.
 2. Pročita sirov tekst HTTP zahteva i iz njega izdvoji HTTP metodu, adresu, zaglavlja i telo.
 3. Odluči koji deo koda obrađuje baš tu adresu i tu metodu.
@@ -14,11 +12,11 @@ Logika aplikacije je samo jedan korak od šest. Kada bismo sve ostale korake pis
 
 ## ASP.NET Core
 
-**ASP.NET Core** je radni okvir (engl. *framework*) za izgradnju serverskih veb aplikacija na .NET platformi, sličan Spring-u u Java svetu. Radni okvir preuzima tehničke korake obrade HTTP zahteva, a programeru ostavlja da napiše logiku aplikacije i da je označi tako da je radni okvir pronađe i pozove. Za nas se automatski rešavaju koraci 1, 2, 3, 4 i 6 navedeni iznad, gde je na nama samo da iskoristimo par atributa i poziva ugrađenih metoda. Videćemo kako ASP.NET Core ovo realizuje kroz svoje kontrolere. Radni okvir nudi i elegantan mehanizam za ubrizgavanje zavisnosti, koji ćemo kasnije sagledati.
+**ASP.NET Core** je radni okvir (engl. *framework*) za izgradnju serverskih veb aplikacija na .NET platformi, sličan Spring-u u Java svetu. Radni okvir preuzima tehničke korake obrade HTTP zahteva, a programeru ostavlja da napiše logiku aplikacije i da je označi tako da je radni okvir pronađe i pozove. Za nas se automatski rešavaju koraci 1, 2, 3, 4 i 6 navedeni iznad, gde je na nama samo da iskoristimo par atributa i metoda radnog okvira. Videćemo kako ASP.NET Core ovo realizuje kroz svoje kontrolere. Radni okvir nudi i elegantan mehanizam za ubrizgavanje zavisnosti, koji ćemo kasnije sagledati.
 
-Svaka ASP.NET Core aplikacija ima ulaznu tačku u datoteci `Program.cs`. Sledeći kod prikazuje najmanji oblik te datoteke koji nam je dovoljan za rad.
+Svaka ASP.NET Core aplikacija ima ulaznu tačku u datoteci `Program.cs`, koja se izvršava kada pokrenemo aplikaciju. Sledeći kod prikazuje najmanji oblik te datoteke koji nam je dovoljan za rad:
 
-```csharp
+```cs
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddScoped<BookService>();
@@ -29,16 +27,14 @@ app.MapControllers();
 app.Run();
 ```
 
-U datom kodu treba uočiti sledeće.
-- Prvi deo koda, oko promenljive `builder`, opisuje od čega se aplikacija sastoji. Ovde prijavljujemo kontrolere i servisnu klasu od koje kontroler zavisi. Ove linije ćemo kasnije detaljnije objasniti.
-- Poziv `Build()` pravi aplikaciju na osnovu tog opisa, a `MapControllers()` uključuje rutiranje zahteva ka kontrolerima.
+U datom kodu treba uočiti sledeće:
+- Prvi region koda, oko promenljive `builder`, opisuje od čega se aplikacija sastoji. Ovde prijavljujemo kontrolere i servisnu klasu od koje kontroler zavisi. Ove linije ćemo kasnije detaljnije objasniti.
+- Poziv `Build()` pravi aplikaciju na osnovu tog opisa, a `MapControllers()` uključuje rutiranje HTTP zahteva ka kontrolerima.
 - Poziv `Run()` pokreće aplikaciju. Od tog trenutka aplikacija sluša na portu i obrađuje zahteve sve dok je ne zaustavimo.
 
 ## Kontroleri
 
-**Kontroler** je klasa čije javne metode obrađuju HTTP zahteve. Metode kontrolera zovemo **akcije**. Kontroler rešava treći i četvrti korak sa početka lekcije. Umesto da sami ispitujemo adresu zahteva i parsiramo njegov sadržaj, deklarativno označimo koje adrese i HTTP metode akcija obrađuje, a radni okvir pronalazi akciju, priprema njene parametre i poziva je.
-
-Povezivanje adrese i akcije zovemo **rutiranje** (engl. *routing*). Rutiranje se zadaje atributima. Atribut `[Route]` na klasi definiše zajednički početak adrese za sve akcije kontrolera. Atributi poput `[HttpGet]` i `[HttpPost]` na metodi definišu HTTP metodu i ostatak adrese. Parametre akcije radni okvir popunjava iz zahteva automatski, na primer iz adrese ili iz tela zahteva.
+**Kontroler** je klasa čije javne metode obrađuju HTTP zahteve. Metode kontrolera zovemo **akcije**. U kod treba svaku akciju deklarativno označiti kako bi radni okvir znao da je aktivira kada stigne HTTP zahtev sitgne na određenu adresu. Povezivanje adrese i akcije zovemo **rutiranje** (engl. *routing*). Rutiranje se postiže atributima. Atribut `[Route]` na klasi definiše zajednički početak adrese za sve akcije kontrolera. Atributi poput `[HttpGet]` i `[HttpPost]` na metodi definišu HTTP metodu i ostatak adrese. Parametre akcije radni okvir popunjava iz zahteva automatski, na primer iz adrese ili iz tela zahteva.
 
 Akcija vraća vrednost tipa `ActionResult<T>`, gde je `T` tip podatka koji šaljemo klijentu. Ovaj tip omogućava akciji da vrati podatak ili statusni kod. Kada akcija vrati objekat, radni okvir ga pretvara u JSON i šalje odgovor sa statusnim kodom 200. Kada akcija vrati poziv poput `Problem(statusCode: StatusCodes.Status404NotFound)`, radni okvir šalje odgovor sa statusnim kodom 404.
 
@@ -84,13 +80,13 @@ U datom kodu treba uočiti sledeće:
 - Akcija ne sadrži nijednu liniju parsiranja niti pretvaranja u JSON. Njen posao je da pozove logiku aplikacije i da odluči kakav odgovor vraća.
 - Atribut `[ApiController]` označava klasu kao kontroler i uključuje podrazumevana ponašanja koja su nam potrebna, poput automatskog popunjavanja parametara.
 
-Više detalja o kontrolerima i obradi HTTP zahteva se nalazi u [lekciji o kontrolerima](kontroleri.md).
+Više detalja o kontrolerima i obradi HTTP zahteva se nalazi u [lekciji o kontrolerima](2-kontroleri.md).
 
 ## Ugrađeni kontejner zavisnosti
 
 Kada stigne HTTP zahtev na ASP.NET aplikaciju, ona će pronaći odgovarajuću akciju koju treba izvršiti kroz rutiranje. Tada će ispod haube instancirati kontroler. Pitanje je kako ASP.NET zna koje objekte treba da pošalje konstruktoru kontrolera.
 
-Obrazac ubrizgavanja zavisnosti vam je poznat. Klasa ne pravi svoje zavisnosti sama, već ih prima kroz konstruktor. U dosadašnjim aplikacijama ste zavisnosti povezivali ručno, tako što ste na jednom mestu pisali kod poput `new BookService(new BookDbRepository())` (u tzv. *Injector* klasi). U serverskoj aplikaciji ručno povezivanje ne funkcioniše. Kontroler se instancira iznova za svaki HTTP zahtev, te ne postoji linija koda `new BookController(...)`. Neko drugi mora da napravi kontroler i sve njegove zavisnosti, za svaki zahtev. Taj posao radi kontejner zavisnosti.
+Obrazac ubrizgavanja zavisnosti nam je poznat. Klasa ne pravi svoje zavisnosti sama, već ih prima kroz konstruktor. U dosadašnjim aplikacijama smo zavisnosti povezivali ručno, tako što smo na jednom mestu pisali kod poput `new BookService(new BookDbRepository())` (u tzv. *Injector* klasi). U serverskoj aplikaciji ručno povezivanje ne funkcioniše. Kontroler se instancira iznova za svaki HTTP zahtev, te ne postoji linija koda `new BookController(...)`. Neko drugi mora da napravi kontroler i sve njegove zavisnosti, za svaki zahtev. Taj posao radi kontejner zavisnosti.
 
 **Kontejner zavisnosti** (engl. *Dependency Injection container*) je komponenta radnog okvira koja pravi objekte i popunjava njihove zavisnosti na osnovu prijavljenih klasa. Klase prijavljujemo u datoteci `Program.cs`, pre pokretanja aplikacije. Kada zatreba objekat neke klase, kontejner čita njen konstruktor, pravi svaku zavisnost koju konstruktor traži i prosleđuje ih konstruktoru.
 
@@ -125,7 +121,7 @@ U datom kodu treba uočiti sledeće.
 - `builder.Services.AddScoped<BookService>();` označava da je `BookService` klasa koju kontejner treba da instancira ako je pronađe u listi parametara konstruktora nekog objekta u lancu koji počinje sa kontrolerom.
 - `builder.Services.AddScoped<IBookRepository, BookDbRepository>();` označava da `BookDbRepository` treba instancirati kada se u listi parametara konstruktora nekog objekta u lancu koji počinje sa kontrolerom pojavi `IBookRepository`.
 
-Različiti načini prijavljivanja klasa, kao i pitanje koliko dugo napravljeni objekti žive, se obrađuju u [lekciji o registraciji zavisnosti](registracija-zavisnosti.md).
+Različiti načini prijavljivanja klasa, kao i pitanje koliko dugo napravljeni objekti žive, se obrađuju u [lekciji o registraciji zavisnosti](3-registracija-zavisnosti.md).
 
 ## Put jednog zahteva
 

@@ -1,6 +1,6 @@
-> **Tip: lekcija.** Primeri u dokumentu su pojednostavljeni radi učenja koncepta i ne prate konvencije projekta do kraja.
+Ovde ćemo razmotriti princip asinhronog programiranja koji ćemo pratiti u projektu. Ovaj mehanizam nije vezan za ASP.NET, pa ni C#, ali ćemo najviše vremena posvetiti ispitivanju kako se koristi u .NET platformi.
 
-U JavaScriptu postoje callback, Promise i async/await mehanizmi da se omoguće asinhrone operacije. Asinhrone operacije su nam veoma interesantne prilikom slanja HTTP zahteva i prihvatanja HTTP odgovora. Između ova dva događaja se dešava sledeće:
+U JavaScriptu postoje callback, Promise i async/await mehanizmi da se omoguće asinhrone operacije. Asinhrone operacije su nam korisne prilikom slanja HTTP zahteva i prihvatanja HTTP odgovora. Između ova dva događaja se dešava sledeće:
 1. HTTP poruka putuje kroz električne i optičke kablove od našeg računara do servera koji se nalazi u drugoj državi, pa možda i na drugom kontinentu. U gorem slučaju ovaj put može da traje pola sekunde.
 2. Server obrađuje HTTP zahtev i izvršava određenu logiku da formira HTTP odgovor. Za proste operacije se odgovor formira u fragmentu sekunde. Složene operacije mogu da uzmu i više minuta.
 3. HTTP poruka putuje od servera nazad do našeg internet čitača, što opet uzima do pola sekunde.
@@ -27,18 +27,18 @@ Programski jezik C# ima ključne reči **async** i **await**, slično kao i Java
 2. Dodajemo sufiks *Async* u naziv metode (nije obavezno, ali je dobra praksa) i
 3. Menjamo povratnu vrednost da vraća `Task` ako je metoda bila `void`, odnosno `Task<stari tip>` (npr. `Movie` postaje `Task<Movie>`).
 
-Interesantno je da ništa u telu metode ne moramo da menjamo. Drugim rečima, logika asinhrone metode može da ima identičan izgled kao sinhrona metoda. Međutim, za očekivati je da ćemo negde u asinhronoj metodi sačekati rezultat operacije pre nego što se kod metode izvrši do kraja. Ovo čekanje postižemo uz pomoć ključne reči **await**. U nastavku je primer jednostavne repozitorijumske metode koja je asinhrona:
+Interesantno je da ništa u telu metode ne moramo da menjamo. Drugim rečima, logika asinhrone metode može da ima identičan izgled kao sinhrona metoda. Međutim, za očekivati je da ćemo negde u asinhronoj metodi sačekati rezultat operacije pre nego što se kod metode izvrši do kraja. Ovo čekanje postižemo uz pomoć ključne reči **await**. U nastavku je primer jednostavne servisne metode koja je asinhrona:
 
 ```cs
 public async Task<List<Movie>> GetAllAsync()
 {
-  Task<List<Movie>> dbTask = _context.Movies.ToListAsync();
+  Task<List<Movie>> dbTask = _movieRepository.GetAllAsync();
   List<Movie> result = await dbTask;
   return result;
 }
 ```
 Osim izmene zaglavlja, interesantne su linije 3 i 4:
-- U liniji 3 metoda poziva `ToListAsync` metodu nad `DbSet` svojstvom. Ova metoda generiše SQL SELECT naredbu i šalje je bazi podataka. Odgovor od baze podataka se ne čeka, a povratna vrednost `ToListAsync` je zadatak (Task) koji kada se završi će kao rezultat dati `List<Movie>` objekat. Zadatak je sličan Promise objektu.
+- U liniji 3 metoda poziva `GetAllAsync` metodu repozitorijuma. Ova metoda generiše SQL SELECT naredbu i šalje je bazi podataka. Odgovor od baze podataka se ne čeka, a povratna vrednost `GetAllAsync` je zadatak (`Task`) koji kada se završi će kao rezultat dati `List<Movie>` objekat. Zadatak je sličan Promise objektu.
 - U liniji 4 je iskorišćena ključna reč **await**. Ovde kažemo da želimo da sačekamo da se zadatak završi, a kada se to desi ćemo njegov rezultat smestiti u promenljivu `result`.
 
 Interesantno je da linija 4 neće aktivno čekati, odnosno neće uzurpirati nit već će metoda pauzirati sa izvršavanjem i osloboditi nit da se koristi za obradu nekog drugog zahteva (npr. od drugog korisnika). Tek kada odgovor od baze podataka stigne će .NET ispod haube da istakne da je vreme da se metoda nastavi i tada će se pronaći nova slobodna nit da izvrši ostatak operacija do kraja.
@@ -47,7 +47,7 @@ Prethodan kod možemo pojednostaviti u jednu liniju, što sledeći kod prikazuje
 ```cs
 public async Task<List<Movie>> GetAllAsync()
 {
-  return await _context.Movies.ToListAsync();
+  return await _movieRepository.GetAllAsync();
 }
 ```
 
