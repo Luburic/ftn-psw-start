@@ -125,6 +125,11 @@ public class ExceptionHandlingMiddleware
       await Results.Problem(statusCode: StatusCodes.Status404NotFound, title: exception.Message)
         .ExecuteAsync(context);
     }
+    catch (DomainException exception)
+    {
+      await Results.Problem(statusCode: StatusCodes.Status400BadRequest, title: exception.Message)
+        .ExecuteAsync(context);
+    }
     catch (Exception)
     {
       await Results.Problem(statusCode: StatusCodes.Status500InternalServerError)
@@ -139,6 +144,7 @@ U datom kodu treba uočiti sledeće:
 - Polje `_next` predstavlja ostatak lanca, uključujući akciju. Poziv `_next(context)` prosleđuje zahtev dalje, a naredni red koda se izvršava tek kada je akcija završila.
 - Blok `try` obuhvata poziv ostatka lanca, pa `catch` hvata izuzetak bačen iz bilo koje akcije. Jedan `catch` blok tako zamenjuje try/catch blokove u svim akcijama.
 - Poziv `Results.Problem` upisuje u odgovor istu vrstu greške koju bi akcija napravila metodom `Problem`.
+- Drugi `catch` blok hvata `DomainException`, izuzetak kojim naša aplikacija prijavljuje da zahtev krši pravilo domena, i vraća odgovor sa statusnim kodom 400, jer je greška u podacima koje je klijent poslao. Gde i kako se ovaj izuzetak baca obrađuje [lekcija o vrednosnom objektu](../2-arhitektura-modula/1-domenski-sloj/2-vrednosni-objekat.md).
 - Poslednji `catch` blok hvata svaki drugi izuzetak, na primer pad konekcije ka bazi, i vraća odgovor sa statusnim kodom 500. Takav odgovor ne nosi poruku jer korisniku ne pomaže; on je znak programerima da u aplikaciji postoji greška koju treba istražiti.
 
 Da bi se prethodni kod izvršio kroz lanac middleware komponenti, neophodno je registrovati klasu u datoteci `Program.cs`, između pravljenja i pokretanja aplikacije:

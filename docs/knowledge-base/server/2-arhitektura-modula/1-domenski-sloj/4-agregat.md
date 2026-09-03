@@ -30,7 +30,7 @@ public sealed class Survey
   public Survey(string title)
   {
     if (string.IsNullOrWhiteSpace(title))
-      throw new ArgumentException("Naslov ankete je obavezan.");
+      throw new DomainException("Naslov ankete je obavezan.");
 
     Title = title;
     Status = SurveyStatus.Draft;
@@ -39,7 +39,7 @@ public sealed class Survey
   public void AddQuestion(string text)
   {
     if (Status != SurveyStatus.Draft)
-      throw new InvalidOperationException("Pitanja se mogu dodavati samo dok je anketa u pripremi.");
+      throw new DomainException("Pitanja se mogu dodavati samo dok je anketa u pripremi.");
 
     _questions.Add(new Question(text));
   }
@@ -47,7 +47,7 @@ public sealed class Survey
   public void RemoveQuestion(long questionId)
   {
     if (Status != SurveyStatus.Draft)
-      throw new InvalidOperationException("Pitanja se mogu uklanjati samo dok je anketa u pripremi.");
+      throw new DomainException("Pitanja se mogu uklanjati samo dok je anketa u pripremi.");
 
     _questions.RemoveAll(q => q.Id == questionId);
   }
@@ -55,9 +55,9 @@ public sealed class Survey
   public void Publish()
   {
     if (Status != SurveyStatus.Draft)
-      throw new InvalidOperationException("Objaviti je moguće samo anketu u pripremi.");
+      throw new DomainException("Objaviti je moguće samo anketu u pripremi.");
     if (ActiveQuestionCount() == 0)
-      throw new InvalidOperationException("Anketa mora imati bar jedno aktivno pitanje.");
+      throw new DomainException("Anketa mora imati bar jedno aktivno pitanje.");
 
     Status = SurveyStatus.Published;
   }
@@ -65,10 +65,10 @@ public sealed class Survey
   public void ArchiveQuestion(long questionId)
   {
     var question = _questions.SingleOrDefault(q => q.Id == questionId)
-      ?? throw new InvalidOperationException("Pitanje ne postoji u anketi.");
+      ?? throw new DomainException("Pitanje ne postoji u anketi.");
 
     if (Status == SurveyStatus.Published && !question.IsArchived && ActiveQuestionCount() == 1)
-      throw new InvalidOperationException("Objavljena anketa mora zadržati bar jedno aktivno pitanje.");
+      throw new DomainException("Objavljena anketa mora zadržati bar jedno aktivno pitanje.");
 
     question.Archive();
   }
@@ -76,7 +76,7 @@ public sealed class Survey
   public void Close()
   {
     if (Status != SurveyStatus.Published)
-      throw new InvalidOperationException("Zatvoriti je moguće samo objavljenu anketu.");
+      throw new DomainException("Zatvoriti je moguće samo objavljenu anketu.");
 
     Status = SurveyStatus.Closed;
   }
@@ -151,7 +151,7 @@ public sealed record Option
   public Option(string value)
   {
     if (string.IsNullOrWhiteSpace(value))
-      throw new ArgumentException("Tekst opcije je obavezan.");
+      throw new DomainException("Tekst opcije je obavezan.");
 
     Value = value;
   }
@@ -189,6 +189,15 @@ public sealed class SurveyResponse
   public IReadOnlyList<Answer> Answers => _answers.AsReadOnly();
 
   // Konstruktor
+
+  public void Record(Answer answer) { ... }
+}
+
+public sealed class Survey
+{
+  // ... prethodno definisana svojstva i metode
+
+  public bool CanAccept(Answer answer) { ... }
 }
 
 public sealed record Answer
@@ -199,7 +208,7 @@ public sealed record Answer
   public Answer(long questionId, string value)
   {
     if (string.IsNullOrWhiteSpace(value))
-      throw new ArgumentException("Odgovor mora sadržati izabranu opciju.");
+      throw new DomainException("Odgovor mora sadržati izabranu opciju.");
 
     QuestionId = questionId;
     Value = value;
@@ -209,7 +218,7 @@ public sealed record Answer
 
 Primetimo šta `SurveyResponse` agregat *nema*. Koren agregata ne poseduje svojstvo tipa `Survey`, niti unutrašnji `Answer` vrednosni objekat poseduje direktnu referencu na `Question` objekat.
 
-Kada nekoj operaciji zatrebaju podaci iz obe granice, svaki agregat se učitava i menja kroz sopstvenu granicu.
+Kada nekoj operaciji zatrebaju podaci iz obe granice, svaki agregat se učitava i menja kroz sopstvenu granicu. Tako `CanAccept` proverava samo ono što anketa vidi, da odgovor upućuje na njeno aktivno pitanje, a `Record` samo ono što odgovor ispitanika vidi, na primer da odgovor još nije predat. Ko poziva jednu pa drugu metodu obrađuje aplikacioni sloj.
 
 </details>
 <hr></hr>
@@ -264,7 +273,7 @@ public sealed record TaxRate
   public TaxRate(decimal percent)
   {
     if (percent < 0 || percent > 100)
-      throw new ArgumentException("Poreska stopa mora biti između 0 i 100.");
+      throw new DomainException("Poreska stopa mora biti između 0 i 100.");
 
     Percent = percent;
   }
@@ -303,7 +312,7 @@ public sealed class Invoice
   public void AddLine(string description, int quantity, decimal unitPrice)
   {
     if (Status != InvoiceStatus.Draft)
-      throw new InvalidOperationException("Stavke se mogu dodavati samo dok je faktura u pripremi.");
+      throw new DomainException("Stavke se mogu dodavati samo dok je faktura u pripremi.");
 
     _lines.Add(new InvoiceLine(NextLineId(), description, quantity, unitPrice));
   }
@@ -311,10 +320,10 @@ public sealed class Invoice
   public void ChangeLineQuantity(long lineId, int quantity)
   {
     if (Status != InvoiceStatus.Draft)
-      throw new InvalidOperationException("Stavke se mogu menjati samo dok je faktura u pripremi.");
+      throw new DomainException("Stavke se mogu menjati samo dok je faktura u pripremi.");
 
     var line = _lines.SingleOrDefault(l => l.Id == lineId)
-      ?? throw new InvalidOperationException("Stavka ne postoji na fakturi.");
+      ?? throw new DomainException("Stavka ne postoji na fakturi.");
 
     line.ChangeQuantity(quantity);
   }
@@ -322,9 +331,9 @@ public sealed class Invoice
   public void Issue(DateOnly today)
   {
     if (Status != InvoiceStatus.Draft)
-      throw new InvalidOperationException("Izdati je moguće samo fakturu u pripremi.");
+      throw new DomainException("Izdati je moguće samo fakturu u pripremi.");
     if (_lines.Count == 0)
-      throw new InvalidOperationException("Faktura mora imati bar jednu stavku.");
+      throw new DomainException("Faktura mora imati bar jednu stavku.");
 
     Status = InvoiceStatus.Issued;
     IssuedOn = today;
@@ -341,7 +350,7 @@ public sealed class InvoiceLine
   internal void ChangeQuantity(int quantity)
   {
     if (quantity < 1)
-      throw new ArgumentException("Količina mora biti bar 1.");
+      throw new DomainException("Količina mora biti bar 1.");
 
     Quantity = quantity;
   }
@@ -416,7 +425,7 @@ public sealed class Question
   internal void RemoveOption(Option option)
   {
     if (_options.Count <= 2)
-      throw new InvalidOperationException("Pitanje mora imati bar dve opcije.");
+      throw new DomainException("Pitanje mora imati bar dve opcije.");
 
     _options.Remove(option);
   }
@@ -429,9 +438,9 @@ public sealed class Survey
   public void Publish()
   {
     if (Status != SurveyStatus.Draft)
-      throw new InvalidOperationException("Objaviti je moguće samo anketu u pripremi.");
+      throw new DomainException("Objaviti je moguće samo anketu u pripremi.");
     if (ActiveQuestionCount() == 0)
-      throw new InvalidOperationException("Anketa mora imati bar jedno aktivno pitanje.");
+      throw new DomainException("Anketa mora imati bar jedno aktivno pitanje.");
 
     Status = SurveyStatus.Published;
   }

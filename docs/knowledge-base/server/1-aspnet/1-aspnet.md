@@ -34,7 +34,7 @@ U datom kodu treba uočiti sledeće:
 
 ## Kontroleri
 
-**Kontroler** je klasa čije javne metode obrađuju HTTP zahteve. Metode kontrolera zovemo **akcije**. U kod treba svaku akciju deklarativno označiti kako bi radni okvir znao da je aktivira kada stigne HTTP zahtev sitgne na određenu adresu. Povezivanje adrese i akcije zovemo **rutiranje** (engl. *routing*). Rutiranje se postiže atributima. Atribut `[Route]` na klasi definiše zajednički početak adrese za sve akcije kontrolera. Atributi poput `[HttpGet]` i `[HttpPost]` na metodi definišu HTTP metodu i ostatak adrese. Parametre akcije radni okvir popunjava iz zahteva automatski, na primer iz adrese ili iz tela zahteva.
+**Kontroler** je klasa čije javne metode obrađuju HTTP zahteve. Metode kontrolera zovemo **akcije**. U kod treba svaku akciju deklarativno označiti kako bi radni okvir znao da je aktivira kada HTTP zahtev stigne na određenu adresu. Povezivanje adrese i akcije zovemo **rutiranje** (engl. *routing*). Rutiranje se postiže atributima. Atribut `[Route]` na klasi definiše zajednički početak adrese za sve akcije kontrolera. Atributi poput `[HttpGet]` i `[HttpPost]` na metodi definišu HTTP metodu i ostatak adrese. Parametre akcije radni okvir popunjava iz zahteva automatski, na primer iz adrese ili iz tela zahteva.
 
 Akcija vraća vrednost tipa `ActionResult<T>`, gde je `T` tip podatka koji šaljemo klijentu. Ovaj tip omogućava akciji da vrati podatak ili statusni kod. Kada akcija vrati objekat, radni okvir ga pretvara u JSON i šalje odgovor sa statusnim kodom 200. Kada akcija vrati poziv poput `Problem(statusCode: StatusCodes.Status404NotFound)`, radni okvir šalje odgovor sa statusnim kodom 404.
 
@@ -116,7 +116,7 @@ public class BookService
 }
 ```
 
-U datom kodu treba uočiti sledeće.
+U datom kodu treba uočiti sledeće:
 - Nigde nismo napisali `new`. Kada zahtev stigne u `BookController`, kontejner čita konstruktor kontrolera, vidi da mu treba `BookService`, zatim čita konstruktor te klase i vidi da joj treba `IBookRepository`. Kontejner zna da instancira odgovarajuće objekte i poveže ceo lanac zavisnosti.
 - `builder.Services.AddScoped<BookService>();` označava da je `BookService` klasa koju kontejner treba da instancira ako je pronađe u listi parametara konstruktora nekog objekta u lancu koji počinje sa kontrolerom.
 - `builder.Services.AddScoped<IBookRepository, BookDbRepository>();` označava da `BookDbRepository` treba instancirati kada se u listi parametara konstruktora nekog objekta u lancu koji počinje sa kontrolerom pojavi `IBookRepository`.

@@ -111,9 +111,9 @@ public sealed class Reservation
       // Slučaj 1: operacija menja jedno svojstvo,
       // pa je domensko pravilo ugrađeno u 'set' pristupnik
       if (value < 1)
-        throw new ArgumentException("Rezervacija mora imati bar jedno mesto.");
+        throw new DomainException("Rezervacija mora imati bar jedno mesto.");
       if (value < _attendees.Count)
-        throw new InvalidOperationException("Broj mesta ne može biti manji od broja prijavljenih učesnika.");
+        throw new DomainException("Broj mesta ne može biti manji od broja prijavljenih učesnika.");
  
       _numberOfSeats = value;
     }
@@ -124,7 +124,7 @@ public sealed class Reservation
   public void Confirm()
   {
     if (Status != ReservationStatus.Pending)
-      throw new InvalidOperationException("Potvrditi je moguće samo rezervaciju koja je na čekanju.");
+      throw new DomainException("Potvrditi je moguće samo rezervaciju koja je na čekanju.");
  
     Status = ReservationStatus.Confirmed;
     ConfirmedOn = DateOnly.FromDateTime(DateTime.Now);
@@ -138,11 +138,11 @@ public sealed class Reservation
   public void AddAttendee(string attendee)
   {
     if (Status == ReservationStatus.Cancelled)
-      throw new InvalidOperationException("Nije moguće prijaviti učesnika na otkazanu rezervaciju.");
+      throw new DomainException("Nije moguće prijaviti učesnika na otkazanu rezervaciju.");
     if (_attendees.Count == NumberOfSeats)
-      throw new InvalidOperationException("Sva mesta su popunjena.");
+      throw new DomainException("Sva mesta su popunjena.");
     if (_attendees.Contains(attendee))
-      throw new InvalidOperationException("Učesnik je već prijavljen.");
+      throw new DomainException("Učesnik je već prijavljen.");
  
     _attendees.Add(attendee);
   }
@@ -156,7 +156,7 @@ Primetimo da spolja ne postoji nijedan način da se `Status`, `ConfirmedOn` ili 
 
 Domenska pravila koja definišu validna stanja objekta zovemo **invarijante** (engl. *invariant*). Vrednosni objekat svoje invarijante proverava prilikom konstrukcije, a nepromenljivost garantuje da nakon toga ne mogu biti narušene. Entitet, čija se svojstva menjaju kroz životni ciklus, mora da brani invarijante pri svakoj promeni stanja. U prethodnom primeru, invarijanta rezervacije je da broj prijavljenih učesnika nikada ne prelazi broj mesta. Pravilo mora da preživi i prijavu novog učesnika i naknadno smanjenje broja mesta, pa ga proverava svaka metoda koja dira bilo koje od ta dva svojstva.
 
-U svim dosadašnjim primerima prekršeno domensko pravilo prijavljujemo izuzetkom. Domenski objekat ne zna ko ga poziva niti kako se greška saopštava korisniku, pa samo odbija nedozvoljenu izmenu i opisuje razlog. Spoljašnji slojevi prepoznaju te izuzetke i prevode ih u odgovor koji pozivalac razume, na primer u HTTP odgovor sa odgovarajućim statusnim kodom.
+U svim dosadašnjim primerima prekršeno domensko pravilo prijavljujemo izuzetkom `DomainException`. Domenski objekat ne zna ko ga poziva niti kako se greška saopštava korisniku, pa samo odbija nedozvoljenu izmenu i opisuje razlog. Spoljašnji slojevi prepoznaju taj izuzetak po tipu i prevode ga u odgovor koji pozivalac razume, kao što middleware iz [lekcije o kontrolerima](../../1-aspnet/2-kontroleri.md) formira HTTP odgovor sa statusnim kodom 400.
 
 ### 5. Metode za izvođenje domenski značajne informacije
  

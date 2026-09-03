@@ -29,16 +29,18 @@ public sealed class Address
   private void Validate()
   {
     if (string.IsNullOrWhiteSpace(Street))
-      throw new ArgumentException("Ulica je obavezna.");
+      throw new DomainException("Ulica je obavezna.");
     if (string.IsNullOrWhiteSpace(City))
-      throw new ArgumentException("Grad je obavezan.");
+      throw new DomainException("Grad je obavezan.");
     if (string.IsNullOrWhiteSpace(PostalCode) || PostalCode.Length != 5)
-      throw new ArgumentException("Poštanski broj mora imati 5 cifara.");
+      throw new DomainException("Poštanski broj mora imati 5 cifara.");
   }
 
   public override string ToString() => $"{Street}, {PostalCode} {City}";
 }
 ```
+Prekršeno pravilo metoda `Validate` prijavljuje izuzetkom **DomainException**, klasom koju definišemo u domenskom sloju kao naslednika klase `Exception` i koristimo za svako prekršeno domensko pravilo. Po tipu ovog izuzetka spoljašnji slojevi razlikuju neispravan zahtev od greške u programu.
+
 Ovakvu klasu bismo onda mogli da iskoristimo kao svojstvo druge klase, u kodu poput sledećeg:
 ```cs
 public class Shipment
@@ -141,13 +143,13 @@ public sealed record Jmbg
   private void Validate()
   {
     if (string.IsNullOrWhiteSpace(Value))
-      throw new ArgumentException("JMBG je obavezan.");
+      throw new DomainException("JMBG je obavezan.");
     if (Value.Length != 13 || !Value.All(char.IsDigit))
-      throw new ArgumentException("JMBG mora imati 13 cifara.");
+      throw new DomainException("JMBG mora imati 13 cifara.");
     if (!IsDateValid())
-      throw new ArgumentException("JMBG ima neispravan datum.");
+      throw new DomainException("JMBG ima neispravan datum.");
     if (!IsChecksumValid())
-      throw new ArgumentException("Neispravna kontrolna cifra.");
+      throw new DomainException("Neispravna kontrolna cifra.");
   }
 
   private bool IsDateValid()
@@ -226,17 +228,17 @@ public sealed record DateRange
   public DateRange(DateOnly start, DateOnly end)
   {
     if (end < start)
-      throw new ArgumentException("Datum završetka ne sme biti pre datuma početka.");
+      throw new DomainException("Datum završetka ne sme biti pre datuma početka.");
 
     Start = start;
     End = end;
   }
 
-  public bool OverlapsWith(DateRange drugi) =>
-    Start <= drugi.End && drugi.Start <= End;
+  public bool OverlapsWith(DateRange other) =>
+    Start <= other.End && other.Start <= End;
 
-  public bool Includes(DateRange drugi) =>
-    Start <= drugi.Start && End >= drugi.End;
+  public bool Includes(DateRange other) =>
+    Start <= other.Start && End >= other.End;
 }
 ```
 
