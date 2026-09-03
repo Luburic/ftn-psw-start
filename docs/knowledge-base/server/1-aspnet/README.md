@@ -1,0 +1,1 @@
+TODO: A map of the folder plus just enough context to orient, not a knowledge node.

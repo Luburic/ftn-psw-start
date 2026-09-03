@@ -106,7 +106,7 @@ public static class BookModuleExtensions
 
 ```cs
 // U datoteci Program.cs
-builder.Services.AddBookModule();
+builder.Services.AddBookModule(); // Services je tipa IServiceCollection (parametar metode iznad)
 ```
 
 U datom kodu treba uočiti sledeće:
