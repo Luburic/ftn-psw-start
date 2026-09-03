@@ -156,6 +156,8 @@ Primetimo da spolja ne postoji nijedan način da se `Status`, `ConfirmedOn` ili 
 
 Domenska pravila koja definišu validna stanja objekta zovemo **invarijante** (engl. *invariant*). Vrednosni objekat svoje invarijante proverava prilikom konstrukcije, a nepromenljivost garantuje da nakon toga ne mogu biti narušene. Entitet, čija se svojstva menjaju kroz životni ciklus, mora da brani invarijante pri svakoj promeni stanja. U prethodnom primeru, invarijanta rezervacije je da broj prijavljenih učesnika nikada ne prelazi broj mesta. Pravilo mora da preživi i prijavu novog učesnika i naknadno smanjenje broja mesta, pa ga proverava svaka metoda koja dira bilo koje od ta dva svojstva.
 
+U svim dosadašnjim primerima prekršeno domensko pravilo prijavljujemo izuzetkom. Domenski objekat ne zna ko ga poziva niti kako se greška saopštava korisniku, pa samo odbija nedozvoljenu izmenu i opisuje razlog. Spoljašnji slojevi prepoznaju te izuzetke i prevode ih u odgovor koji pozivalac razume, na primer u HTTP odgovor sa odgovarajućim statusnim kodom.
+
 ### 5. Metode za izvođenje domenski značajne informacije
  
 Kao i kod vrednosnog objekta, klasa koja modeluje entitet može sadržati metode koje vraćaju domenski značajne informacije izvedene iz njegovog trenutnog stanja, ne menjajući pri tome to stanje.

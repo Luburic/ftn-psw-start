@@ -1,114 +1,17 @@
-**Domenski sloj modeluje deo domena problema koji je relevantan za rad softvera.**
+# Domenski sloj
 
-Posmatrajmo softver u kojem ispitanik popunjava anketu i predaje svoje odgovore ([Čista arhitektura](../čista-arhitektura.md)). Domen istraživanja javnog mnjenja obuhvata mnogo više pojmova nego što je potrebno jednoj aplikaciji. Posmatrani softver modeluje ankete, pitanja, ponuđene odgovore, odgovore ispitanika i pravila koja određuju kada je dozvoljeno evidentirati odgovor. Ovi pojmovi i pravila čine domenski model relevantan za rad softvera.
+Svaki softver koji rešava stvaran problem sadrži koncepte i pravila tog problema. Pravila određuju koje operacije su dozvoljene, šta je ispravno stanje podataka i kako se iz postojećih podataka izvode novi. Ta pravila ne zavise od toga da li aplikacija radi kroz veb ili konzolu, da li podatke čuva u relacionoj bazi ili datoteci, niti kojim radnim okvirom je izgrađena. Ona bi važila i kada bi se posao obavljao ručno, olovkom i papirom. Klase koje ta pravila i podatke predstavljaju u kodu čine **domenski sloj**.
 
-Domenski sloj ne opisuje HTTP zahteve, tabele u bazi ili način serijalizacije podataka. Njegove klase koriste jezik domena i implementiraju domenske koncepte i pravila koja važe bez obzira na tehničko okruženje u kojem se softver izvršava.
+Domenski sloj ne modeluje ceo domen problema, već onaj njegov deo koji je relevantan za rad softvera. Domen istraživanja javnog mnjenja obuhvata mnogo više pojmova nego što treba jednoj aplikaciji za sprovođenje anketa. Aplikacija modeluje ankete, pitanja, ponuđene opcije, odgovore ispitanika i pravila koja određuju kada je odgovor dozvoljen. Izbor šta ulazi u model, a šta ostaje van njega, je odluka koju donosimo za svaki modul posebno.
 
-### 1. Entiteti i vrednosni objekti grupisani u agregate
+Klase domenskog sloja koriste jezik domena i ne znaju ništa o tehničkom okruženju u kom se izvršavaju. Ne opisuju HTTP zahteve, tabele u bazi niti način serijalizacije podataka. Ta nezavisnost omogućava da se domenska pravila čitaju, održavaju i testiraju bez ijedne tehničke zavisnosti. U našem projektu svaki modul ima svoj domenski sloj i on je prvo mesto na kom tim odlučuje šta modul zaista radi.
 
-**Domenski sloj sadrži entitete i vrednosne objekte grupisane u agregate.**
+U našem projektu primenjujemo naprednu tehniku za modelovanje domenskog sloja koju nazivamo *dizajn vođen domenom*. Pratimo taktičke obrasce ove metodologije koji propisuju nekoliko vrsta gradivnih elemenata i pravila po kojima se oni povezuju. Ovde se upoznajemo sa tim elementima, redom od najprostijeg ka najsloženijem.
 
-Ovi obrasci su detaljno opisani u lekcijama o [taktičkim DDD obrascima](../ddd/1-takticki-obrasci.md). U posmatranom primeru `Survey` i `SurveyResponse` predstavljaju korene dva agregata. `Survey` agregat sadrži korenski entitet `Survey`, unutrašnje entitete `Question` i vrednosne objekte `Option`. `SurveyResponse` agregat sadrži korenski entitet `SurveyResponse` i vrednosne objekte `Answer`.
+## Mapa direktorijuma
 
-Svaki agregat štiti pravila koja zahtevaju uvid u njegovo stanje kao celinu. `Survey` proverava da li se na anketu trenutno može odgovarati i da li postoji odgovarajuće aktivno pitanje. `SurveyResponse` kontroliše promenu sopstvene kolekcije odgovora.
-
-<hr></hr>
-<details>
-<summary><b>Klikni da analiziraš kod navedenih agregata</b></summary>
-
-Metoda `CanAccept` izvodi domenski značajnu informaciju iz stanja `Survey` agregata:
-
-```cs
-public sealed class Survey
-{
-  public long Id { get; }
-  public SurveyStatus Status { get; private set; }
-
-  private readonly List<Question> _questions = new();
-  public IReadOnlyList<Question> Questions => _questions.AsReadOnly();
-
-  public bool CanAccept(Answer answer)
-  {
-    if (!IsPublished())
-      return false;
-    if (!HasActiveQuestion(answer.QuestionId))
-      return false;
-    return true;
-  }
-
-  private bool IsPublished() => Status == SurveyStatus.Published;
-
-  private bool HasActiveQuestion(long questionId) =>
-    _questions.Any(question => question.Id == questionId && !question.IsArchived);
-}
-```
-
-Koren agregata koristi sopstveni status, spisak pitanja i ponašanje odgovarajućeg pitanja. Spoljašnji kod dobija odgovor na domensko pitanje pozivom jedne metode. Ne mora samostalno da proverava status ankete, pronalazi pitanje i analizira njegove opcije.
-
-`SurveyResponse` agregat nudi metodu za kontrolisanu promenu stanja:
-
-```cs
-public sealed class SurveyResponse
-{
-  public long Id { get; }
-  public long UserId { get; }
-  public long SurveyId { get; }
-  public ResponseStatus Status { get; private set; }
-
-  private readonly List<Answer> _answers = new();
-  public IReadOnlyList<Answer> Answers => _answers.AsReadOnly();
-
-  public void Record(Answer answer)
-  {
-    if (!IsIncomplete())
-      throw new InvalidOperationException("Odgovori se mogu menjati samo pre predaje ankete.");
-
-    _answers.RemoveAll(
-      existing => existing.QuestionId == answer.QuestionId);
-
-    _answers.Add(answer);
-  }
-
-  public bool IsIncomplete() =>
-    Status == ResponseStatus.Incomplete;
-}
-
-public enum ResponseStatus
-{
-  Incomplete,
-  Submitted
-}
-```
-
-Metoda `Record` štiti životni ciklus odgovora. Ispitanik može da doda ili promeni odgovor dok je celokupan odgovor na anketu nepotpun. Nakon predaje ankete, ista operacija više nije dozvoljena. Prekršeno domensko pravilo prijavljujemo kroz izuzetak koji spoljašnji slojevi prepoznaju i prevode u odgovarajući odgovor.
-
-`Answer` je vrednosni objekat koji garantuje ispravnost pojedinačnog odgovora pri kreiranju:
-
-```cs
-public sealed record Answer
-{
-  public long QuestionId { get; }
-  public string Value { get; }
-
-  public Answer(long questionId, string value)
-  {
-    if (questionId <= 0)
-      throw new ArgumentException("Identifikator pitanja mora biti ispravan.");
-
-    if (string.IsNullOrWhiteSpace(value))
-      throw new ArgumentException("Odgovor ne sme biti prazan.");
-
-    QuestionId = questionId;
-    Value = value;
-  }
-}
-```
-
-</details>
-<hr></hr>
-
-### 2. Domenski servisi
-
-**Domenski sloj sadrži domenske servise.**
-
-[Domenski servis](../ddd/5-domenski-servis.md) je stručnjačka funkcionalna klasa koja se uvodi kada domensko pravilo ne pripada prirodno jednom entitetu ili vrednosnom objektu, već zahteva uvid u više agregata. Aplikacioni servis je odgovoran da agregate učita, prosledi domenskom servisu i sačuva njihove izmene, a domenski servis radi isključivo sa domenskim objektima.
+1. [Taktički obrasci](1-takticki-obrasci.md) - Dva pitanja koja postavljamo pri dizajnu domenskog modela: gde živi domenska logika i kako su objekti povezani. Lekcija poredi anemičan i bogat model, potpuno povezan graf i graf isečen na celine, i objašnjava zašto biramo kombinaciju koju propisuju DDD taktički obrasci. Preduslov je za sve naredne lekcije.
+2. [Vrednosni objekat](2-vrednosni-objekat.md) - Najprostiji gradivni element: domenski značajna vrednost čiji je identitet određen vrednostima svojstava, koja je nepromenljiva, validira se pri kreiranju i može da izvodi informacije iz svog stanja.
+3. [Entitet](3-entitet.md) - Domenski koncept sa životnim ciklusom i nepromenljivim identifikatorom, čije se stanje menja isključivo kroz metode koje brane invarijante. Ovde se uvodi pojam invarijante i način na koji se prekršeno pravilo prijavljuje spoljašnjim slojevima.
+4. [Agregat](4-agregat.md) - Grupa entiteta i vrednosnih objekata koja se drži konzistentnom kao celina, sa korenom kao jedinom tačkom izmene i identifikatorima kao jedinom vezom ka drugim agregatima. Lekcija zaokružuje raspodelu pravila po nivoima agregata.
+5. [Domenski servis](5-domenski-servis.md) - Klasa za domensko pravilo koje zahteva uvid u više agregata i ne pripada prirodno nijednom od njih.

@@ -1,135 +1,100 @@
-# Komande i upiti
+Pri projektovanju aplikacionih servisa u složenom softveru, često u praksi pratimo princip razdvajanja komandi od upita, koji diktira šta jedna metoda sme da radi. Praćenje ovog principa čini kod lakšim za održavanje.
 
-> **Status: normativan.** Primeri u ovom dokumentu odgovaraju stvarnom kodu projekta i predstavljaju obavezan obrazac koji timovi prate.
+## Princip razdvajanja
 
-Aplikacioni sloj modula objavljuje slučajeve upotrebe koje kontroleri pozivaju. Metoda aplikacionog sloja koja u istom pozivu menja stanje sistema i vraća složene podatke brzo postaje teška za razumevanje. Pozivalac takve metode ne zna da li sme da je pozove ponovo bez posledica, a sama metoda vremenom raste jer služi i izmeni i prikazu, čije se potrebe razlikuju. Zato svaku javnu metodu aplikacionog sloja pišemo tako da radi tačno jedno od ta dva.
+**Razdvajanje komandi i upita** (engl. *command-query separation*) je pravilo da svaka javna metoda aplikacionog sloja kao konačni cilj ima ili promenu stanja sistema (npr. podataka u bazi) ili dobavljanje podataka. **Komanda** (engl. *command*) je metoda koja menja stanje sistema i ne vraća podatke ili vraća najmanju potvrdu izmene, poput identifikatora novog agregata. **Upit** (engl. *query*) je metoda koja vraća podatke i ne menja stanje sistema.
 
-**Komanda** (engl. *command*) je metoda aplikacionog sloja koja menja stanje sistema i ne vraća podatke, ili vraća najmanju potvrdu izmene. **Upit** (engl. *query*) je metoda aplikacionog sloja koja vraća podatke i ne menja ništa. Svaka javna metoda aplikacionog sloja je ili komanda ili upit, nikada oboje.
+Pravilo garantuje tri stvari:
+1. Metoda tipa *upit* se sme pozvati bilo kada, bilo koliko puta i sa bilo kog mesta, a stanje sistema se ne menja. Zato osvežavanje stranice, prikaz spiska ili generisanje izveštaja mogu da čitaju podatke bez neželjenih posledica.
+2. Metoda tipa *komanda* ima samo dva moguća ishoda: ili je promenila stanje, ili je bacila izuzetak. Pozivalac mora da zna da li je promena upisana.
+3. Kod za čitanje (query) i kod za pisanje (command) su razdvojeni, pa svaki može koristi model podataka koji mu odgovara: pisanje radi nad agregatom, a čitanje nad podacima spremnim za prikaz.
 
-Aplikacioni sloj je organizovan po slučajevima upotrebe. Srodni slučajevi upotrebe čine grupu sa sopstvenim direktorijumom, na primer `TourAuthoring` za autorske slučajeve upotrebe i `TourBrowsing` za pregled objavljenih tura. Svaka grupa ima najviše dve klase. Komandna klasa, na primer `TourAuthoringService`, okuplja komande i kroz konstruktor prima repozitorijum agregata `ITourRepository` i jedinicu posla `IUnitOfWork`. Upitna klasa, na primer `TourBrowsingQueries`, okuplja upite i prima repozitorijum za čitanje `ITourReadRepository`. Oba interfejsa su deklarisana u aplikacionom sloju, a implementirana u infrastrukturnom.
+Posmatrajmo metodu koju bismo bez ovog pravila prirodno napisali. Ispitanik otvara anketu i treba mu njegov odgovor na tu anketu, sa dosadašnjim odgovorima na pitanja. Ako odgovor još ne postoji, jer ispitanik prvi put otvara anketu, metoda ga pravi:
 
-Upiti se javljaju u dva oblika, pa ovaj dokument opisuje tri slučaja:
-
-1. komanda,
-2. čist upit,
-3. upit koji koristi agregat.
-
-## Slučaj 1: komanda
-
-Komanda se uvek piše u tri koraka: učita agregat kroz repozitorijum, pozove jednu metodu na njemu i sačuva izmene tačno jednim pozivom metode `SaveChangesAsync`. Primer je objava ture iz klase `TourAuthoringService`.
-
-```csharp
-public async Task PublishAsync(Guid tourId, Guid authorId)
+```cs
+public async Task<SurveyResponseDto> GetResponseAsync(long surveyId, long userId)
 {
-    var tour = await GetOwnedTourAsync(tourId, authorId);
-
-    tour.Publish();
-    await _unitOfWork.SaveChangesAsync();
-}
-
-private async Task<Tour> GetOwnedTourAsync(Guid tourId, Guid authorId)
-{
-    var tour = await _tourRepository.GetByIdAsync(tourId);
-    if (tour is null || tour.AuthorId != authorId)
-    {
-        throw new NotFoundException($"Tour {tourId} does not exist.");
-    }
-    return tour;
+  var surveyResponse = await _surveyResponseRepository.GetBySurveyAndUserAsync(surveyId, userId);
+  if (surveyResponse is null)
+  {
+    surveyResponse = new SurveyResponse(surveyId, userId);
+    _surveyResponseRepository.Add(surveyResponse);
+  }
+  return MapToDto(surveyResponse);
 }
 ```
 
-U primeru treba uočiti sledeće.
+U datom kodu treba uočiti sledeće:
 
-- Repozitorijum vraća ceo agregat `Tour`, a ne pojedinačne kolone. Komanda radi nad agregatom jer samo agregat sme da menja svoje stanje.
-- Poslovna pravila objave, na primer najmanja dužina opisa, žive u metodi `Tour.Publish`. Kada pravilo nije ispunjeno, agregat izbacuje `DomainException`, a middleware taj izuzetak pretvara u HTTP odgovor 400. Komandna metoda zato nema nijedan `if` o poslovnom stanju.
-- Tura koja ne postoji i tuđa tura obrađuju se istovetno, izuzetkom `NotFoundException` koji middleware pretvara u odgovor 404. Time se ne otkriva da li identifikator postoji.
-- Poziv `SaveChangesAsync` na kraju je granica transakcije: sve što je izmenjeno od učitavanja upisuje se u jednoj transakciji. Komanda ga poziva tačno jednom.
+- Metoda se zove i izgleda kao upit, a u jednoj grani pravi nov agregat. Svako ko je pozove da bi nešto pogledao, može da promeni stanje sistema.
+- Autor koji želi da pogleda anketu koju je upravo napravio iz perspektive ispitanika, generiše odgovor u svoje ime bez da je nameravao da odgovori. Stranica sa spiskom anketa, koja za svaku anketu prikazuje napredak korisnika, pravi po jedan odgovor za svaku anketu koju je korisnik samo video. Izveštaj o broju započetih anketa broji i te odgovore.
+- Test koji proverava prikaz odgovora mora prvo da pripremi odgovor u skladištu ili će ga metoda napraviti sama i test će proći iz pogrešnog razloga.
+- Klasa koja sadrži ovu metodu mora da prima repozitorijum koji ume da upisuje, pa iz njenog konstruktora niko ne može da zaključi da klasa samo čita.
 
-## Slučaj 2: čist upit
+Pravilo razdvajanja nalaže da se metoda podeli na dve:
 
-**Čist upit** je upit koji se izvršava projekcijom podataka pravo u DTO, bez učitavanja agregata. Ovo je podrazumevani oblik upita i jedini ispravan izbor kada je rezultat spisak ili prikaz podataka. Primer je spisak objavljenih tura. U aplikacionom sloju upitna klasa ograničava parametre stranice i prosleđuje poziv repozitorijumu za čitanje.
+```cs
+public Task<long> StartResponseAsync(long surveyId, long userId);
 
-```csharp
-public Task<PageResult<TourDto>> GetPublishedAsync(int page, int pageSize)
+public Task<SurveyResponseDto?> GetResponseAsync(long surveyId, long userId);
+```
+
+Komanda `StartResponseAsync` pravi odgovor i vraća samo njegov identifikator. Upit `GetResponseAsync` vraća odgovor ako postoji, a `null` ako ne postoji, i ne pravi ništa. Odluka da se odgovor započne sada pripada klijentu, koji komandu poziva kada ispitanik izabere da započne anketu, a upit svaki put kada nešto prikazuje.
+
+Isto pravilo važi i u drugom smeru. Komanda koja evidentira odgovor na pitanje i pozivaocu vraća prikaz celog odgovora, sa tekstom svakog pitanja, ima dva posla. Kada evidentiranje uspe, a sastavljanje prikaza baci izuzetak, pozivalac dobija grešku iako je stanje promenjeno i ne može da zna da li je odgovor sačuvan. Kada prikaz zatraži još jedan podatak, menja se metoda koja evidentira odgovore. Komanda zato vraća identifikator, a prikaz se dobija upitom.
+
+## Oblik komandne i upitne klase
+
+Pravilo razdvajanja ne govori gde metode žive. Komande i upiti mogu da stoje u istoj klasi, u dve odvojene klase, ili svaka metoda u sopstvenoj klasi. U našem projektu se držimo pristupa da aplikacioni servis sadrži samo komande za grupu slučajeva korišćenja (ove klase imaju sufiks `Service`) ili samo upite (sufiks `Queries`). Sledeći kod prikazuje kostur dve klase ispitaničke grupe, gde su tela metoda izostavljena:
+
+```cs
+public sealed class SurveyRespondingService
 {
-    page = Math.Max(page, 1);
-    pageSize = Math.Clamp(pageSize, 1, 100);
+  private readonly ISurveyRepository _surveyRepository;
+  private readonly ISurveyResponseRepository _surveyResponseRepository;
+  private readonly IUnitOfWork _unitOfWork;
 
-    return _tourReadRepository.GetPublishedAsync(page, pageSize);
+  public SurveyRespondingService(ISurveyRepository surveyRepository,
+    ISurveyResponseRepository surveyResponseRepository, IUnitOfWork unitOfWork) { ... }
+
+  public Task<long> StartResponseAsync(long surveyId, long userId) { ... }
+
+  public Task SubmitAnswerAsync(long responseId, AnswerDto answerDto) { ... }
+
+  public Task ConcludeResponseAsync(long responseId) { ... }
+}
+
+public sealed class SurveyRespondingQueries
+{
+  private readonly ISurveyResponseReadRepository _surveyResponseReadRepository;
+
+  public SurveyRespondingQueries(ISurveyResponseReadRepository surveyResponseReadRepository) { ... }
+
+  public Task<SurveyResponseDto?> GetResponseAsync(long surveyId, long userId) { ... }
 }
 ```
 
-U infrastrukturnom sloju klasa `TourReadRepository` implementira interfejs `ITourReadRepository` i sastavlja upit nad bazom.
+U datom kodu treba uočiti sledeće:
 
-```csharp
-public async Task<PageResult<TourDto>> GetPublishedAsync(int page, int pageSize)
-{
-    var published = _dbContext.Tours
-        .Where(tour => tour.Status == TourStatus.Published)
-        .OrderByDescending(tour => tour.PublishedAt);
+- Komandna klasa kroz konstruktor prima:
+  - **Repozitorijume agregata**, koji vraćaju cele agregate, jer spoljni kod može samo kroz koren agregata da menja stanje agregata.
+  - **Jedinicu posla** (engl. *unit of work*), što je interfejs čija metoda `SaveChangesAsync` upisuje u skladište sve izmene agregata učitanih tokom obrade jednog zahteva, u jednoj transakciji. Komanda je poziva tačno jednom, na kraju. Problem koji jedinica posla rešava ćemo videti u infrastrukturnom sloju.
+- Upitna klasa kroz konstruktor prima:
+   - **Repozitorijum za čitanje** (engl. *read repository*), što je interfejs čije metode vraćaju DTO strukture spremne za prikaz, bez učitavanja agregata.
+   - Ređe repozitorijume agregata, kada upit učitava agregat da bi pozvao metodu koja izvodi domenski značajnu informaciju iz njegovog stanja. Kada se koji oblik upita piše obrađuje [lekcija o aplikacionom servisu](2-aplikacioni-servis.md).
+- Upitna klasa nikada ne prima jedinicu posla, što je sprečava da čuva izmene stanja.
 
-    var totalCount = await published.CountAsync();
-    var items = await ProjectToDtos(published)
-        .Skip((page - 1) * pageSize)
-        .Take(pageSize)
-        .ToListAsync();
+Sva četiri interfejsa su deklarisana u aplikacionom sloju, a implementirana u infrastrukturnom, kao i svaki drugi interfejs tehničke sposobnosti ([Infrastrukturni sloj](../3-infrastrukturni-sloj/README.md)).
 
-    return new PageResult<TourDto>(items, totalCount);
-}
+## Put dva zahteva
 
-private static IQueryable<TourDto> ProjectToDtos(IQueryable<Tour> tours)
-{
-    return tours
-        .AsNoTracking()
-        .Select(tour => new TourDto(
-            tour.Id,
-            tour.AuthorId,
-            tour.Name,
-            ...));
-}
-```
+Povežimo pojmove praćenjem jedne komande i jednog upita, u redosledu u kom ih klijent poziva.
 
-U primeru treba uočiti sledeće.
-
-- Poziv `AsNoTracking` isključuje praćenje promena u Entity Framework alatu. Učitani podaci se ne mogu izmeniti ni sačuvati, pa upit ni greškom ne može da promeni stanje.
-- Metoda `Select` prevodi se u SQL projekciju, pa baza vraća samo kolone koje DTO sadrži. Agregat se nikada ne materijalizuje u memoriji.
-- Spisak koji vremenom raste bez granice vraća se kroz tip `PageResult<T>` iz projekta `Shared.Domain`, koji nosi jednu stranicu rezultata i ukupan broj redova. Upitna klasa pre prosleđivanja ograničava brojeve stranice na razumne vrednosti, jer te vrednosti stižu iz HTTP zahteva.
-- Prirodno mali spisak, na primer ture jednog autora, sme da ostane bez straničenja.
-
-## Slučaj 3: upit koji koristi agregat
-
-Ovaj obrazac trenutno nema primer u kodu projekta. Kada se ovakav upit prvi put pojavi, piše se na način opisan u nastavku i taj primer tada postaje deo ovog dokumenta.
-
-**Izvedena vrednost** je podatak koji se izračunava iz stanja jednog agregata, na primer prosečno vreme obilaska ture. Logika izračunavanja pripada agregatu, kao metoda bez propratnih efekata: metoda čita sopstveno stanje, vraća vrednost i ne menja ništa. Kada slučaj upotrebe traži izvedenu vrednost, upitna klasa učitava agregat kroz običan repozitorijum, pozove metodu i upakuje rezultat u DTO.
-
-```csharp
-public async Task<TourStatisticsDto> GetStatisticsAsync(Guid tourId)
-{
-    var tour = await _tourRepository.GetByIdAsync(tourId);
-    if (tour is null)
-    {
-        throw new NotFoundException($"Tour {tourId} does not exist.");
-    }
-    return new TourStatisticsDto(tour.Id, tour.AverageTransportMinutes());
-}
-```
-
-U primeru treba uočiti sledeće.
-
-- Upitna klasa za ovaj slučaj kroz konstruktor prima i `ITourRepository`, pored repozitorijuma za čitanje.
-- Metoda `AverageTransportMinutes` živi u klasi `Tour` i izračunava vrednost iz njenog stanja. Ista logika se ne piše ponovo kao SQL projekcija, jer bi tada postojala na dva mesta.
-- Metoda nikada ne poziva `SaveChangesAsync`. Učitani agregat se odbacuje na kraju obrade zahteva, pa i slučajna izmena stanja ne bi bila upisana.
-
-Ovaj oblik je izuzetak, a ne podrazumevani izbor. Kada rezultat služi prikazu spiska ili obuhvata više agregata, važi slučaj 2. Metode za izvedene vrednosti ne pišu se unapred, nego tek kada ih neki slučaj upotrebe zatraži.
-
-## Kako odlučiti
-
-Za svaki novi zahtev postavljaju se tri pitanja, redom:
-
-1. Da li zahtev menja stanje? Ako da, piše se komanda: učitaj agregat, pozovi metodu, sačuvaj jednom.
-2. Da li je rezultat spisak ili prikaz podataka? Ako da, piše se čist upit: projekcija u DTO kroz repozitorijum za čitanje.
-3. Da li je rezultat izvedena vrednost koju jedan agregat izračunava iz svog stanja? Ako da, piše se upit koji koristi agregat.
-
-Razmotrimo redom zahteve nad turama. Objava ture menja stanje, pa je to komanda i staje na prvom pitanju. Spisak objavljenih tura ne menja stanje i jeste prikaz spiska, pa je to čist upit i staje na drugom pitanju. Prosečno vreme obilaska jedne ture ne menja stanje, nije spisak, a izračunava se iz stanja jedne ture, pa je to upit koji koristi agregat.
-
-Iza sva tri pitanja stoji jedno tvrdo pravilo: upit ne menja stanje i nikada ne poziva `SaveChangesAsync`. Posledica u kodu je vidljiva iz konstruktora, jer upitna klasa nikada ne prima `IUnitOfWork`. Ovo pravilo čuva i arhitektonski test u projektu `Host.Tests`.
+1. Ispitanik otvara anketu i klijent šalje `GET /api/surveys/5/response`.
+2. Kontroler poziva `GetResponseAsync` na klasi `SurveyRespondingQueries`.
+3. Upit prosleđuje poziv repozitorijumu za čitanje, koji vraća `null`, jer odgovor ne postoji. Nijedan agregat nije učitan i ništa nije sačuvano. Klijent prikazuje dugme za započinjanje ankete.
+4. Ispitanik započinje anketu i klijent šalje `POST /api/surveys/5/response`.
+5. Kontroler poziva `StartResponseAsync` na klasi `SurveyRespondingService`.
+6. Komanda kroz repozitorijum učitava `Survey` agregat i pita ga da li se na anketu trenutno može odgovarati. Zatim pravi `SurveyResponse` agregat i dodaje ga u repozitorijum.
+7. Komanda jednom poziva `SaveChangesAsync` na jedinici posla i vraća identifikator novog odgovora.
+8. Klijent ponovo šalje `GET /api/surveys/5/response` i ovaj put upit vraća započet odgovor.
