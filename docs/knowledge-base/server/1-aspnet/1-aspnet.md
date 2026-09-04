@@ -12,16 +12,16 @@ Logika aplikacije je samo jedan korak od šest. Kada bismo sve ostale korake pis
 
 ## ASP.NET Core
 
-**ASP.NET Core** je radni okvir (engl. *framework*) za izgradnju serverskih veb aplikacija na .NET platformi, sličan Spring-u u Java svetu. Radni okvir preuzima tehničke korake obrade HTTP zahteva, a programeru ostavlja da napiše logiku aplikacije i da je označi tako da je radni okvir pronađe i pozove. Za nas se automatski rešavaju koraci 1, 2, 3, 4 i 6 navedeni iznad, gde je na nama samo da iskoristimo par atributa i metoda radnog okvira. Videćemo kako ASP.NET Core ovo realizuje kroz svoje kontrolere. Radni okvir nudi i elegantan mehanizam za ubrizgavanje zavisnosti, koji ćemo kasnije sagledati.
+**ASP.NET Core** je radni okvir za izgradnju serverskih veb aplikacija na .NET platformi, sličan Spring-u u Java svetu. Radni okvir preuzima tehničke korake obrade HTTP zahteva, a programeru ostavlja da napiše logiku aplikacije i da je označi tako da je radni okvir pronađe i pozove. Za nas se automatski rešavaju koraci 1, 2, 3, 4 i 6 navedeni iznad, gde je na nama samo da iskoristimo par atributa i metoda radnog okvira. Videćemo kako ASP.NET Core ovo realizuje kroz svoje kontrolere. Radni okvir nudi i elegantan mehanizam za ubrizgavanje zavisnosti, koji ćemo kasnije sagledati.
 
-Svaka ASP.NET Core aplikacija ima ulaznu tačku u datoteci `Program.cs`, koja se izvršava kada pokrenemo aplikaciju. Sledeći kod prikazuje najmanji oblik te datoteke koji nam je dovoljan za rad:
+ASP.NET Core aplikacija je tipično zasnovana na `Microsoft.NET.Sdk.Web` SDK-u (engl. *software development kit*). Takav `.csproj` projekat ima ulaznu tačku u datoteci `Program.cs`, koja se izvršava kada pokrenemo aplikaciju. Sledeći kod prikazuje najmanji oblik te datoteke koji nam je dovoljan za rad:
 
 ```cs
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddScoped<BookService>();
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 app.MapControllers();
 
 app.Run();
@@ -31,6 +31,8 @@ U datom kodu treba uočiti sledeće:
 - Prvi region koda, oko promenljive `builder`, opisuje od čega se aplikacija sastoji. Ovde prijavljujemo kontrolere i servisnu klasu od koje kontroler zavisi. Ove linije ćemo kasnije detaljnije objasniti.
 - Poziv `Build()` pravi aplikaciju na osnovu tog opisa, a `MapControllers()` uključuje rutiranje HTTP zahteva ka kontrolerima.
 - Poziv `Run()` pokreće aplikaciju. Od tog trenutka aplikacija sluša na portu i obrađuje zahteve sve dok je ne zaustavimo.
+
+Tipovi `WebApplication` i `WebApplicationBuilder` dolaze iz SDK-a i pripadaju `Microsoft.AspNetCore.Builder` prostoru naziva.
 
 ## Kontroleri
 
