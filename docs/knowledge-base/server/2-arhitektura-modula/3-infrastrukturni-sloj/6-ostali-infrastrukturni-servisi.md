@@ -100,12 +100,6 @@ services.AddScoped<IRespondentNotifier, SmtpRespondentNotifier>();
 services.AddScoped<ISurveyReportGenerator, PdfSurveyReportGenerator>();
 ```
 
-## Put jedne komande
+## Kada se spoljašnji sistem obaveštava
 
-Povežimo pojmove praćenjem komande koja objavljuje anketu i obaveštava ispitanike.
-
-1. Kontroler prima `POST /api/surveys/{id}/publish` i poziva metodu `PublishSurveyAsync` klase `SurveyAuthoringService`, koja kroz konstruktor prima repozitorijum ankete, jedinicu posla i `IRespondentNotifier`.
-2. Komanda kroz repozitorijum učitava anketu i poziva metodu `Publish`, koja proverava pravila i menja status.
-3. Komanda poziva `SaveChangesAsync` na jedinici posla. Anketa je objavljena u bazi.
-4. Tek tada komanda poziva `NotifySurveyPublishedAsync`. Konektorska klasa prevodi anketu u poruke i šalje ih. Obaveštenje se šalje nakon čuvanja, jer bi obaveštenje o anketi čije čuvanje nije uspelo bilo gore od izostanka obaveštenja.
-5. Kada slanje ne uspe, anketa ostaje objavljena, a pozivalac dobija grešku. Kako se takav neuspeh naknadno ispravlja pitanje je koje ova lekcija ne obrađuje.
+Komanda koja menja stanje i obaveštava drugi sistem prvo poziva `SaveChangesAsync`, a tek zatim konektorsku klasu. Obaveštenje o anketi čije čuvanje nije uspelo bilo bi gore od izostanka obaveštenja. Kada slanje ne uspe nakon čuvanja, anketa ostaje objavljena, a pozivalac dobija grešku. Kako se takav neuspeh naknadno ispravlja pitanje je koje ova lekcija ne obrađuje.

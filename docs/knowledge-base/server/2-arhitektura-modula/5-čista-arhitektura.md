@@ -1,73 +1,69 @@
-**Čista arhitektura** (srodna obrascima *ports & adapters*, *hexagonal* i *onion*) je višeslojna arhitektura koja prati princip inverzije zavisnosti, čiji je osnovni cilj da domenski sloj ostane izolovan od tehničkih detalja. DDD čista arhitektura poseduje bogati domenski model razdeljen u agregate. Sagledaćemo konkretan primer funkcionalnosti koja prožima sve slojeve, nakon čega ćemo detaljnije analizirati svaki sloj.
+Prethodne lekcije su svaki sloj čiste arhitekture obradile zasebno, kroz klase koje mu pripadaju. Ovde slojeve sagledavamo zajedno. Pratimo jednu komandu i jedan upit od HTTP zahteva do HTTP odgovora, koristeći isključivo klase i metode koje su prethodne lekcije već definisale, a zatim precizno navodimo pravilo o zavisnostima između slojeva.
 
-Posmatrajmo softver u kojem ispitanik popunjava anketu i predaje svoje odgovore. U ovom delu domena postoje dva agregata:
+## Put komande
 
-- `Survey`, koji modeluje anketu, njena pitanja i pravila za prihvatanje odgovora i
-- `SurveyResponse`, koji modeluje odgovore jednog ispitanika i njihov životni ciklus.
+Ispitanik odgovara na pitanje, što obrađuje komanda `SubmitAnswerAsync` iz [lekcije o aplikacionom servisu](2-aplikacioni-sloj/2-aplikacioni-servis.md), kroz akciju iz [lekcije o API sloju](4-api-sloj.md).
 
-Struktura ovih agregata je ilustrovana kroz sledeći dijagram:
+1. Klijent šalje `POST /api/surveys/responses/{responseId}/answers` sa odgovorom u telu. Middleware za proveru identiteta čita token, rutiranje bira akciju `SubmitAnswer` kontrolera `SurveyRespondingController`, a vezivanje modela popunjava `responseId` iz adrese i `AnswerDto` iz tela.
+2. Kontejner zavisnosti za ovaj zahtev pravi `SurveyRespondingService` sa oba repozitorijuma agregata i jedan `SurveyDbContext`, koji repozitorijumi dobijaju kao kontekst, a komanda kao `IUnitOfWork`.
+3. Akcija poziva `SubmitAnswerAsync(responseId, answerDto)`.
+4. Komanda kroz `ISurveyResponseRepository` traži odgovor ispitanika. `SurveyResponseRepository` izvršava `SELECT`, a kontekst rehidrira agregat i prati ga. Kada odgovor ne postoji, komanda baca `NotFoundException`.
+5. Komanda kroz `ISurveyRepository` traži anketu po `SurveyId` učitanog odgovora. Anketa se učitava sa pitanjima, jer je tako konfigurisano.
+6. Komanda od DTO strukture pravi vrednosni objekat `Answer`. Konstruktor proverava da odgovor nije prazan.
+7. Komanda pita anketu `CanAccept(answer)` i, kada anketa prihvata odgovor, poziva `Record(answer)` nad odgovorom ispitanika. Pravila o objavljenoj anketi i aktivnom pitanju proverava anketa, a pravilo da se u predat odgovor ne može dodati odgovor proverava odgovor ispitanika.
+8. Komanda poziva `SaveChangesAsync`. Kontekst poredi praćene objekte sa zapamćenim stanjem, sastavlja naredbe upisa samo za izmenjeni odgovor ispitanika i izvršava ih u jednoj transakciji.
+9. Akcija vraća `NoContent()`, a radni okvir šalje odgovor sa statusnim kodom 204. Kontejner uništava kontekst.
 
-![](https://luburic.github.io/ftn-tutor-images/images/ddd/clean-arch-struct.png)
+Kada korak 4 baci `NotFoundException`, ili korak 6 ili 7 baci `DomainException`, izuzetak prolazi kroz komandu i akciju nepromenjen do middleware-a, koji ga prevodi u odgovor sa statusnim kodom 404, odnosno 400. Do koraka 8 se ne stiže, pa je baza nepromenjena.
 
-Zamislimo da korisnik ima mogućnost da postepeno popunjava anketu i da se odgovor na svako pitanje zasebno čuva. Kada ispitanik odgovori na pitanje, sistem treba da:
+## Put upita
 
-1. primi HTTP zahtev koji sadrži odgovor na pitanje,
-2. učita korisnikov odgovor na celokupnu anketu, gde će pridodati odgovor na pitanje,
-3. učita anketu,
-4. pita anketu da li je dozvoljeno odgovarati na nju,
-5. ako jeste, evidentira odgovor na pitanje u okviru celokupnog odgovora,
-6. sačuva promenjeni agregat i
-7. vrati rezultat.
+Autor preuzima rezultate ankete kao PDF dokument. Upit koristi agregate, domenski servis `SurveyResultsCalculator` iz [lekcije o domenskom servisu](1-domenski-sloj/5-domenski-servis.md) i stručnjačku klasu iz [lekcije o ostalim infrastrukturnim servisima](3-infrastrukturni-sloj/6-ostali-infrastrukturni-servisi.md).
 
-Serverska aplikacija bi svih sedam koraka mogla da realizuje u okviru metode kontrolera. Ipak, takav potez bi rezultovao složenom metodom koja narušava više heuristika za pisanje održivog koda. Umesto toga, logiku razlažemo po slojevima, što sledeći dijagram ilustruje:
+1. Klijent šalje `GET /api/surveys/{surveyId}/report`. Rutiranje bira akciju `GetReport` kontrolera `SurveyBrowsingController`, a vezivanje modela popunjava `surveyId`.
+2. Kontejner zavisnosti pravi `SurveyBrowsingQueries` sa oba repozitorijuma agregata, domenskim servisom i `ISurveyReportGenerator`. Upitna klasa ne prima jedinicu posla.
+3. Akcija poziva `GetReportAsync(surveyId)`.
+4. Upit kroz repozitorijume učitava anketu i sve njene odgovore. Kada anketa ne postoji, upit baca `NotFoundException`.
+5. Upit poziva `Calculate(survey, responses)` nad domenskim servisom, koji po domenskim pravilima broji predate odgovore na aktivna pitanja i vraća `SurveyResults`.
+6. Upit poziva `Generate(results)` kroz interfejs. `PdfSurveyReportGenerator` kroz biblioteku sastavlja dokument i vraća niz bajtova.
+7. Akcija vraća bajtove kao PDF datoteku sa statusnim kodom 200. Ništa nije upisano, a učitani agregati se odbacuju sa kontekstom.
 
-![](https://luburic.github.io/ftn-tutor-images/images/ddd/clean-arch-data-flow.png)
+## Odgovornosti po slojevima
 
-Vidimo da:
+Oba puta prolaze kroz iste četiri vrste odgovornosti:
 
-1. Kontroler prima HTTP zahtev i prevodi ga u poziv aplikacionog servisa.
-2. Aplikacioni servis preko repozitorijuma učitava `SurveyResponse` i `Survey` agregate.
-3. Aplikacioni servis pita `Survey` agregat da li je operacija dozvoljena, pozivajući njegovu metodu koja izvodi domenski značajnu informaciju.
-4. Aplikacioni servis zatim poziva metodu za kontrolisanu promenu stanja `SurveyResponse` agregata.
-5. Na kraju se izmenjen odgovor čuva u skladištu putem repozitorijuma i formira se odgovor za klijentsku aplikaciju.
+| Sloj | Koraci komande | Koraci upita | Odgovornost |
+|---|---|---|---|
+| API | 1, 3, 9 | 1, 3, 7 | Prevodi HTTP zahtev u poziv i rezultat u HTTP odgovor. |
+| Aplikacioni | 4 do 8, kao pozivalac | 4 do 6, kao pozivalac | Koordiniše korake slučaja korišćenja. |
+| Domenski | 6, 7 | 5 | Proverava pravila, menja stanje i izvodi informacije. |
+| Infrastrukturni | 4, 5, 8 | 4, 6 | Radi sa bazom i bibliotekama iza interfejsa aplikacionog sloja. |
 
-U ovom toku postoje četiri vrste odgovornosti:
-
-- API sloj obrađuje HTTP zahtev i formira HTTP odgovor.
-- Aplikacioni sloj koordiniše korake slučaja korišćenja.
-- Domenski sloj primenjuje domenska pravila da izvodi domenski značajne informacije i kontrolisano menja stanje agregata.
-- Infrastrukturni sloj radi sa skladištem podataka.
-
-Svaki sloj i klase koje mu pripadaju detaljno analizira zaseban dokument:
-
-1. [Domenski sloj](slojevi/1-domenski-sloj.md), koji sadrži agregate i domenske servise.
-2. [Aplikacioni sloj](slojevi/2-aplikacioni-sloj.md), koji sadrži aplikacione servise, DTO strukture i interfejse tehničkih sposobnosti.
-3. [Infrastrukturni sloj](slojevi/3-infrastrukturni-sloj.md), koji sadrži repozitorijumske, konektorske i stručnjačke klase.
-4. [API sloj](slojevi/4-api-sloj.md), koji sadrži kontrolerske klase.
+Aplikacioni sloj u koracima 4 do 8 komande ne radi ništa sam. Svaki korak je poziv metode drugog sloja, a jedini kod koji mu pripada je redosled tih poziva.
 
 ## Zavisnosti između slojeva
 
 Zavisnost jednog sloja od drugog postoji kada klasa jednog sloja direktno koristi tip iz drugog sloja. To se u kodu vidi kroz tip polja, parametra, povratne vrednosti, implementiranog interfejsa ili objekta koji se kreira.
 
-Tok izvršavanja i smer zavisnosti nisu ista stvar. Tok izvršavanja prati redosled poziva tokom rada programa:
+Tok izvršavanja i smer zavisnosti nisu ista stvar. Tok izvršavanja komande prati redosled poziva:
 
 ```text
-SurveyResponseController
-    -> SurveyResponseService
+SurveyRespondingController
+    -> SurveyRespondingService
         -> SurveyResponseRepository
-            -> Skladište podataka
+            -> Baza podataka
 ```
 
-Aplikacioni servis tokom izvršavanja poziva infrastrukturni repozitorijum. Ipak, `SurveyResponseService` ne referencira klasu `SurveyResponseRepository`. On referencira interfejs `ISurveyResponseRepository` iz aplikacionog sloja.
+Komanda tokom izvršavanja poziva infrastrukturni repozitorijum. Ipak, `SurveyRespondingService` ne referencira klasu `SurveyResponseRepository`, već interfejs `ISurveyResponseRepository` iz aplikacionog sloja. Isto važi za jedinicu posla, repozitorijum za čitanje i generator izveštaja.
 
-Čista arhitektura je višeslojna arhitektura koja prati princip inverzije zavisnosti. Rezultat ove postavke je da:
+Čista arhitektura prati princip inverzije zavisnosti, iz čega sledi:
 - Domenski sloj ne zavisi ni od jednog drugog sloja.
-- Aplikacioni sloj zavisi isključivo od domenskog sloja jer direktno koristi njegove tipove.
-- Infrastrukturni sloj referencira domenski sloj jer referencira tipove agregata. Referencira i aplikacioni sloj čije interfejse tehničkih sposobnosti, uključujući interfejse repozitorijuma, implementira. Ovaj sloj dodatno referencira konkretne biblioteke, radne okvire i SDK pakete potrebne za tehnički rad. Te zavisnosti se zadržavaju u infrastrukturi.
-- API sloj zavisi isključivo od aplikacionog sloja, gde poziva metode servisa i radi sa DTO instancama. Kontroler koristi i tipove HTTP radnog okvira (ili biblioteke za drugi protokol) zato što adaptira protokol. Ti tipovi pripadaju API sloju i ne prelaze u aplikacioni ili domenski sloj.
+- Aplikacioni sloj zavisi isključivo od domenskog sloja, čije tipove direktno koristi. Sposobnosti koje mu trebaju opisuje interfejsima koje sam deklariše.
+- Infrastrukturni sloj referencira domenski sloj, jer radi sa tipovima agregata, i aplikacioni sloj, čije interfejse implementira. Uz njih referencira biblioteke i radne okvire potrebne za tehnički rad, koji ostaju u ovom sloju.
+- API sloj zavisi isključivo od aplikacionog sloja, čije metode poziva i sa čijim DTO strukturama radi. Tipove domenskog sloja može da vidi, jer ih aplikacioni sloj koristi, ali ih ne sme koristiti. Kontroler uz to koristi tipove HTTP radnog okvira, koji ne prelaze u druge slojeve.
 
-Kada se prethodno sabere sa vrstama klasa koje pronalazimo u svakom sloju, dobijamo prikaz elemenata i zavisnosti slojeva poput sledećeg:
+Sledeća slika prikazuje vrste klasa svakog sloja i zavisnosti između njih:
 
-![](https://luburic.github.io/ftn-tutor-images/images/ddd/clean-arch-gen-struct.png)
+![](5-čista-arhitektura.png)
 
-Slika ilustruje bitno opšte pravilo koje pronalazimo u čistoj arhitekturi, a to je da smer zavisnosti ide od spoljašnjih slojeva ka unutrašnjim, gde u centru pronalazimo domenski sloj, izvan njega aplikacioni, a izvan njega API i infrastrukturni sloj.
+Smer zavisnosti ide od spoljašnjih slojeva ka unutrašnjim. U centru je domenski sloj, oko njega aplikacioni, a oko njega API i infrastrukturni sloj. U našem projektu su slojevi razdvojeni u zasebne projekte, a svako od navedenih pravila proverava [arhitektonski test](../3-modularni-monolit/4-arhitektonski-testovi.md).
