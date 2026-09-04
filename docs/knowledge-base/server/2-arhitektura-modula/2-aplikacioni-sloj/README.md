@@ -2,7 +2,7 @@
 
 Domenski sloj zna domen problema, njegove koncepte i pravila, ali nijedan njegov objekat ne zna kada je stigao zahtev, odakle se agregat učitava niti šta se sa njim radi nakon promene. Neko mora da učita prave agregate, da ih pozove dobrim redosledom i da sačuva rezultat, sa ciljem ispunjenja slučaja korišćenja korisnika. Taj posao koordinacije koraka za ispunjenje slučaja korišćenja pripada aplikacionom sloju.
 
-**Aplikacioni servis** je klasa aplikacionog sloja čije javne metode koordinišu rad sa domenskim objektima, infrastrukturnim servisima i drugim modulima da se podrži slučaj korišćenja. Servis ne poseže u unutrašnjost agregata da bi sam tražio podatke ili menjao kolekcije i ne zna kako repozitorijum dolazi do podataka. U lekcijama ćemo videti da se aplikacioni servisi u kodu javljaju kao dve vrste klasa, komandne i upitne.
+**Aplikacioni servis** je klasa aplikacionog sloja čije javne metode koordinišu rad sa domenskim objektima, infrastrukturnim servisima i drugim modulima da se podrži slučaj korišćenja. Servis ne poseže u unutrašnjost agregata da bi sam tražio podatke ili menjao kolekcije i ne zna kako repozitorijum dolazi do podataka. Zna samo kom objektu treba da se obrati i u kom redosledu. U lekcijama ćemo videti da se aplikacioni servisi u kodu javljaju kao dve vrste klasa, komandne i upitne.
 
 Tri lekcije ovog direktorijuma redom obrađuju pravilo po kom oblikujemo metode servisa, kako to pravilo izgleda u kodu i kako podaci prelaze granicu sloja.
 

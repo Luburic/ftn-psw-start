@@ -9,11 +9,11 @@ Modul Ankete definiše kontrakt kroz koji drugi moduli saznaju koje je ankete is
 ```cs
 public interface ISurveyApi
 {
-  List<CompletedSurveyDto> GetCompletedSurveys(long userId);
+  List<CompletedSurveyDto> GetCompletedSurveys(Guid userId);
 }
 
 public sealed record CompletedSurveyDto(
-  long SurveyId, string Title, DateTime CompletedAt);
+  Guid SurveyId, string Title, DateTime CompletedAt);
 ```
 
 U datom kodu treba uočiti sledeće.

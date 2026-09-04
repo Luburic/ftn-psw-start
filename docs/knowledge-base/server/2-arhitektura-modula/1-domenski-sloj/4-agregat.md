@@ -20,7 +20,7 @@ Sledeći kod prikazuje agregat ankete, koji se sastoji od jednog glavnog entitet
 ```cs
 public sealed class Survey
 {
-  public long Id { get; }
+  public Guid Id { get; }
   public string Title { get; private set; }
   public SurveyStatus Status { get; private set; }
 
@@ -44,7 +44,7 @@ public sealed class Survey
     _questions.Add(new Question(text));
   }
 
-  public void RemoveQuestion(long questionId)
+  public void RemoveQuestion(Guid questionId)
   {
     if (Status != SurveyStatus.Draft)
       throw new DomainException("Pitanja se mogu uklanjati samo dok je anketa u pripremi.");
@@ -62,7 +62,7 @@ public sealed class Survey
     Status = SurveyStatus.Published;
   }
 
-  public void ArchiveQuestion(long questionId)
+  public void ArchiveQuestion(Guid questionId)
   {
     var question = _questions.SingleOrDefault(q => q.Id == questionId)
       ?? throw new DomainException("Pitanje ne postoji u anketi.");
@@ -93,7 +93,7 @@ public enum SurveyStatus
 
 public sealed class Question
 {
-  public long Id { get; }
+  public Guid Id { get; }
   public string Text { get; private set; }
   public bool IsArchived { get; private set; }
 
@@ -122,7 +122,7 @@ U implementaciji, agregat je skup klasa u kojem koren drži reference na unutra�
 ```cs
 public sealed class Survey
 {
-  public long Id { get; }
+  public Guid Id { get; }
   public string Title { get; private set; }
   public SurveyStatus Status { get; private set; }
 
@@ -134,7 +134,7 @@ public sealed class Survey
 
 public sealed class Question
 {
-  public long Id { get; }
+  public Guid Id { get; }
   public string Text { get; private set; }
   public bool IsArchived { get; private set; }
 
@@ -182,8 +182,8 @@ U implementaciji, veze ka tuđem agregatu su obična svojstva čiji je tip jedna
 ```cs
 public sealed class SurveyResponse
 {
-  public long Id { get; }
-  public long SurveyId { get; }
+  public Guid Id { get; }
+  public Guid SurveyId { get; }
 
   private readonly List<Answer> _answers = new();
   public IReadOnlyList<Answer> Answers => _answers.AsReadOnly();
@@ -202,10 +202,10 @@ public sealed class Survey
 
 public sealed record Answer
 {
-  public long QuestionId { get; }
+  public Guid QuestionId { get; }
   public string Value { get; }
 
-  public Answer(long questionId, string value)
+  public Answer(Guid questionId, string value)
   {
     if (string.IsNullOrWhiteSpace(value))
       throw new DomainException("Odgovor mora sadržati izabranu opciju.");
@@ -245,10 +245,10 @@ U implementaciji, klasa korena objedinjuje identifikator, sopstvena svojstva i r
 public sealed class Invoice
 {
   // Identifikator agregata
-  public long Id { get; }
+  public Guid Id { get; }
 
   // Sopstvena svojstva korena
-  public long CustomerId { get; }
+  public Guid CustomerId { get; }
   public InvoiceStatus Status { get; private set; }
   public DateOnly? IssuedOn { get; private set; }
 
@@ -260,7 +260,7 @@ public sealed class Invoice
 
 public sealed class InvoiceLine
 {
-  public long Id { get; }
+  public Guid Id { get; }
   public string Description { get; private set; }
   public int Quantity { get; private set; }
   public decimal UnitPrice { get; private set; }
@@ -314,10 +314,10 @@ public sealed class Invoice
     if (Status != InvoiceStatus.Draft)
       throw new DomainException("Stavke se mogu dodavati samo dok je faktura u pripremi.");
 
-    _lines.Add(new InvoiceLine(NextLineId(), description, quantity, unitPrice));
+    _lines.Add(new InvoiceLine(description, quantity, unitPrice));
   }
 
-  public void ChangeLineQuantity(long lineId, int quantity)
+  public void ChangeLineQuantity(Guid lineId, int quantity)
   {
     if (Status != InvoiceStatus.Draft)
       throw new DomainException("Stavke se mogu menjati samo dok je faktura u pripremi.");
@@ -338,9 +338,6 @@ public sealed class Invoice
     Status = InvoiceStatus.Issued;
     IssuedOn = today;
   }
-
-  private long NextLineId() =>
-    _lines.Count == 0 ? 1 : _lines.Max(line => line.Id) + 1;
 }
 
 public sealed class InvoiceLine

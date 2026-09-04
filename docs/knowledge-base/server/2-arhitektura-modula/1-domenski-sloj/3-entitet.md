@@ -15,7 +15,7 @@ Na primer, u domenu zauzeća prostorija, rezervacija se kreira, potom potvrđuje
 ```cs
 public sealed class Reservation
 {
-  public long Id { get; }
+  public Guid Id { get; }
   public DateRange Period { get; }
   public ReservationStatus Status { get; private set; }
  
@@ -38,19 +38,28 @@ Rezervacija nastaje u stanju `Pending`, može preći u `Confirmed` ili `Cancelle
  
 Entitet poseduje nepromenljiv identifikator, dodeljen pri kreiranju, koji se nikada ne menja. Dva entiteta istog tipa su jednaka ako imaju jednak identifikator, bez obzira na to da li im se trenutno stanje razlikuje. Ovo je suštinska razlika u odnosu na vrednosni objekat, gde je jednakost zasnovana na vrednostima svih svojstava.
  
-Na primer, rezervacija sa `Id` 482 ostaje ista rezervacija bez obzira na to da li joj se status promeni iz `Pending` u `Confirmed`.
+Na primer, rezervacija sa datim identifikatorom ostaje ista rezervacija bez obzira na to da li joj se status promeni iz `Pending` u `Confirmed`.
+
+Identifikator dodeljuje konstruktor entiteta, a ne skladište podataka. Zbog toga je identifikator tipa `Guid`. Globalno jedinstvena vrednost se generiše u memoriji, pozivom `Guid.NewGuid()`, dok bi celobrojni identifikator morao da dodeli sistem koji zna sve do tada dodeljene vrednosti. Entitet tako ima identifikator od trenutka konstrukcije, pa ga pozivalac može koristiti i pre nego što entitet bude sačuvan.
  
 <hr></hr>
 <details>
 <summary><b>Klikni da analiziraš jednakost Reservation klase po identifikatoru</b></summary>
 
-U implementaciji klasa entiteta implementira `GetHashCode` i `Equals` metode iz `object` klase, gde se jednakost određuje isključivo spram identifikatora:
+U implementaciji konstruktor entiteta dodeljuje identifikator, a klasa implementira `GetHashCode` i `Equals` metode iz `object` klase, gde se jednakost određuje isključivo spram identifikatora:
 
 ```cs
 public sealed class Reservation
 {
-  public long Id { get; }
+  public Guid Id { get; }
   // ... ostala svojstva
+
+  public Reservation(DateRange period)
+  {
+    Id = Guid.NewGuid();
+    Period = period;
+    Status = ReservationStatus.Pending;
+  }
  
   public override bool Equals(object? obj)
   {
@@ -97,7 +106,7 @@ Sledeći kod proširuje `Reservation` klasu tako da ilustruje sva tri slučaja:
 ```cs
 public sealed class Reservation
 {
-  public long Id { get; }
+  public Guid Id { get; }
   public DateRange Period { get; }
   public ReservationStatus Status { get; private set; }
   public DateOnly? ConfirmedOn { get; private set; }

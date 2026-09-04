@@ -45,7 +45,7 @@ Ovakvu klasu bismo onda mogli da iskoristimo kao svojstvo druge klase, u kodu po
 ```cs
 public class Shipment
 {
-  public long Id { get; private set; }
+  public Guid Id { get; private set; }
   public Address DeliveryAddress { get; private set; }
   // Ostala svojstva i metode
 }

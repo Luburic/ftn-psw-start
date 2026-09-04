@@ -29,7 +29,7 @@ Application/
 
 U datoj strukturi vidimo četiri klase aplikacionog servisa, gde svaka ima jasnu odgovornost:
 
-- `SurveyAuthoringService` je komandna klasa autorske grupe. Njene komande prave anketu, dodaju i arhiviraju pitanja i objavljuju anketu.
+- `SurveyAuthoringService` je komandna klasa autorske grupe. Njene komande prave anketu, dodaju i arhiviraju pitanja, objavljuju i zatvaraju anketu.
 - `SurveyRespondingService` je komandna klasa ispitaničke grupe. Njene komande započinju odgovor, evidentiraju odgovor na pitanje i predaju ceo odgovor.
 - `SurveyRespondingQueries` je upitna klasa ispitaničke grupe. Njen upit vraća odgovor ispitanika na anketu, sa dosadašnjim odgovorima na pitanja.
 - `SurveyBrowsingQueries` je upitna klasa pregledne grupe. Njeni upiti vraćaju spisak objavljenih anketa i rezultate jedne ankete.
@@ -60,7 +60,7 @@ public sealed class SurveyRespondingService
     _unitOfWork = unitOfWork;
   }
 
-  public async Task SubmitAnswerAsync(long responseId, AnswerDto answerDto)
+  public async Task SubmitAnswerAsync(Guid responseId, AnswerDto answerDto)
   {
     var surveyResponse = await _surveyResponseRepository.GetByIdAsync(responseId)
       ?? throw new NotFoundException("Odgovor na anketu ne postoji.");
@@ -105,7 +105,7 @@ public sealed class SurveyBrowsingQueries
 }
 ```
 
-Implementaciju repozitorijuma za čitanje obrađuje [lekcija o repozitorijumima](../3-infrastrukturni-sloj/3-repozitorijumi-i-jedinica-posla.md).
+Implementaciju repozitorijuma za čitanje obrađuje [lekcija o repozitorijumima](../3-infrastrukturni-sloj/4-repozitorijumi.md).
 
 ## Slučaj 3: upit koji koristi agregat
 
@@ -121,7 +121,7 @@ public sealed class SurveyBrowsingQueries
 
   // Konstruktor i metoda GetPublishedAsync
 
-  public async Task<SurveyResultsDto> GetResultsAsync(long surveyId)
+  public async Task<SurveyResultsDto> GetResultsAsync(Guid surveyId)
   {
     var survey = await _surveyRepository.GetByIdAsync(surveyId)
       ?? throw new NotFoundException("Anketa ne postoji.");

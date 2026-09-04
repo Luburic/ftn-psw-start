@@ -9,7 +9,7 @@ Za domenski sloj, gradivni elementi su bazne klase domenskih objekata i zajedniÄ
 ```cs
 public abstract class Entity
 {
-  public long Id { get; }
+  public Guid Id { get; }
   // PoreÄ‘enje dva entiteta po identifikatoru
 }
 

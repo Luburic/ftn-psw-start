@@ -33,9 +33,9 @@ public sealed class SurveyResponseController : ControllerBase
     _surveyResponseService = surveyResponseService;
   }
 
-  [HttpPost("{responseId:long}")]
+  [HttpPost("{responseId:guid}")]
   public ActionResult<SubmitAnswerResultDto> SubmitAnswer(
-    long responseId, [FromBody] AnswerDto answerDto)
+    Guid responseId, [FromBody] AnswerDto answerDto)
   {
     try
     {

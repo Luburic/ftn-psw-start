@@ -12,7 +12,7 @@ Pravilo garantuje tri stvari:
 Posmatrajmo metodu koju bismo bez ovog pravila prirodno napisali. Ispitanik otvara anketu i treba mu njegov odgovor na tu anketu, sa dosadašnjim odgovorima na pitanja. Ako odgovor još ne postoji, jer ispitanik prvi put otvara anketu, metoda ga pravi:
 
 ```cs
-public async Task<SurveyResponseDto> GetResponseAsync(long surveyId, long userId)
+public async Task<SurveyResponseDto> GetResponseAsync(Guid surveyId, Guid userId)
 {
   var surveyResponse = await _surveyResponseRepository.GetBySurveyAndUserAsync(surveyId, userId);
   if (surveyResponse is null)
@@ -35,9 +35,9 @@ U datom kodu treba uočiti sledeće:
 Pravilo razdvajanja nalaže da se metoda podeli na dve:
 
 ```cs
-public Task<long> StartResponseAsync(long surveyId, long userId);
+public Task<Guid> StartResponseAsync(Guid surveyId, Guid userId);
 
-public Task<SurveyResponseDto?> GetResponseAsync(long surveyId, long userId);
+public Task<SurveyResponseDto?> GetResponseAsync(Guid surveyId, Guid userId);
 ```
 
 Komanda `StartResponseAsync` pravi odgovor i vraća samo njegov identifikator. Upit `GetResponseAsync` vraća odgovor ako postoji, a `null` ako ne postoji, i ne pravi ništa. Odluka da se odgovor započne sada pripada klijentu, koji komandu poziva kada ispitanik izabere da započne anketu, a upit svaki put kada nešto prikazuje.
@@ -48,7 +48,7 @@ Isto pravilo važi i u drugom smeru. Komanda koja evidentira odgovor na pitanje 
 
 Pravilo razdvajanja ne govori gde metode žive. Komande i upiti mogu da stoje u istoj klasi, u dve odvojene klase, ili svaka metoda u sopstvenoj klasi. U našem projektu se držimo pristupa da aplikacioni servis sadrži samo komande za grupu slučajeva korišćenja (ove klase imaju sufiks `Service`) ili samo upite (sufiks `Queries`).
 
-Ove klase kroz konstruktor primaju tri vrste interfejsa. **Repozitorijum agregata** je interfejs čije metode učitavaju i dodaju cele agregate, jer spoljni kod samo kroz koren agregata sme da menja njegovo stanje. **Jedinica posla** (engl. *unit of work*) je interfejs čija metoda `SaveChangesAsync` upisuje u skladište sve izmene agregata učitanih tokom obrade jednog zahteva, u jednoj transakciji. **Repozitorijum za čitanje** (engl. *read repository*) je interfejs čije metode vraćaju DTO strukture spremne za prikaz, bez učitavanja agregata. Sva tri su deklarisana u aplikacionom sloju, a implementirana u infrastrukturnom, kao i svaki drugi interfejs tehničke sposobnosti ([Repozitorijumi i jedinica posla](../3-infrastrukturni-sloj/3-repozitorijumi-i-jedinica-posla.md)).
+Ove klase kroz konstruktor primaju tri vrste interfejsa. **Repozitorijum agregata** je interfejs čije metode učitavaju i dodaju cele agregate, jer spoljni kod samo kroz koren agregata sme da menja njegovo stanje. **Jedinica posla** (engl. *unit of work*) je interfejs čija metoda `SaveChangesAsync` upisuje u skladište sve izmene agregata učitanih tokom obrade jednog zahteva, u jednoj transakciji. **Repozitorijum za čitanje** (engl. *read repository*) je interfejs čije metode vraćaju DTO strukture spremne za prikaz, bez učitavanja agregata. Sva tri su deklarisana u aplikacionom sloju, a implementirana u infrastrukturnom, kao i svaki drugi interfejs tehničke sposobnosti ([Repozitorijumi](../3-infrastrukturni-sloj/4-repozitorijumi.md)).
 
 Sledeći kod prikazuje kostur dve klase ispitaničke grupe, gde su tela metoda izostavljena:
 
@@ -62,11 +62,11 @@ public sealed class SurveyRespondingService
   public SurveyRespondingService(ISurveyRepository surveyRepository,
     ISurveyResponseRepository surveyResponseRepository, IUnitOfWork unitOfWork) { ... }
 
-  public Task<long> StartResponseAsync(long surveyId, long userId) { ... }
+  public Task<Guid> StartResponseAsync(Guid surveyId, Guid userId) { ... }
 
-  public Task SubmitAnswerAsync(long responseId, AnswerDto answerDto) { ... }
+  public Task SubmitAnswerAsync(Guid responseId, AnswerDto answerDto) { ... }
 
-  public Task ConcludeResponseAsync(long responseId) { ... }
+  public Task ConcludeResponseAsync(Guid responseId) { ... }
 }
 
 public sealed class SurveyRespondingQueries
@@ -75,7 +75,7 @@ public sealed class SurveyRespondingQueries
 
   public SurveyRespondingQueries(ISurveyResponseReadRepository surveyResponseReadRepository) { ... }
 
-  public Task<SurveyResponseDto?> GetResponseAsync(long surveyId, long userId) { ... }
+  public Task<SurveyResponseDto?> GetResponseAsync(Guid surveyId, Guid userId) { ... }
 }
 ```
 
@@ -85,15 +85,40 @@ U datom kodu treba uočiti sledeće:
 - Upitna klasa prima repozitorijum za čitanje. Ređe prima i repozitorijum agregata, kada upit učitava agregat da bi pozvao metodu koja izvodi domenski značajnu informaciju iz njegovog stanja. Kada se koji oblik upita piše obrađuje [lekcija o aplikacionom servisu](2-aplikacioni-servis.md).
 - Upitna klasa nikada ne prima jedinicu posla, što je sprečava da čuva izmene stanja.
 
+## Komanda nad više agregata
+
+Komanda često menja više agregata. Zatvaranjem ankete ispitanici koji su odgovor započeli, a nisu ga predali, gube mogućnost da ga predaju. Zato se svaki takav odgovor označava kao istekao. Sledeći kod prikazuje tu komandu:
+
+```cs
+public async Task CloseSurveyAsync(Guid surveyId)
+{
+  var survey = await _surveyRepository.GetByIdAsync(surveyId)
+    ?? throw new NotFoundException("Anketa ne postoji.");
+  var startedResponses = await _surveyResponseRepository.GetStartedBySurveyAsync(surveyId);
+
+  survey.Close();
+  foreach (var response in startedResponses)
+    response.Expire();
+
+  await _unitOfWork.SaveChangesAsync();
+}
+```
+
+U datom kodu treba uočiti sledeće:
+
+- Komanda menja `Survey` agregat i svaki započeti `SurveyResponse` agregat kroz metode njihovih korena. Pravilo da se zatvara samo objavljena anketa proverava metoda `Close`, a pravilo da ističe samo započet odgovor proverava metoda `Expire`.
+- Sve izmene čine jednu celinu, jer anketa sme da bude zatvorena samo ako su svi započeti odgovori istekli. Jedino komanda vidi tu celinu, pa jedino ona može da odredi kada se izmene upisuju. Zato ih upisuje jednim pozivom `SaveChangesAsync`, koji ili upiše sve ili ne upiše ništa.
+- Kako jedan poziv obuhvata agregate učitane kroz više repozitorijuma i šta bi se desilo kada bi svaki repozitorijum upisivao sam, obrađuje [lekcija o jedinici posla](../3-infrastrukturni-sloj/5-jedinica-posla.md).
+
 ## Put dva zahteva
 
 Povežimo pojmove praćenjem jedne komande i jednog upita, u redosledu u kom ih klijent poziva.
 
-1. Ispitanik otvara anketu i klijent šalje `GET /api/surveys/5/response`.
-2. Kontroler poziva `GetResponseAsync` na klasi `SurveyRespondingQueries`.
+1. Ispitanik otvara anketu i klijent šalje `GET /api/surveys/{id}/response`.
+2. Kontroler poziva metodu `GetResponseAsync` klase `SurveyRespondingQueries`.
 3. Upit prosleđuje poziv repozitorijumu za čitanje, koji vraća `null`, jer odgovor ne postoji. Nijedan agregat nije učitan i ništa nije sačuvano. Klijent prikazuje dugme za započinjanje ankete.
-4. Ispitanik započinje anketu i klijent šalje `POST /api/surveys/5/response`.
-5. Kontroler poziva `StartResponseAsync` na klasi `SurveyRespondingService`.
+4. Ispitanik započinje anketu i klijent šalje `POST /api/surveys/{id}/response`.
+5. Kontroler poziva metodu `StartResponseAsync` klase `SurveyRespondingService`.
 6. Komanda kroz repozitorijum učitava `Survey` agregat i pita ga da li se na anketu trenutno može odgovarati. Zatim pravi `SurveyResponse` agregat i dodaje ga u repozitorijum.
 7. Komanda jednom poziva `SaveChangesAsync` na jedinici posla i vraća identifikator novog odgovora.
-8. Klijent ponovo šalje `GET /api/surveys/5/response` i ovaj put upit vraća započet odgovor.
+8. Klijent ponovo šalje `GET /api/surveys/{id}/response` i ovaj put upit vraća započet odgovor.

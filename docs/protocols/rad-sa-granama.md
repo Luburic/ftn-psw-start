@@ -21,7 +21,7 @@ git fetch origin
 git merge origin/main
 ```
 
-Time konflikte rešavate dok su mali i dok pamtite kontekst. Ako spajanje prijavi konflikt na snapshot datoteci migracija, prekinite ga i pratite protokol [Migracije: rešavanje konflikata](migracije-resavanje-konflikata.md) — taj konflikt se ne rešava ručnim spajanjem.
+Time konflikte rešavate dok su mali i dok pamtite kontekst. Ako spajanje prijavi konflikt na datoteci snimka modela migracija, prekinite ga i pratite protokol [Migracije: rešavanje konflikata](migracije-resavanje-konflikata.md) — taj konflikt se ne rešava ručnim spajanjem.
 
 ## Pre otvaranja pull request-a
 

@@ -8,7 +8,6 @@ Jedna linija po dokumentu: putanja, opis i preduslovi (dokumenti koje čitalac t
 - `server/kontroleri.md` — Kontroleri i akcije: rutiranje, vezivanje parametara, formiranje odgovora i middleware. Preduslovi: `server/aspnet.md`.
 - `server/registracija-zavisnosti.md` — Kontejner zavisnosti: kako pravi objekte, životni vekovi i oblici registracije. Preduslovi: `server/aspnet.md`.
 - `server/asinhrono-programiranje.md` — Asinhrone operacije i async/await na klijentu i serveru. Preduslovi: nema.
-- `server/orm.md` — Objektno-relaciono mapiranje i Entity Framework naspram ručnog ADO.NET koda. Preduslovi: nema.
 - `server/maperi.md` — Maper i profil mapera (AutoMapper): prevođenje između domenskih objekata i DTO struktura. Preduslovi: `server/arhitektura/slojevi/2-aplikacioni-sloj.md`.
 
 ## Arhitektura
@@ -17,7 +16,11 @@ Jedna linija po dokumentu: putanja, opis i preduslovi (dokumenti koje čitalac t
 - `server/arhitektura/čista-arhitektura.md` — Čista arhitektura: primer kroz sve slojeve, četiri odgovornosti i smer zavisnosti između slojeva. Preduslovi: `server/arhitektura/ddd/4-agregat.md`.
 - `server/arhitektura/slojevi/1-domenski-sloj.md` — Domenski sloj: agregati i domenski servisi kao klase sloja. Preduslovi: `server/arhitektura/čista-arhitektura.md`, `server/arhitektura/ddd/4-agregat.md`.
 - `server/arhitektura/slojevi/2-aplikacioni-sloj.md` — Aplikacioni sloj: aplikacioni servisi, DTO strukture, interfejsi tehničkih sposobnosti, komande i upiti. Preduslovi: `server/arhitektura/čista-arhitektura.md`, `server/arhitektura/slojevi/1-domenski-sloj.md`.
-- `server/arhitektura/slojevi/3-infrastrukturni-sloj.md` — Infrastrukturni sloj: repozitorijumske, konektorske i stručnjačke klase. Preduslovi: `server/arhitektura/slojevi/2-aplikacioni-sloj.md`.
+- `server/2-arhitektura-modula/3-infrastrukturni-sloj/1-orm.md` — Objektno-relaciono mapiranje i Entity Framework Core naspram ručnog ADO.NET koda. Preduslovi: nema.
+- `server/2-arhitektura-modula/3-infrastrukturni-sloj/2-efc-kontekst-i-model.md` — Kontekstna klasa i model mapiranja: konvencije, konfiguracija za unutrašnje entitete, vrednosne objekte i identifikatore, rehidracija. Preduslovi: `1-orm.md`, `server/arhitektura/ddd/4-agregat.md`.
+- `server/2-arhitektura-modula/3-infrastrukturni-sloj/3-migracije.md` — Migracije: generisanje iz razlike prema snimku modela, primena pri pokretanju aplikacije, početni podaci. Preduslovi: `2-efc-kontekst-i-model.md`.
+- `server/2-arhitektura-modula/3-infrastrukturni-sloj/4-repozitorijumi.md` — Repozitorijum agregata, učitavanje povezanih objekata, praćenje promena i repozitorijum za čitanje. Preduslovi: `2-efc-kontekst-i-model.md`, `server/arhitektura/komande-i-upiti.md`.
+- `server/2-arhitektura-modula/3-infrastrukturni-sloj/5-jedinica-posla.md` — Jedinica posla: kontekst kao jedinica posla, repozitorijum bez čuvanja, put jedne komande. Preduslovi: `4-repozitorijumi.md`.
 - `server/arhitektura/slojevi/4-api-sloj.md` — API sloj: kontrolerske klase kao adapteri protokola. Preduslovi: `server/arhitektura/slojevi/2-aplikacioni-sloj.md`, `server/kontroleri.md`.
 - `server/arhitektura/komande-i-upiti.md` — Oblikovanje komandi i upita: tri slučaja i postupak odlučivanja za nov zahtev. Preduslovi: `server/arhitektura/slojevi/2-aplikacioni-sloj.md`, `server/arhitektura/slojevi/3-infrastrukturni-sloj.md`.
 - `server/arhitektura/kontrakti.md` — Kontrakt kao javna površina modula prema drugim modulima: interfejs i minimalne DTO strukture. Preduslovi: `server/arhitektura/modularni-monolit.md`, `server/arhitektura/slojevi/2-aplikacioni-sloj.md`.

@@ -1,51 +1,17 @@
-**Infrastrukturni sloj implementira tehničke sposobnosti softvera.**
+# Infrastrukturni sloj
 
-Infrastrukturni sloj sadrži konkretan kod koji radi sa bazom podataka, udaljenim API-jima, datotekama, bibliotekama i radnim okvirima. Njegove klase realizuju tehnički deo operacija koje je aplikacioni sloj opisao kroz interfejse.
+Aplikacioni sloj je deklarisao interfejse tehničkih sposobnosti koje slučaj korišćenja zahteva, ali nijedan od njih nije implementirao. Repozitorijum agregata obećava cele agregate, repozitorijum za čitanje DTO strukture, a jedinica posla upis svih izmena odjednom. Klase koje ta obećanja ispunjavaju konkretnom tehnologijom čine **infrastrukturni sloj**.
 
-U posmatranom primeru ([Čista arhitektura](../čista-arhitektura.md)) infrastrukturne klase učitavaju `Survey` i `SurveyResponse` agregate i čuvaju promenjeni `SurveyResponse`.
+Klase infrastrukturnog sloja poznaju bazu podataka, biblioteke, radne okvire i spoljašnje sisteme. Repozitorijumske klase rade sa skladištem podataka, koje je u našem projektu PostgreSQL baza podataka, pa lekcije ovog direktorijuma govore o bazi tamo gde aplikacioni sloj govori o skladištu. Konektorske klase komuniciraju sa drugim aplikacijama, a stručnjačke klase obavljaju lokalan tehnički posao pomoću biblioteke. Sve tri vrste implementiraju interfejs koji je aplikacioni sloj deklarisao prema potrebama slučaja korišćenja, a sve tehničke zavisnosti ostaju u ovom sloju. Konektorske i stručnjačke klase obrađuje TODO (lekcija o ostalim infrastrukturnim servisima).
 
-### 1. Repozitorijumske klase
+Lekcije ovog direktorijuma obrađuju repozitorijumske klase, jer svaki modul radi sa bazom podataka, i to kroz objektno-relacioni maper Entity Framework Core. Lekcije definišu pojmove koji važe za svaki maper i pokazuju kako ih Entity Framework Core realizuje.
 
-**Infrastrukturni sloj sadrži repozitorijumske klase koje učitavaju i čuvaju agregate koristeći konkretan sistem za skladištenje podataka.**
+## Mapa direktorijuma
 
-Repozitorijumska klasa poznaje konkretan sistem za skladištenje podataka. Ona zna kako se podaci čitaju, kako se od njih rekonstruiše agregat i kako se stanje agregata čuva. Repozitorijum učitava agregat kao celinu potrebnu za izvršavanje njegovih pravila. `SurveyRepository` zato učitava pitanja i opcije potrebne metodi `CanAccept`. `SurveyResponseRepository` učitava postojeće odgovore i status potreban metodi `Record`.
+1. [Objektno-relaciono mapiranje](1-orm.md) - Koliko koda traži rad sa bazom kroz ADO.NET i šta objektno-relacioni maper od tog posla preuzima. Preduslov je za sve naredne lekcije.
+2. [Kontekst i model mapiranja](2-efc-kontekst-i-model.md) - Odakle maper zna kako klase izgledaju u bazi. Kontekstna klasa, konvencije, konfiguracija za mesta na kojima konvencije greše i rehidracija objekata mimo javnog konstruktora.
+3. [Migracije](3-migracije.md) - Kako baza prati izmene modela. Generisanje migracije iz razlike prema snimku modela, primena pri pokretanju aplikacije i početni podaci kroz domenske konstruktore. Procedura za svakodnevni rad je u protokolu o migracijama.
+4. [Repozitorijumi](4-repozitorijumi.md) - Repozitorijum agregata koji učitava agregat u celini, praćenje promena kojim kontekst sam sastavlja naredbe za upis i repozitorijum za čitanje koji projektuje podatke pravo u DTO strukturu.
+5. [Jedinica posla](5-jedinica-posla.md) - Zašto repozitorijum ne sme sam da čuva, kako kontekst već jeste jedinica posla i kako se repozitorijum zbog toga skraćuje na učitavanje i dodavanje. Zaokružuje direktorijum praćenjem jedne komande kroz sve uvedene pojmove.
 
-Pored repozitorijuma koji učitavaju i čuvaju agregate, infrastrukturni sloj sadrži i repozitorijume za čitanje. Repozitorijum za čitanje implementira interfejs poput `ISurveyReadRepository` tako što podatke projektuje pravo u DTO strukture, bez rekonstrukcije agregata. Ovi repozitorijumi služe upitima aplikacionog sloja ([Komande i upiti](../komande-i-upiti.md)).
-
-### 2. Konektorske klase
-
-**Infrastrukturni sloj sadrži konektorske klase koje interaguju sa API-jem drugih aplikacija.**
-
-Konektorska klasa implementira tehničku sposobnost kroz komunikaciju sa udaljenim softverom. Ona poznaje protokol, adresu, autentifikaciju i format podataka drugog sistema. Tako možemo pronaći konektorske klase za:
-- HTTP komunikaciju, gde klasa šalje HTTP zahteve eksternom API-ju i prihvata HTTP odgovor.
-- SMTP komunikaciju, gde klasa šalje email.
-- FTP komunikaciju, gde klasa pakuje podatke u datoteke i šalje ih na udaljeni sistem.
-
-Konektorske klase implementiraju interfejse aplikacionog sloja koje definišu ovu tehničku sposobnost.
-
-### 3. Klasa lokalne tehničke sposobnosti
-
-**Infrastrukturni sloj sadrži stručnjačke klase koje nude lokalnu tehničku sposobnost kroz rad sa bibliotekom ili radnim okvirom.**
-
-Stručnjačka klasa koristi tehničko znanje biblioteke, radnog okvira ili mogućnosti lokalnog sistema. Ona ne mora da komunicira sa drugom aplikacijom. Na primer, `ISurveyReporter` može da definiše tehničku sposobnost za generisanje izveštaja, što može da bude realizovan klasom koja koristi biblioteku za formiranje PDF dokumenta:
-
-```cs
-public sealed class PdfSurveyReporter : ISurveyReporter
-{
-  public string Generate(Survey survey, List<SurveyResponse> response)
-  {
-    // Obradi podatke koji stižu kao argumenti poziva metode.
-    // Upotrebi biblioteku za generisanje PDF datoteke.
-    // Sačuvaj PDF i vrati putanju do njega.
-  }
-}
-```
-
-Dodatni primeri stručnjačkih klasa su:
-
-- klasa koja šifruje osetljive odgovore,
-- klasa koja kompresuje izvezene datoteke,
-- klasa koja čita podatke iz Excel dokumenta i
-- klasa koja generiše slučajne identifikatore.
-
-Aplikacioni sloj definiše interfejs prema potrebama slučaja korišćenja. Klasa koja implementira interfejs bira i koristi konkretan tehnički mehanizam.
+Nakon ovog direktorijuma čitalac zna kako se agregat upisuje u bazu i učitava iz nje, kako se šema baze menja tokom razvoja i zašto komanda upisuje sve izmene jednim pozivom. Preostaje [API sloj](../4-api-sloj.md), koji zahtev spoljašnjeg sveta prevodi u poziv aplikacionog sloja.

@@ -9,9 +9,9 @@ U svakom dosadašnjem primeru je granicu aplikacionog sloja prešao podatak koji
 **Ulazna DTO struktura** je parametar komande ili upita i nosi podatke koje je klijent poslao. **Izlazna DTO struktura** je povratna vrednost upita i nosi tačno one podatke koje klijent prikazuje. Sledeći kod prikazuje primer od oba:
 
 ```cs
-public sealed record AnswerDto(long QuestionId, string Value);
+public sealed record AnswerDto(Guid QuestionId, string Value);
 
-public sealed record SurveySummaryDto(long Id, string Title, int QuestionCount);
+public sealed record SurveySummaryDto(Guid Id, string Title, int QuestionCount);
 ```
 
 U datom kodu treba uočiti sledeće:
@@ -24,7 +24,7 @@ U datom kodu treba uočiti sledeće:
 
 Ulazna struktura se u domenski objekat prevodi isključivo pozivom konstruktora, kao u komandi `SubmitAnswerAsync`, jer konstruktor jedini garantuje ispravnost. Izlazna struktura se popunjava na jedan od dva načina, u zavisnosti od toga da li domenski objekat postoji u memoriji:
 
-1. Kada upit ne učitava agregat, struktura se popunjava projekcijom pravo iz skladišta. Ovo je čist upit, a projekciju obrađuje [lekcija o repozitorijumima](../3-infrastrukturni-sloj/3-repozitorijumi-i-jedinica-posla.md).
+1. Kada upit ne učitava agregat, struktura se popunjava projekcijom pravo iz skladišta. Ovo je čist upit, a projekciju obrađuje [lekcija o repozitorijumima](../3-infrastrukturni-sloj/4-repozitorijumi.md).
 2. Kada je domenski objekat već u memoriji, struktura se popunjava prevođenjem tog objekta. Ovo je slučaj upita koji koristi agregat, gde je domenski servis vratio objekat `SurveyResults`.
 
 Za drugi način je potreban kod koji čita svojstva domenskog objekta i upisuje ih u istoimena svojstva DTO strukture:
@@ -57,7 +57,7 @@ public sealed class SurveyMapperProfile : Profile
 Upit tada kroz konstruktor prima interfejs `IMapper` i poziva njegovu metodu `Map`:
 
 ```cs
-public async Task<SurveyResultsDto> GetResultsAsync(long surveyId)
+public async Task<SurveyResultsDto> GetResultsAsync(Guid surveyId)
 {
   var survey = await _surveyRepository.GetByIdAsync(surveyId)
     ?? throw new NotFoundException("Anketa ne postoji.");

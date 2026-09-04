@@ -1,8 +1,6 @@
-> **Tip: lekcija.** Primeri u dokumentu su pojednostavljeni radi učenja koncepta i ne prate konvencije projekta do kraja.
+Do sada ste se upoznali sa ADO.NET bibliotekom, koju ste koristili za rad sa bazom podataka. Pisali smo repozitorijumske klase u kojima se nalazio sav kod koji je potreban za rad sa bazom podataka.
 
-Do sada ste se upoznali sa ADO.NET bibliotekom, koju ste koristili za rad sa bazom podataka. Pisali ste repozitorijumske klase u kojima se nalazio sav kod koji je potreban za rad sa bazom podataka.
-
-Podsetimo se primera jednog repozitorijuma koji koristi ADO.NET za upravljanje knjigama i obratite pažnju na poslove koje svaka metoda mora da reši.
+Podsetimo se primera jednog repozitorijuma koji koristi ADO.NET za upravljanje knjigama i svih poslova koje mora da reši.
 
 <hr></hr>
 <details>
@@ -229,7 +227,7 @@ Objektno-relacioni maperi automatizuju i sakrivaju značajan deo posla rada sa b
 - Za konkretan objekat se generiše i izvršava INSERT ili UPDATE naredba,
 - Pozivom funkcije za čitanje sadržaja tabele se generiše i izvršava SELECT naredba, gde se povratni string automatski parsira i pretvara u jedan ili više objekata.
 
-U našim projektima ćemo koristiti objektno-relacioni maper koji je najpoznatiji u C# svetu i zove se **Entity Framework Core** (EF). U nastavku je `BookDbRepository` klasa koja koristi EF umesto ADO.NET za rad sa podacima. Kod je dosta jednostavniji i kraći nego u prethodnom primeru.
+U našim projektima ćemo koristiti objektno-relacioni maper koji je najpoznatiji u .NET svetu i zove se **Entity Framework Core** (EF). U nastavku je `BookDbRepository` klasa koja koristi EF umesto ADO.NET za rad sa podacima. Kod je dosta jednostavniji i kraći nego u prethodnom primeru:
 
 ```csharp
 public class BookDbRepository
