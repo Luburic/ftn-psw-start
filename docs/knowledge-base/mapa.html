@@ -141,7 +141,6 @@ h1{font-size:18px;font-weight:600;margin:0 0 16px;letter-spacing:-.01em}
   margin-top:12px;font-size:12px;color:var(--text-secondary);
 }
 .legend .chip,.legend .tag,.legend .pr{margin:0 4px 0 0;padding:2px 8px;cursor:default}
-.legend .sample-node{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
 .title-node.node{
   display:inline-block;border:1px solid var(--border-strong);border-radius:6px;
   background:var(--surface-2);padding:3px 10px;
@@ -211,44 +210,43 @@ h1{font-size:18px;font-weight:600;margin:0 0 16px;letter-spacing:-.01em}
 <h1>Mapa znanja</h1>
 <div class="monolith">
     <div class="frame-title" style="margin:0 2px 10px">
-      <span class="box-title title-node" data-note="modularni-monolit">Modularan monolit</span>
-      <span class="tag" data-note="aspnet">ASP.NET radni okvir</span>
+      <span class="box-title title-node" data-note="modularni-monolit">Modularni monolit</span>
+      <span class="tag" data-note="aspnet-segment">ASP.NET Core radni okvir</span>
     </div>
     <div class="module">
       <div class="module-shadow"></div>
       <div class="frame-title" style="margin:0 2px 10px">
-        <span class="box-title">Feature modul <span class="box-sub">jedan od više</span></span>
-        <span class="pr" data-note="cista-arhitektura">prati Čistu arhitekturu</span>
+        <span class="box-title title-node" data-note="feature-modul">Feature modul <span class="box-sub">jedan od više</span></span>
+        <span class="pr" data-note="cista-arhitektura">prati čistu arhitekturu</span>
       </div>
-      <div class="layer"><div class="lname" data-note="api-sloj">Javni API sloj<span>API</span></div><div class="lbody"><span class="chip" data-note="kontroleri">Kontroler</span><span class="tag" data-note="aspnet">ASP.NET</span></div></div>
-      <div class="layer"><div class="lname" data-note="kontrakti">Interni API sloj<span>Contracts, vidljiv drugim modulima</span></div><div class="lbody"><span class="chip">Interfejs dostupan drugim modulima</span></div></div>
-      <div class="layer"><div class="lname" data-note="aplikacioni-sloj">Aplikacioni sloj<span>Application</span></div><div class="lbody"><span class="chip">Aplikacioni servis</span><span class="chip">DTO</span><span class="chip" data-note="maperi">Profil maperi</span><span class="chip">Interfejsi infrastrukturnih servisa</span><span class="pr" data-note="komande-i-upiti">CQS</span><span class="pr" data-note="asinhrono-programiranje">asinhrono programiranje</span></div></div>
-      <div class="layer"><div class="lname" data-note="domenski-sloj">Domenski sloj<span>Domain</span></div><div class="lbody"><span class="chip" data-note="entitet">Entiteti</span><span class="chip" data-note="agregat">Agregati</span><span class="chip" data-note="vrednosni-objekat">Vrednosni objekti</span><span class="chip" data-note="domenski-servis">Domenski servisi</span></div></div>
-      <div class="layer"><div class="lname" data-note="infrastrukturni-sloj">Infrastrukturni sloj<span>Infrastructure</span></div><div class="lbody"><span class="chip">Repozitorijumi</span><span class="chip">Konektor klase</span><span class="chip">Lokalni tehnički eksperti</span><span class="pr" data-note="orm">ORM</span><span class="tag" data-note="orm">Entity Framework</span></div></div>
-      <div class="layer"><div class="lname">Sloj testova<span>Tests</span></div><div class="lbody"><span class="pr">automatizovani testovi</span><span class="pr">kvalitet testova</span><span class="tag" data-note="xunit">xUnit</span></div></div>
+      <div class="layer"><div class="lname" data-note="api-sloj">API sloj<span>Api, vidljiv klijentskoj aplikaciji</span></div><div class="lbody"><span class="tag" data-note="aspnet">ASP.NET Core</span><span class="chip" data-note="kontroleri">Kontroleri</span></div></div>
+      <div class="layer"><div class="lname" data-note="kontrakti">Kontrakt<span>Contracts, vidljiv drugim modulima</span></div><div class="lbody"><span class="chip" data-note="kontrakti">Interfejs i DTO strukture za druge module</span></div></div>
+      <div class="layer"><div class="lname" data-note="aplikacioni-sloj">Aplikacioni sloj<span>Application</span></div><div class="lbody"><span class="pr" data-note="komande-i-upiti">komande i upiti</span><span class="chip" data-note="aplikacioni-servis">Aplikacioni servisi</span><span class="chip" data-note="dto-i-mapiranje">DTO strukture i maper</span><span class="chip">Interfejsi tehničkih sposobnosti</span><span class="pr" data-note="asinhrono-programiranje">asinhrono programiranje</span></div></div>
+      <div class="layer"><div class="lname" data-note="domenski-sloj">Domenski sloj<span>Domain</span></div><div class="lbody"><span class="pr" data-note="takticki-obrasci">taktički obrasci DDD</span><span class="chip" data-note="vrednosni-objekat">Vrednosni objekti</span><span class="chip" data-note="entitet">Entiteti</span><span class="chip" data-note="agregat">Agregati</span><span class="chip" data-note="domenski-servis">Domenski servisi</span></div></div>
+      <div class="layer"><div class="lname" data-note="infrastrukturni-sloj">Infrastrukturni sloj<span>Infrastructure</span></div><div class="lbody"><span class="pr" data-note="orm">ORM</span><span class="tag" data-note="efc-kontekst-i-model">Entity Framework Core</span><span class="chip" data-note="migracije">Migracije</span><span class="chip" data-note="repozitorijumi">Repozitorijumi</span><span class="chip" data-note="jedinica-posla">Jedinica posla</span><span class="chip" data-note="ostali-infrastrukturni-servisi">Konektorske klase</span><span class="chip" data-note="ostali-infrastrukturni-servisi">Lokalni tehnički stručnjaci</span></div></div>
+      <div class="layer"><div class="lname">Sloj testova<span>Tests</span></div><div class="lbody"><span class="tag" data-note="xunit">xUnit</span><span class="pr">automatski testovi</span><span class="pr">kvalitet testova</span></div></div>
     </div>
     <div class="top-row">
       <div class="top-box">
-        <div class="box-title">Kompozicioni koren</div>
-        <span class="box-sub">registracija zavisnosti</span>
-        <span class="chip" data-note="middleware">Middleware</span><span class="tag" data-note="registracija-zavisnosti">ASP.NET DI</span>
+        <div class="box-title title-node" data-note="glavna-aplikacija">Glavna aplikacija</div>
+        <span class="box-sub">Host, sastavlja module</span>
+        <span class="tag" data-note="registracija-zavisnosti">Kontejner zavisnosti</span><span class="chip" data-note="middleware">Middleware</span>
       </div>
       <div class="top-box">
         <div class="box-title title-node" data-note="gradivni-elementi">Gradivni elementi</div>
-        <span class="box-sub">shared</span>
+        <span class="box-sub">Shared, zajedničko jezgro</span>
       </div>
     </div>
 </div>
 <div class="frame">
   <div class="frame-title">
-    <span><span class="box-title title-node" data-note="arhitekturalni-testovi">Arhitekturalni testovi</span> <span class="box-sub">proveravaju granice i smer zavisnosti</span></span>
+    <span><span class="box-title title-node" data-note="arhitektonski-testovi">Arhitektonski testovi</span> <span class="box-sub">čuvaju granice slojeva i modula</span></span>
   </div>
 </div>
 <div class="legend">
-  <span class="chip">element</span>
+  <span class="chip">koncept</span>
   <span class="tag">tehnologija</span>
   <span class="pr">princip</span>
-  <span class="chip sample-node">čvor sa vezom</span>
 </div>
 </div>
 
@@ -266,30 +264,41 @@ h1{font-size:18px;font-weight:600;margin:0 0 16px;letter-spacing:-.01em}
 </div>
 <script>
 const RAW_BASE = 'https://raw.githubusercontent.com/Luburic/ftn-psw-start/main/docs/knowledge-base/';
+const BLOB_BASE = 'https://github.com/Luburic/ftn-psw-start/blob/main/docs/knowledge-base/';
 
 const NOTES = {
-  'aspnet':                  { title: 'ASP.NET',                 path: 'server/aspnet.md' },
-  'kontroleri':              { title: 'Kontroleri',              path: 'server/kontroleri.md' },
-  'middleware':              { title: 'Middleware',              path: 'server/kontroleri.md', section: 'middleware' },
-  'registracija-zavisnosti': { title: 'Registracija zavisnosti', path: 'server/registracija-zavisnosti.md' },
-  'komande-i-upiti':         { title: 'Komande i upiti',         path: 'server/arhitektura/komande-i-upiti.md' },
-  'asinhrono-programiranje': { title: 'Asinhrono programiranje', path: 'server/asinhrono-programiranje.md' },
-  'orm':                     { title: 'ORM',                     path: 'server/orm.md' },
-  'xunit':                   { title: 'xUnit',                   path: 'testovi/xunit.md' },
-  'modularni-monolit':       { title: 'Modularni monolit',       path: 'server/arhitektura/modularni-monolit.md' },
-  'cista-arhitektura':       { title: 'Čista arhitektura',       path: 'server/arhitektura/čista-arhitektura.md' },
-  'domenski-sloj':           { title: 'Domenski sloj',           path: 'server/arhitektura/slojevi/1-domenski-sloj.md' },
-  'aplikacioni-sloj':        { title: 'Aplikacioni sloj',        path: 'server/arhitektura/slojevi/2-aplikacioni-sloj.md' },
-  'infrastrukturni-sloj':    { title: 'Infrastrukturni sloj',    path: 'server/arhitektura/slojevi/3-infrastrukturni-sloj.md' },
-  'api-sloj':                { title: 'API sloj',                path: 'server/arhitektura/slojevi/4-api-sloj.md' },
-  'kontrakti':               { title: 'Kontrakti',               path: 'server/arhitektura/kontrakti.md' },
-  'vrednosni-objekat':       { title: 'Vrednosni objekat',       path: 'server/arhitektura/ddd/2-vrednosni-objekat.md' },
-  'entitet':                 { title: 'Entitet',                 path: 'server/arhitektura/ddd/3-entitet.md' },
-  'agregat':                 { title: 'Agregat',                 path: 'server/arhitektura/ddd/4-agregat.md' },
-  'domenski-servis':         { title: 'Domenski servis',         path: 'server/arhitektura/ddd/5-domenski-servis.md' },
-  'maperi':                  { title: 'Profil mapera',           path: 'server/maperi.md' },
-  'gradivni-elementi':       { title: 'Gradivni elementi',       path: 'server/arhitektura/gradivni-elementi.md' },
-  'arhitekturalni-testovi':  { title: 'Arhitektonski testovi',   path: 'server/arhitektura/arhitektonski-testovi.md' }
+  'aspnet-segment':          { title: 'ASP.NET Core',                     path: 'server/1-aspnet/README.md' },
+  'aspnet':                  { title: 'ASP.NET Core',                     path: 'server/1-aspnet/1-aspnet.md' },
+  'kontroleri':              { title: 'Kontroleri',                       path: 'server/1-aspnet/2-kontroleri.md' },
+  'middleware':              { title: 'Middleware',                       path: 'server/1-aspnet/2-kontroleri.md', section: 'middleware' },
+  'registracija-zavisnosti': { title: 'Registracija zavisnosti',          path: 'server/1-aspnet/3-registracija-zavisnosti.md' },
+  'asinhrono-programiranje': { title: 'Asinhrono programiranje',          path: 'server/1-aspnet/4-asinhrono-programiranje.md' },
+  'cista-arhitektura':       { title: 'Arhitektura modula',               path: 'server/2-arhitektura-modula/README.md' },
+  'domenski-sloj':           { title: 'Domenski sloj',                    path: 'server/2-arhitektura-modula/1-domenski-sloj/README.md' },
+  'takticki-obrasci':        { title: 'Taktički obrasci',                 path: 'server/2-arhitektura-modula/1-domenski-sloj/1-takticki-obrasci.md' },
+  'vrednosni-objekat':       { title: 'Vrednosni objekat',                path: 'server/2-arhitektura-modula/1-domenski-sloj/2-vrednosni-objekat.md' },
+  'entitet':                 { title: 'Entitet',                          path: 'server/2-arhitektura-modula/1-domenski-sloj/3-entitet.md' },
+  'agregat':                 { title: 'Agregat',                          path: 'server/2-arhitektura-modula/1-domenski-sloj/4-agregat.md' },
+  'domenski-servis':         { title: 'Domenski servis',                  path: 'server/2-arhitektura-modula/1-domenski-sloj/5-domenski-servis.md' },
+  'aplikacioni-sloj':        { title: 'Aplikacioni sloj',                 path: 'server/2-arhitektura-modula/2-aplikacioni-sloj/README.md' },
+  'komande-i-upiti':         { title: 'Komande i upiti',                  path: 'server/2-arhitektura-modula/2-aplikacioni-sloj/1-komande-i-upiti.md' },
+  'aplikacioni-servis':      { title: 'Aplikacioni servis',               path: 'server/2-arhitektura-modula/2-aplikacioni-sloj/2-aplikacioni-servis.md' },
+  'dto-i-mapiranje':         { title: 'DTO strukture i mapiranje',        path: 'server/2-arhitektura-modula/2-aplikacioni-sloj/3-dto-i-mapiranje.md' },
+  'infrastrukturni-sloj':    { title: 'Infrastrukturni sloj',             path: 'server/2-arhitektura-modula/3-infrastrukturni-sloj/README.md' },
+  'orm':                     { title: 'Objektno-relaciono mapiranje',     path: 'server/2-arhitektura-modula/3-infrastrukturni-sloj/1-orm.md' },
+  'efc-kontekst-i-model':    { title: 'Kontekst i model mapiranja',       path: 'server/2-arhitektura-modula/3-infrastrukturni-sloj/2-efc-kontekst-i-model.md' },
+  'migracije':               { title: 'Migracije',                        path: 'server/2-arhitektura-modula/3-infrastrukturni-sloj/3-migracije.md' },
+  'repozitorijumi':          { title: 'Repozitorijumi',                   path: 'server/2-arhitektura-modula/3-infrastrukturni-sloj/4-repozitorijumi.md' },
+  'jedinica-posla':          { title: 'Jedinica posla',                   path: 'server/2-arhitektura-modula/3-infrastrukturni-sloj/5-jedinica-posla.md' },
+  'ostali-infrastrukturni-servisi': { title: 'Ostali infrastrukturni servisi', path: 'server/2-arhitektura-modula/3-infrastrukturni-sloj/6-ostali-infrastrukturni-servisi.md' },
+  'api-sloj':                { title: 'API sloj',                         path: 'server/2-arhitektura-modula/4-api-sloj.md' },
+  'modularni-monolit':       { title: 'Modularni monolit',                path: 'server/3-modularni-monolit/README.md' },
+  'feature-modul':           { title: 'Feature modul',                    path: 'server/3-modularni-monolit/README.md', section: 'feature-modul' },
+  'glavna-aplikacija':       { title: 'Sastavljanje aplikacije',          path: 'server/3-modularni-monolit/README.md', section: 'sastavljanje-aplikacije' },
+  'kontrakti':               { title: 'Kontrakti',                        path: 'server/3-modularni-monolit/1-kontrakti.md' },
+  'gradivni-elementi':       { title: 'Gradivni elementi',                path: 'server/3-modularni-monolit/2-gradivni-elementi.md' },
+  'arhitektonski-testovi':   { title: 'Arhitektonski testovi',            path: 'server/3-modularni-monolit/3-arhitektonski-testovi.md' },
+  'xunit':                   { title: 'xUnit',                            path: 'testovi/xunit.md' }
 };
 
 const readerPane = document.getElementById('readerPane');
@@ -308,6 +317,18 @@ function slugify(text) {
   return text.toLowerCase()
     .replace(/š/g, 's').replace(/đ/g, 'dj').replace(/č/g, 'c').replace(/ć/g, 'c').replace(/ž/g, 'z')
     .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function noteKeyFor(path, section, linkText) {
+  const existing = Object.keys(NOTES).find(k =>
+    NOTES[k].path === path && (NOTES[k].section || '') === (section || ''));
+  if (existing) return existing;
+  const key = section ? path + '#' + section : path;
+  if (!NOTES[key]) {
+    const fileName = path.slice(path.lastIndexOf('/') + 1).replace(/\.md$/, '');
+    NOTES[key] = { title: linkText.trim() || fileName, path, section: section || undefined };
+  }
+  return key;
 }
 
 function markActive(key) {
@@ -375,6 +396,35 @@ async function openNote(key, { nav = null } = {}) {
   if (currentKey !== key) return;
 
   readerContent.innerHTML = marked.parse(markdown);
+  const noteDir = RAW_BASE + note.path.slice(0, note.path.lastIndexOf('/') + 1);
+  readerContent.querySelectorAll('img').forEach(img => {
+    const src = img.getAttribute('src');
+    if (src && !/^(https?:)?\/\//.test(src) && !src.startsWith('data:')) {
+      img.src = new URL(src, noteDir).href;
+    }
+  });
+  readerContent.querySelectorAll('a[href]').forEach(a => {
+    const href = a.getAttribute('href');
+    if (/^(https?:)?\/\//.test(href) || href.startsWith('mailto:')) {
+      a.target = '_blank';
+      return;
+    }
+    if (href.startsWith('#')) return;
+    const resolved = new URL(href, noteDir);
+    const hash = resolved.hash.slice(1);
+    resolved.hash = '';
+    if (!resolved.href.startsWith(RAW_BASE) || !resolved.pathname.endsWith('.md')) {
+      a.href = resolved.href.replace(RAW_BASE, BLOB_BASE);
+      a.target = '_blank';
+      return;
+    }
+    const linkedKey = noteKeyFor(resolved.href.slice(RAW_BASE.length), hash, a.textContent);
+    a.href = '#' + linkedKey;
+    a.addEventListener('click', event => {
+      event.preventDefault();
+      openNote(linkedKey);
+    });
+  });
   readerContent.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
   readerContent.querySelectorAll('h1, h2, h3').forEach(h => { h.id = slugify(h.textContent); });
 
@@ -405,8 +455,13 @@ fwdBtn.addEventListener('click', () => {
   if (next) openNote(next, { nav: 'forward' });
 });
 
-const initial = location.hash.slice(1);
-if (NOTES[initial]) openNote(initial);
+const initial = decodeURIComponent(location.hash.slice(1));
+if (NOTES[initial]) {
+  openNote(initial);
+} else if (initial.includes('.md')) {
+  const [path, section] = initial.split('#');
+  openNote(noteKeyFor(path, section, ''));
+}
 </script>
 </body>
 </html>
