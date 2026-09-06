@@ -67,14 +67,11 @@ U datom kodu treba uočiti sledeće:
 Agregat se po definiciji učitava u celini, pa bi svaki upit nad anketom morao da ponovi isti `Include`, a upit koji ga zaboravi vraća agregat koji ne ume da brani svoja pravila. EF zato dopušta da se učitavanje kolekcije proglasi obaveznim u konfiguraciji, jednom za sve upite:
 
 ```cs
-public sealed class SurveyConfiguration : IEntityTypeConfiguration<Survey>
+private static void ConfigureSurvey(EntityTypeBuilder<Survey> builder)
 {
-  public void Configure(EntityTypeBuilder<Survey> builder)
-  {
-    // ... prethodno definisana pravila
+  // ... prethodno definisana pravila
 
-    builder.Navigation(survey => survey.Questions).AutoInclude();
-  }
+  builder.Navigation(survey => survey.Questions).AutoInclude();
 }
 ```
 
