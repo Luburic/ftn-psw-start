@@ -10,4 +10,16 @@ public abstract class Entity
     {
         Id = id;
     }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is not Entity other || GetType() != other.GetType())
+        {
+            return false;
+        }
+
+        return ReferenceEquals(this, other) || Id == other.Id;
+    }
+
+    public override int GetHashCode() => Id.GetHashCode();
 }
