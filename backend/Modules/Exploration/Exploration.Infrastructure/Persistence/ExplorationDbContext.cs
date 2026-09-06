@@ -1,5 +1,6 @@
-using Exploration.Application;
+﻿using Exploration.Application;
 using Exploration.Domain.Tours;
+using Exploration.Infrastructure.Persistence.Tours;
 using Microsoft.EntityFrameworkCore;
 
 namespace Exploration.Infrastructure.Persistence;
@@ -13,6 +14,6 @@ internal sealed class ExplorationDbContext : DbContext, IUnitOfWork
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.HasDefaultSchema("exploration");
-        builder.ApplyConfigurationsFromAssembly(typeof(ExplorationDbContext).Assembly);
+        builder.ConfigureTours();
     }
 }

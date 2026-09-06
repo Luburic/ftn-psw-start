@@ -259,6 +259,10 @@ Architecture tests in `Host.Tests` use ArchUnitNET and encode the reference rule
   nothing else: `AddXxxModule(IServiceCollection, IConfiguration)` in `Infrastructure`
   (which registers the module's `DbContext` on its own schema via `AddModuleDbContext`)
   and `Add<Name>Controllers(IMvcBuilder)` in `Api`.
+- EF mapping configuration is one static class per aggregate, `<Aggregate>Configuration`,
+  exposing a `Configure<Aggregates>(this ModelBuilder)` extension and holding one private
+  method per mapped type. `OnModelCreating` calls one extension per aggregate; inner
+  entities never get a configuration class of their own.
 - Aggregates generate their ID in the constructor (`base(Guid.NewGuid())`), never via EF
   value generation; seed data and tests depend on IDs existing before save.
 - Local development configuration (connection string with `postgres`/`admin`, dev JWT

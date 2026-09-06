@@ -1,6 +1,7 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Social.Application;
 using Social.Domain.Blogs;
+using Social.Infrastructure.Persistence.Blogs;
 
 namespace Social.Infrastructure.Persistence;
 
@@ -13,6 +14,6 @@ internal sealed class SocialDbContext : DbContext, IUnitOfWork
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.HasDefaultSchema("social");
-        builder.ApplyConfigurationsFromAssembly(typeof(SocialDbContext).Assembly);
+        builder.ConfigureBlogs();
     }
 }
