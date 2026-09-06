@@ -1,8 +1,8 @@
-U [lekciji o komandama i upitima](../2-aplikacioni-sloj/1-komande-i-upiti.md) smo videli komandu `CloseSurveyAsync`, koja zatvara anketu i označava svaki započet odgovor kao istekao, i zaključili da jedino komanda zna gde se celina izmena završava. Zato je jedinica posla deklarisana kao interfejs sa jednom metodom `SaveChangesAsync`, koju komanda poziva jednom, na kraju. Ovde razmatramo šta bi se desilo kada bi svaki repozitorijum upisivao sam, kako jedan poziv obuhvata agregate učitane kroz dva repozitorijuma i šta se u repozitorijumima zbog toga menja.
+Ranije smo videli komandu `CloseSurveyAsync`, koja zatvara anketu i označava svaki započet odgovor kao istekao. Ovde smo imali izmenu veće količine agregata, gde bismo želeli da grupišemo sve u okviru jedne transakcije kako bismo izbegli parcijalne izmene. Zato je jedinica posla deklarisana kao interfejs sa jednom metodom `SaveChangesAsync`, koju komanda poziva jednom, na kraju. Ovde razmatramo šta je potrebno da izmenimo u prethodnim repoziorijumima i kako izgleda implementacija jedinice posla.
 
 ## Repozitorijum koji čuva
 
-Posmatrajmo prvo šta se dešava kada repozitorijumi zadrže oblik iz [lekcije o repozitorijumima](4-repozitorijumi.md), u kom svaka metoda koja upisuje sama poziva `SaveChangesAsync`. Komanda tada od svakog repozitorijuma traži da sačuva svoj agregat:
+Posmatrajmo prvo šta se dešava kada repozitorijumi zadrže oblik iz [lekcije o repozitorijumima](4-repozitorijumi.md), gde svaka metoda koja upisuje podatke poziva `SaveChangesAsync`. Komanda tada od svakog repozitorijuma traži da sačuva svoj agregat:
 
 ```cs
 public async Task CloseSurveyAsync(Guid surveyId)
@@ -61,7 +61,7 @@ U datom kodu treba uočiti sledeće:
 
 ## Repozitorijum bez čuvanja
 
-Kada čuvanje pripada komandi, repozitorijum ga gubi. Od tri metode koje su upisivale ostaje jedna. Metoda `CreateAsync` iz lekcije o repozitorijumima postaje `Add`, a `UpdateAsync` i `DeleteAsync` nestaju:
+Kada čuvanje pripada komandi, repozitorijum ga gubi. Od tri metode koje su upisivale ostaju dve. Metoda `CreateAsync` iz lekcije o repozitorijumima postaje `Add`, `DeleteAsync` postaje `Delete`, a `UpdateAsync` nestaje:
 
 ```cs
 public sealed class SurveyRepository : ISurveyRepository
@@ -72,19 +72,24 @@ public sealed class SurveyRepository : ISurveyRepository
   {
     _dbContext.Surveys.Add(survey);
   }
+
+  public void Delete(Survey survey)
+  {
+    _dbContext.Surveys.Remove(survey);
+  }
 }
 ```
 
 U datom kodu treba uočiti sledeće:
 
-- Metoda više nije asinhrona, jer se ne obraća bazi. Poziv `Add` samo beleži anketu kao praćen objekat u stanju *dodat*, a `INSERT` nastaje tek pri čuvanju.
-- Metoda `UpdateAsync` je i ranije samo pozivala `SaveChangesAsync`, pa bez tog poziva nema šta da radi. Izmena je posledica poziva metode korena nad praćenim agregatom, a brisanje unutrašnjeg entiteta posledica njegovog uklanjanja iz kolekcije. Brisanje celog agregata u našem projektu još nije potrebno, pa ni `DeleteAsync` nema zamenu.
-- Tri poziva `SaveChangesAsync` u tri metode repozitorijuma postala su jedan poziv u komandi. Jedinica posla tako rešava i ponavljanje iz lekcije o repozitorijumima, a ne samo pitanje transakcije.
+- Nijedna metoda više nije asinhrona, jer se ne obraćaju bazi. Poziv `Add` beleži anketu kao praćen objekat u stanju *dodat*, a poziv `Remove` u stanju *obrisan*. Naredbe `INSERT` i `DELETE` nastaju tek pri čuvanju.
+- Metoda `UpdateAsync` je i ranije samo pozivala `SaveChangesAsync`, pa bez tog poziva nema šta da radi. Izmena je posledica poziva metode korena nad praćenim agregatom, a brisanje unutrašnjeg entiteta posledica njegovog uklanjanja iz kolekcije, pa kontekst za oba saznaje sam.
+- Tri poziva `SaveChangesAsync` u tri metode jednog repozitorijuma (i tako za svaki repozitorijum) postala su jedan poziv u komandi.
 - Ni repozitorijum ni upitna klasa ne mogu da proizvedu upis. Repozitorijum nema poziv `SaveChangesAsync`, a upitna klasa ne prima jedinicu posla. U našem projektu tu drugu zabranu proverava automatski test koji odbija svaku upitnu klasu koja zavisi od `IUnitOfWork`.
 
 ## Put jedne komande
 
-Povežimo pojmove praćenjem komande `CloseSurveyAsync` u obliku iz lekcije o komandama i upitima, sa jedinicom posla.
+Povežimo pojmove praćenjem komande `CloseSurveyAsync` kroz vizuru jedinice posla.
 
 1. Kontroler prima `POST /api/surveys/{id}/close` i poziva metodu `CloseSurveyAsync` klase `SurveyAuthoringService`. Kontejner zavisnosti je za ovaj zahtev napravio jedan `SurveyDbContext` i predao ga repozitorijumu ankete, repozitorijumu odgovora i, kao `IUnitOfWork`, komandi.
 2. Repozitorijum ankete izvršava `SELECT` nad tabelama `Surveys` i `Questions`, jer je učitavanje pitanja konfigurisano kao obavezno. Kontekst rehidrira anketu i pitanja i prati ih u stanju *nepromenjen*.

@@ -1,14 +1,14 @@
-Repozitorijum je jedna tehnička sposobnost koju slučaj korišćenja zahteva. Slučaj korišćenja može da zahteva i da se nekome van sistema nešto saopšti, ili da se proizvede nešto što modul sopstvenim kodom ne ume da proizvede. Objavljivanje ankete treba da obavesti ispitanike elektronskom poštom, a pregled rezultata treba da ponudi izveštaj u PDF obliku. Ovde razmatramo kako infrastrukturni sloj implementira sposobnost koja nije rad sa bazom i šta ostaje sa koje strane interfejsa.
+Repozitorijum je jedna tehnička sposobnost koju slučaj korišćenja zahteva. Slučaj korišćenja može da zahteva i da se nekome van sistema nešto saopšti, ili da se proizvede nešto što modul sopstvenim kodom ne ume da proizvede. Objavljivanje ankete treba da obavesti ispitanike elektronskom poštom, a pregled rezultata treba da ponudi izveštaj u PDF obliku. Ovde razmatramo kako infrastrukturni sloj implementira sposobnost koja nije rad sa bazom.
 
 ## Konektorska klasa
 
-**Konektorska klasa** je klasa infrastrukturnog sloja koja tehničku sposobnost implementira komunikacijom sa drugim sistemom. Ona poznaje protokol tog sistema, njegovu adresu, podatke za prijavu i format u kom sistem prima i vraća podatke. Nijedna od te četiri stvari ne pripada aplikacionom sloju, a svaka se menja nezavisno od slučaja korišćenja koji je koristi. Konektorske klase razlikujemo po tome šta je sa druge strane:
+**Konektorska klasa** je klasa infrastrukturnog sloja koja implementira tehničku sposobnost komunikacije sa drugim sistemom. Ona poznaje protokol tog sistema, njegovu adresu, podatke za prijavu i format u kom sistem prima i vraća podatke. Nijedna od te četiri stvari ne pripada aplikacionom sloju, a svaka se menja nezavisno od slučaja korišćenja koji je koristi. Konektorske klase razlikujemo po tome šta je sa druge strane:
 
 - HTTP klijent, koji poziva API druge aplikacije i tumači njen odgovor,
 - pošiljalac poruka, koji šalje elektronsku poštu ili SMS poruke i
 - razmena datoteka, koja podatke pakuje u datoteke i predaje ih udaljenom sistemu.
 
-Posmatrajmo obaveštavanje ispitanika. Aplikacioni sloj deklariše interfejs koji opisuje šta slučaju korišćenja treba, a infrastrukturni sloj ga implementira slanjem elektronske pošte:
+Posmatrajmo obaveštavanje ispitanika. Aplikacioni sloj deklariše interfejs koji opisuje svojim nazivom šta slučaju korišćenja treba, a infrastrukturni sloj ga implementira slanjem elektronske pošte:
 
 ```cs
 public interface IRespondentNotifier
@@ -45,20 +45,20 @@ U datom kodu treba uočiti sledeće:
 
 - Interfejs govori jezikom slučaja korišćenja. Prima anketu i adrese, a ne poruku, i u nazivu nosi šta se dešava, a ne kako se saopštava. Aplikacioni servis koji ga poziva ne zna da iza njega stoji elektronska pošta.
 - Klasa prevodi domenski objekat u poruku. Naslov i tekst poruke nastaju iz svojstava ankete, a to prevođenje je jedino mesto na kom se sadržaj obaveštenja može promeniti.
-- Adresa servera i pošiljalac se čitaju iz konfiguracije, kao i konekcioni string u [lekciji o kontekstu](2-efc-kontekst-i-model.md). Klasa nema nijednu vrednost upisanu u kod, pa se razvojno i produkciono okruženje razlikuju samo po konfiguraciji.
+- Adresa servera i pošiljalac se čitaju iz konfiguracije, kao i konekcioni string. Klasa nema nijednu vrednost upisanu u kod, pa se razvojno i produkciono okruženje razlikuju samo po konfiguraciji.
 - Klasa `SmtpClient` iz osnovne biblioteke otvara konekciju ka serveru elektronske pošte i šalje poruku po SMTP protokolu. Kada server ne odgovori, poziv baca izuzetak, koji prolazi kroz komandu do middleware-a kao i svaki drugi neočekivani izuzetak.
 
 Klasa za HTTP komunikaciju ima isti oblik. Umesto `SmtpClient` koristi `HttpClient`, adresu druge aplikacije čita iz konfiguracije, domenski objekat prevodi u JSON telo zahteva, a JSON odgovor u DTO strukturu koju interfejs obećava.
 
-## Stručnjačka klasa
+## Lokalni tehnički stručnjak
 
-**Stručnjačka klasa** je klasa infrastrukturnog sloja koja tehničku sposobnost implementira lokalno, kroz biblioteku ili mogućnost radnog okvira, bez komunikacije sa drugim sistemom. Tipovi i način pozivanja biblioteke su aplikacionom sloju jednako strani kao i protokol drugog sistema, pa ostaju iza interfejsa. Stručnjačke klase razlikujemo po vrsti znanja koje nose:
+**Lokalni tehnički stručnjak** je klasa infrastrukturnog sloja koja tehničku sposobnost implementira lokalno, kroz biblioteku ili mogućnost radnog okvira, bez komunikacije sa drugim sistemom. Tipovi i način pozivanja biblioteke su aplikacionom sloju jednako strani kao i protokol drugog sistema, pa ostaju iza interfejsa. Stručnjačke klase razlikujemo po vrsti znanja koje nose, gde su česti primeri:
 
 - generisanje dokumenata, poput PDF, Excel ili CSV datoteka,
 - kriptografija, poput heširanja lozinki i izdavanja tokena i
 - obrada datoteka i medija, poput promene veličine slike.
 
-Posmatrajmo izveštaj o rezultatima ankete. Domenski servis `SurveyResultsCalculator` iz [lekcije o domenskom servisu](../1-domenski-sloj/5-domenski-servis.md) izračunava rezultate, a stručnjačka klasa ih pretvara u PDF dokument:
+Posmatrajmo izveštaj o rezultatima ankete. Domenski servis `SurveyResultsCalculator` izračunava statistiku nad odgovorima ankete, a lokalni tehnički stručnjak ih pretvara u PDF dokument:
 
 ```cs
 public interface ISurveyReportGenerator
@@ -99,7 +99,3 @@ Implementacija se registruje u metodi proširenja modula, uz repozitorijume i je
 services.AddScoped<IRespondentNotifier, SmtpRespondentNotifier>();
 services.AddScoped<ISurveyReportGenerator, PdfSurveyReportGenerator>();
 ```
-
-## Kada se spoljašnji sistem obaveštava
-
-Komanda koja menja stanje i obaveštava drugi sistem prvo poziva `SaveChangesAsync`, a tek zatim konektorsku klasu. Obaveštenje o anketi čije čuvanje nije uspelo bilo bi gore od izostanka obaveštenja. Kada slanje ne uspe nakon čuvanja, anketa ostaje objavljena, a pozivalac dobija grešku. Kako se takav neuspeh naknadno ispravlja pitanje je koje ova lekcija ne obrađuje.
