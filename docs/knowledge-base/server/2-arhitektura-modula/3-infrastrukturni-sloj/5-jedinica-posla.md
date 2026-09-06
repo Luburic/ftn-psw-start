@@ -1,4 +1,4 @@
-Ranije smo videli komandu `CloseSurveyAsync`, koja zatvara anketu i označava svaki započet odgovor kao istekao. Ovde smo imali izmenu veće količine agregata, gde bismo želeli da grupišemo sve u okviru jedne transakcije kako bismo izbegli parcijalne izmene. Zato je jedinica posla deklarisana kao interfejs sa jednom metodom `SaveChangesAsync`, koju komanda poziva jednom, na kraju. Ovde razmatramo šta je potrebno da izmenimo u prethodnim repoziorijumima i kako izgleda implementacija jedinice posla.
+Ranije smo videli komandu `CloseSurveyAsync`, koja zatvara anketu i označava svaki započet odgovor kao istekao. Ta komanda menja više agregata odjednom, a sve te izmene treba da se upišu u jednoj transakciji, kako baza ne bi ostala u parcijalno izmenjenom stanju. Zato je jedinica posla deklarisana kao interfejs sa jednom metodom `SaveChangesAsync`, koju komanda poziva jednom, na kraju. Ovde razmatramo šta se zbog toga menja u repozitorijumima i kako izgleda implementacija jedinice posla.
 
 ## Repozitorijum koji čuva
 

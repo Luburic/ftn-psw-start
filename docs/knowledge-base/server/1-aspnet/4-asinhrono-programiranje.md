@@ -60,7 +60,7 @@ U dijagramu vidimo da serverska aplikacija:
 1. Pravi HTTP zahtev ka drugoj serverskoj aplikaciji (eksterni servis).
    - *Primer*: Pri online kupovini, prodavnica nas može preusmeriti na sajt banke kako bismo uneli podatke o plaćanju. Ono što ne vidimo je da serverska aplikacija online prodavnice šalje HTTP zahtev aplikaciji banke kako bi se pripremila ta stranica za plaćanje.
 2. Kada stigne HTTP odgovor, pravi upit ka bazi podataka.
-   - *Primer*: U praksi nije retko da baza podataka stoji na odvojenom serveru koji je možda i geografski udaljen. U tom slučaju EF ispod haube pravi HTTP zahtev ka udaljenoj bazi podataka, što opet podrazumeva čekanje.
+   - *Primer*: U praksi nije retko da baza podataka stoji na odvojenom serveru koji je možda i geografski udaljen. U tom slučaju EFC ispod haube pravi HTTP zahtev ka udaljenoj bazi podataka, što opet podrazumeva čekanje.
 3. Kada stigne rezultat od baze podataka, aplikacija otvara datoteke sa fajl sistema.
    - *Primer*: Slično kao i baza podataka, datoteke mogu biti na udaljenom serveru. Kada nisu, ispod haube aplikacija traži od operativnog sistema da pročita sadržaj datoteke i smesti ga sa hard diska u radnu memoriju. Ovo je uglavnom brza operacija, ali kod krupnih datoteka može da bude zahtevna.
 4. Kada stignu podaci iz datoteke formira se HTTP odgovor.

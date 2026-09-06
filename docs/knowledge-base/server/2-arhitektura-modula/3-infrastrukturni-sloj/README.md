@@ -11,6 +11,6 @@ Klase infrastrukturnog sloja poznaju bazu podataka, biblioteke, radne okvire i s
 3. [Migracije](3-migracije.md) - Kako baza prati izmene modela. Generisanje migracije iz razlike prema snimku modela, primena pri pokretanju aplikacije i početni podaci kroz domenske konstruktore. Procedura za svakodnevni rad je u protokolu o migracijama.
 4. [Repozitorijumi](4-repozitorijumi.md) - Repozitorijum agregata koji učitava agregat u celini, praćenje promena kojim kontekst sam sastavlja naredbe za upis i repozitorijum za čitanje koji projektuje podatke pravo u DTO strukturu.
 5. [Jedinica posla](5-jedinica-posla.md) - Zašto repozitorijum ne treba da direktno šalje komande bazi i kako prepušta taj posao jedinici posla.
-6. [Ostali infrastrukturni servisi](6-ostali-infrastrukturni-servisi.md) - Konektorska klase koje interaguju sa drugim eksternim sistemima i lokalni tehnički stručnjaci koji rade sa bibliotekama.
+6. [Ostali infrastrukturni servisi](6-ostali-infrastrukturni-servisi.md) - Konektorske klase koje interaguju sa drugim eksternim sistemima i lokalni tehnički stručnjaci koji rade sa bibliotekama.
 
 Nakon ovog direktorijuma čitalac zna da koristi objektno relacione mapere i da definiše implementacije tehničkih mogućnosti infrastrukturnog sloja. Preostaje [API sloj](../4-api-sloj.md), koji zahtev spoljašnjeg sveta prevodi u poziv aplikacionog sloja.

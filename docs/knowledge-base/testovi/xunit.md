@@ -191,7 +191,7 @@ Ovakav pristup je ispravan jer funkcionalni moduli korisnika poznaju samo preko 
 
 Integracioni test komunicira sa sistemom kroz tri kanala, a svaki kanal ima jedan smer. Stanje ulazi u bazu isključivo kroz početne podatke. Akcija se izvršava isključivo HTTP zahtevom u koraku Act; telo zahteva se priprema u koraku Arrange, a test nikada ne priprema stanje pozivom drugih krajnjih tačaka, jer bi tada greška u jednoj funkcionalnosti obarala i testove drugih funkcionalnosti. Ishod se posmatra isključivo čitanjem baze kroz kontekst modula; test nikada ne piše kroz kontekst, jer bi takav upis zaobišao domenska pravila. Nijedan alat ne sprečava kršenje ove podele, pa se ona, kao i struktura Arrange, Act, Assert, održava konvencijom i pregledom koda.
 
-Kontekst za posmatranje vraća metoda `CreateContext<TContext>()` klase `ExplorerApiFactory`. Test otvara svež kontekst na mestu upotrebe, unutar naredbe `using`: jedan u koraku Arrange kada čita polazno stanje i poseban u koraku Assert. Kontekst otvoren pre koraka Act ne sme se čitati posle njega, jer EF prati jednom učitane objekte i vratio bi zastarelo stanje.
+Kontekst za posmatranje vraća metoda `CreateContext<TContext>()` klase `ExplorerApiFactory`. Test otvara svež kontekst na mestu upotrebe, unutar naredbe `using`: jedan u koraku Arrange kada čita polazno stanje i poseban u koraku Assert. Kontekst otvoren pre koraka Act ne sme se čitati posle njega, jer EFC prati jednom učitane objekte i vratio bi zastarelo stanje.
 
 ```csharp
 [Fact]

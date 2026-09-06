@@ -148,7 +148,7 @@ private static void ConfigureQuestion(EntityTypeBuilder<Question> builder)
 U datom kodu treba uočiti sledeće:
 
 - Poziv `ToTable` daje tabeli naziv u množini, kakav imaju tabele korena.
-- Poziv `ValueGeneratedNever` saopštava da vrednost ključa dodeljuje konstruktor, kako je opisano u [lekciji o entitetu](../1-domenski-sloj/3-entitet.md). Bez toga EFC za pitanje koje se pojavilo u kolekciji ankete pretpostavlja da već postoji u bazi, jer mu je ključ popunjen, pa pri čuvanju umesto unosa pokušava izmenu nepostojećeg reda i prijavljuje grešku. Koren agregata se kontekstu predaje izričito, pa za njega ta pretpostavka ne važi.
+- Poziv `ValueGeneratedNever` saopštava da vrednost ključa ne treba da dodeli EFC (u našem slučaju dodeljuje konstruktor). Bez toga EFC za pitanje koje se pojavilo u kolekciji ankete pretpostavlja da već postoji u bazi, jer mu je ključ popunjen, pa pri čuvanju umesto unosa pokušava izmenu nepostojećeg reda i prijavljuje grešku. Koren agregata se kontekstu predaje izričito, pa za njega ta pretpostavka ne važi.
 - Poziv `OwnsMany` saopštava da `Option` nije entitet, već vrednosni objekat koji pripada pitanju. Vrednosni objekat nema identifikator, pa mu ne dajemo sopstvenu tabelu. Poziv `ToJson` sve opcije jednog pitanja smešta u jednu kolonu `Options` tipa `jsonb`, gde je svaka opcija JSON objekat sa svojim svojstvima. Isto pravilo mapira `Answer` objekte unutar `SurveyResponse` agregata.
 
 ## Rehidracija

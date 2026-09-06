@@ -52,7 +52,7 @@ Klasa za HTTP komunikaciju ima isti oblik. Umesto `SmtpClient` koristi `HttpClie
 
 ## Lokalni tehnički stručnjak
 
-**Lokalni tehnički stručnjak** je klasa infrastrukturnog sloja koja tehničku sposobnost implementira lokalno, kroz biblioteku ili mogućnost radnog okvira, bez komunikacije sa drugim sistemom. Tipovi i način pozivanja biblioteke su aplikacionom sloju jednako strani kao i protokol drugog sistema, pa ostaju iza interfejsa. Stručnjačke klase razlikujemo po vrsti znanja koje nose, gde su česti primeri:
+**Lokalni tehnički stručnjak** je klasa infrastrukturnog sloja koja tehničku sposobnost implementira lokalno, kroz biblioteku ili mogućnost radnog okvira, bez komunikacije sa drugim sistemom. Tipovi i način pozivanja biblioteke su aplikacionom sloju jednako strani kao i protokol drugog sistema, pa ostaju iza interfejsa. Lokalne tehničke stručnjake razlikujemo po vrsti znanja koje nose, gde su česti primeri:
 
 - generisanje dokumenata, poput PDF, Excel ili CSV datoteka,
 - kriptografija, poput heširanja lozinki i izdavanja tokena i
@@ -87,11 +87,11 @@ U datom kodu treba uočiti sledeće:
 - Klasa ne zna odakle su rezultati došli niti šta će sa dokumentom biti. Upit aplikacionog sloja učita agregate, pozove domenski servis, prosledi rezultate ovoj klasi i dobijene bajtove vrati kontroleru.
 - Pozivi `AddTitle`, `AddParagraph` i `ToBytes` predstavljaju biblioteku za rad sa PDF dokumentima. Konkretna biblioteka bira se pri implementaciji, a nazivi njenih metoda se razlikuju od biblioteke do biblioteke.
 
-U našem projektu je stručnjačka klasa `JwtTokenFactory` modula za identitet, koja od podataka o korisniku, kroz biblioteku za rad sa JWT tokenima, pravi potpisan token koji klijent šalje uz svaki zahtev.
+U našem projektu je lokalni tehnički stručnjak `JwtTokenFactory` modula za identitet, koji od podataka o korisniku, kroz biblioteku za rad sa JWT tokenima, pravi potpisan token koji klijent šalje uz svaki zahtev.
 
 ## Interfejs tehničke sposobnosti
 
-Obe vrste klasa implementiraju interfejs koji je aplikacioni sloj deklarisao, kao što to rade i repozitorijumi. Interfejs imenuje sposobnost koja slučaju korišćenja treba, a ne tehnologiju kojom se ostvaruje. Zato njegove metode primaju i vraćaju isključivo domenske objekte, DTO strukture i proste tipove, a nikada tip biblioteke ili protokola. Isti interfejs može danas da zadovolji konektorska klasa, a sutra stručnjačka. Obaveštenje ispitanicima koje se danas šalje kroz SMTP server može sutra da ide kroz HTTP API spoljašnjeg servisa za slanje pošte, a aplikacioni servis to ne primećuje.
+Obe vrste klasa implementiraju interfejs koji je aplikacioni sloj deklarisao, kao što to rade i repozitorijumi. Interfejs imenuje sposobnost koja slučaju korišćenja treba, a ne tehnologiju kojom se ostvaruje. Zato njegove metode primaju i vraćaju isključivo domenske objekte, DTO strukture i proste tipove, a nikada tip biblioteke ili protokola. Isti interfejs može danas da zadovolji konektorska klasa, a sutra lokalni tehnički stručnjak. Obaveštenje ispitanicima koje se danas šalje kroz SMTP server može sutra da ide kroz HTTP API spoljašnjeg servisa za slanje pošte, a aplikacioni servis to ne primećuje.
 
 Implementacija se registruje u metodi proširenja modula, uz repozitorijume i jedinicu posla:
 

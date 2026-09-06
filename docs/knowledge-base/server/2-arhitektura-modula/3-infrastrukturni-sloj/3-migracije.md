@@ -58,7 +58,7 @@ Uz prethodnu klasu se generiše snimak modela `SurveyDbContextModelSnapshot.cs`.
 
 ## Primena migracije
 
-Generisana migracija menja samo kod. Baza se menja tek kada se migracija primeni, a EFC pri tome mora da zna koje migracije je ta baza već primila. Zato EFC u svakoj bazi koju održava vodi tabelu `__EFCMigrationsHistory`, sa jednim redom za svaku primenjenu migraciju. Primena migracija je postupak u kom EFC pročita tu tabelu, redom izvrši metodu `Up` svake migracije koja u tabeli nije zabeležena i za svaku upiše red. Baza koja je već u koraku sa kodom ne dobija nijednu naredbu.
+Generisana migracija menja samo kod. Baza se menja tek kada se migracija primeni, a EFC pri tome mora da zna koje migracije je ta baza već primila. Zato EFC u svakoj bazi koju održava vodi tabelu `__EFMigrationsHistory`, sa jednim redom za svaku primenjenu migraciju. Primena migracija je postupak u kom EFC pročita tu tabelu, redom izvrši metodu `Up` svake migracije koja u tabeli nije zabeležena i za svaku upiše red. Baza koja je već u koraku sa kodom ne dobija nijednu naredbu.
 
 Primenu može da zatraži programer, komandom `dotnet ef database update` sa istim parametrima kao pri generisanju. U našem projektu se primena ne traži ručno, već je izvodi aplikacija pri pokretanju. **Inicijalizator modula** je klasa koja se izvršava pri pokretanju aplikacije i dovodi bazu modula u stanje potrebno za rad:
 
@@ -88,7 +88,7 @@ U datom kodu treba uočiti sledeće:
 
 - Klasa implementira `IHostedService`, interfejs radnog okvira za posao koji se izvršava pri pokretanju aplikacije, pre nego što ona počne da prima zahteve. Registruje se pozivom `AddHostedService` uz ostale klase modula.
 - Kontekst je registrovan sa životnim vekom jednog zahteva, a pri pokretanju nema zahteva. Zato inicijalizator sam otvara opseg pozivom `CreateScope` i iz njega traži kontekst, kao što bi to radni okvir uradio za jedan zahtev.
-- Poziv `MigrateAsync` izvodi primenu migracija opisanu iznad. Svaki modul ima sopstveni inicijalizator, sopstveni kontekst i sopstvenu tabelu `__EFCMigrationsHistory` u svojoj šemi, pa migracije jednog modula ne znaju za migracije drugog.
+- Poziv `MigrateAsync` izvodi primenu migracija opisanu iznad. Svaki modul ima sopstveni inicijalizator, sopstveni kontekst i sopstvenu tabelu `__EFMigrationsHistory` u svojoj šemi, pa migracije jednog modula ne znaju za migracije drugog.
 
 Posledica ovakve postavke je da član tima nikada ne dovodi bazu u red ručno. Pokretanje aplikacije nad praznom bazom pravi sve šeme i tabele svih modula, a pokretanje nad zastarelom bazom primenjuje samo ono što nedostaje.
 
@@ -136,7 +136,7 @@ Povežimo pojmove praćenjem jedne izmene modela, od koda do baze svakog člana 
 1. Programer klasi `Survey` dodaje svojstvo `Description` i pokreće komandu `dotnet ef migrations add AddedSurveyDescription --project ... --startup-project ...`.
 2. EFC gradi model iz koda, poredi ga sa snimkom modela, u novu datoteku migracije upisuje metodu `Up` sa pozivom `AddColumn` i metodu `Down` sa pozivom `DropColumn`, a snimak prepisuje tako da sadrži novu kolonu.
 3. Programer pregleda generisanu datoteku i proverava da li menja samo ono što je nameravao.
-4. Programer pokreće aplikaciju. Inicijalizator modula poziva `MigrateAsync`, EFC u tabeli `__EFCMigrationsHistory` ne nalazi novu migraciju, izvršava njenu metodu `Up` i upisuje red. Tabela `Surveys` ima novu kolonu. Početni podaci se ne unose, jer tabela nije prazna.
+4. Programer pokreće aplikaciju. Inicijalizator modula poziva `MigrateAsync`, EFC u tabeli `__EFMigrationsHistory` ne nalazi novu migraciju, izvršava njenu metodu `Up` i upisuje red. Tabela `Surveys` ima novu kolonu. Početni podaci se ne unose, jer tabela nije prazna.
 5. Programer predaje izmenu klase, datoteku migracije i snimak modela zajedno, kao jednu celinu.
 6. Drugi član tima preuzima izmenu i pokreće aplikaciju. Njegova baza nema red za novu migraciju, pa se ista metoda `Up` izvršava i na njoj.
 

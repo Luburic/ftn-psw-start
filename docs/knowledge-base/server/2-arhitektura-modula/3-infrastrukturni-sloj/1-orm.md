@@ -227,7 +227,7 @@ Objektno-relacioni maperi automatizuju i sakrivaju značajan deo posla rada sa b
 - Za konkretan objekat se generiše i izvršava INSERT ili UPDATE naredba,
 - Pozivom funkcije za čitanje sadržaja tabele se generiše i izvršava SELECT naredba, gde se povratni string automatski parsira i pretvara u jedan ili više objekata.
 
-U našim projektima ćemo koristiti objektno-relacioni maper koji je najpoznatiji u .NET svetu i zove se **Entity Framework Core** (EF). U nastavku je `BookDbRepository` klasa koja koristi EF umesto ADO.NET za rad sa podacima. Kod je dosta jednostavniji i kraći nego u prethodnom primeru:
+U našim projektima ćemo koristiti objektno-relacioni maper koji je najpoznatiji u .NET svetu i zove se **Entity Framework Core** (EFC). U nastavku je `BookDbRepository` klasa koja koristi EFC umesto ADO.NET za rad sa podacima. Kod je dosta jednostavniji i kraći nego u prethodnom primeru:
 
 ```csharp
 public class BookDbRepository
@@ -282,6 +282,6 @@ public class BookDbRepository
     }
 }
 ```
-U datom kodu vidimo više jednostavnih, a veoma moćnih linija koda. Pozivom metoda kao što su `ToList()`, `Find()`, `Add()`, `Update()`, `Remove()`, i `SaveChanges()`, EF sam formira odgovarajuće SQL naredbe i izvršava ih. Programer samo koristi metode kao da radi sa običnim C# objektima, bez ručnog upravljanja konekcijom ka bazi, pretvaranja objekta u SQL naredbu i pretvaranja rezultata SQL naredbe u objekat.
+U datom kodu vidimo više jednostavnih, a veoma moćnih linija koda. Pozivom metoda kao što su `ToList()`, `Find()`, `Add()`, `Update()`, `Remove()`, i `SaveChanges()`, EFC sam formira odgovarajuće SQL naredbe i izvršava ih. Programer samo koristi metode kao da radi sa običnim C# objektima, bez ručnog upravljanja konekcijom ka bazi, pretvaranja objekta u SQL naredbu i pretvaranja rezultata SQL naredbe u objekat.
 
 U datom primeru vidimo da smo sa 200 linija koda se spustili na 40. Ovo nije skroz fer poređenje jer je prethodna implementacija repozitorijuma takođe upravljala izuzecima. Ako bismo slično uveli ovde, `BookDbRepository` bi porastao na blizu 100 linija koda. Međutim, prava prednost ORM tehnologije dolazi do izražaja kod složenijih repozitorijuma (npr. entiteti sa više svojstava i veza). U tom slučaju bismo videli kako 500 linija koda spada na 100.
