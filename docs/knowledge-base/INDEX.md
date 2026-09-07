@@ -52,6 +52,39 @@ Jedna linija po dokumentu: putanja, opis i preduslovi (dokumenti koje čitalac t
 - `server/3-modularni-monolit/2-gradivni-elementi.md` — Zajedničko jezgro, gradivni elementi po slojevima, platformski radni okvir i promocija koda u jezgro. Preduslovi: `README.md`.
 - `server/3-modularni-monolit/3-arhitektonski-testovi.md` — Arhitektonski testovi: pravila o zavisnostima kao automatski testovi i tri vrste pravila sa primerom za svaku. Preduslovi: `server/2-arhitektura-modula/5-čista-arhitektura.md`, `2-gradivni-elementi.md`.
 
+## Angular
+
+Lekcije segmenta `klijent/` još nisu napisane; stavke označavaju planirani obim.
+
+- `klijent/1-angular/README.md` — Šta radni okvir preuzima od klijentske aplikacije i koji deo Angular-a projekat koristi. Uvod u segment. Preduslovi: nema.
+- `klijent/1-angular/1-typescript.md` — Najmanji deo TypeScript-a potreban za čitanje projekta: anotacije, interfejs, unija literala, generički tip, nepostojeća vrednost, klasni modifikatori. Preduslovi: nema.
+- `klijent/1-angular/2-angular.md` — Najmanja Angular aplikacija pročitana datoteku po datoteku: pokretanje, konfiguracija, tabela ruta, korenska komponenta. Preduslovi: `1-typescript.md`.
+- `klijent/1-angular/3-komponenta.md` — Komponenta kao klasa, šablon i stil; ispis, vezivanje svojstava i događaja; prikaz koji se ne osvežava. Preduslovi: `2-angular.md`.
+- `klijent/1-angular/4-signali.md` — Zašto prikaz ne prati obično polje, signal kao stanje, izvedene vrednosti, poređenje sa React-om. Preduslovi: `3-komponenta.md`.
+- `klijent/1-angular/5-kontrola-toka.md` — Grananje i petlja u šablonu, alias, referenca na element. Preduslovi: `4-signali.md`.
+- `klijent/1-angular/6-sastavljanje-komponenti.md` — Ugnježdavanje, ulazi i izlazi, podaci naniže i događaji naviše. Preduslovi: `5-kontrola-toka.md`.
+- `klijent/1-angular/7-rutiranje.md` — Adresa bira komponentu, parametri rute kao ulazi, lenjo učitavanje po modulu. Preduslovi: `6-sastavljanje-komponenti.md`.
+- `klijent/1-angular/8-servisi-i-zavisnosti.md` — Kontejner zavisnosti na klijentu, preuzimanje zavisnosti, servis sa stanjem. Preduslovi: `7-rutiranje.md`, `server/1-aspnet/3-registracija-zavisnosti.md`.
+- `klijent/1-angular/9-citanje-podataka.md` — Resurs: adresa kao funkcija signala, vrednost pre učitavanja, stanje učitavanja i greške, ponovno učitavanje. Preduslovi: `8-servisi-i-zavisnosti.md`.
+- `klijent/1-angular/10-komande.md` — Slanje komande, čekanje odgovora, greška koju server prijavi, ponovno učitavanje resursa. Preduslovi: `9-citanje-podataka.md`, `server/1-aspnet/2-kontroleri.md`.
+- `klijent/1-angular/11-forme.md` — Forma vezana za signal, validacija, stanje polja. Preduslovi: `10-komande.md`.
+- `klijent/1-angular/12-slanje-forme.md` — Slanje forme, navigacija nakon uspeha, vraćanje u početno stanje. Preduslovi: `11-forme.md`.
+- `klijent/1-angular/13-stilovi.md` — Stilovi ograničeni na komponentu, raspored SCSS datoteka, promena teme. Preduslovi: `3-komponenta.md`.
+
+## Arhitektura modula na klijentu
+
+- `klijent/2-arhitektura-modula/README.md` — Zašto je klijentska arhitektura tanja od serverske i koja dva pravila je čine. Uvod u segment. Preduslovi: `klijent/1-angular/README.md`.
+- `klijent/2-arhitektura-modula/1-stranice-i-prikazne-komponente.md` — Stranica vodi interakciju, prikazna komponenta prima vrednosti i prijavljuje događaje; izbor strane za novu komponentu. Preduslovi: `klijent/1-angular/6-sastavljanje-komponenti.md`, `klijent/1-angular/7-rutiranje.md`.
+- `klijent/2-arhitektura-modula/2-stanje-u-servisu.md` — Servis modula kao jedino mesto koje zove server i drži stanje, uključujući učitavanje i grešku. Preduslovi: `1-stranice-i-prikazne-komponente.md`, `klijent/1-angular/10-komande.md`.
+- `klijent/2-arhitektura-modula/3-generisani-tipovi.md` — DTO struktura servera kao ugovor, generisanje tipova po modulu, generisana datoteka se ne menja rukom. Preduslovi: `2-stanje-u-servisu.md`, `server/2-arhitektura-modula/2-aplikacioni-sloj/3-dto-i-mapiranje.md`.
+
+## Modularni monolit na klijentu
+
+- `klijent/3-modularni-monolit/README.md` — Ista podela na module kao na serveru, `core` kao glavna aplikacija, granica koju čuva statička analiza. Uvod u segment. Preduslovi: `klijent/2-arhitektura-modula/README.md`, `server/3-modularni-monolit/README.md`.
+- `klijent/3-modularni-monolit/1-javna-povrsina.md` — `public-api.ts` kao kontrakt modula: šta se izvozi, navigacija ili ugrađivanje komponente, podaci se sastavljaju na serveru. Preduslovi: `README.md`, `server/3-modularni-monolit/1-kontrakti.md`.
+- `klijent/3-modularni-monolit/2-gradivni-elementi.md` — `core` i `shared`, globalni stilovi kao deljeni kod, promocija, prijavljeni korisnik kao izuzetak. Preduslovi: `README.md`, `server/3-modularni-monolit/2-gradivni-elementi.md`.
+- `klijent/3-modularni-monolit/3-granica-i-staticka-analiza.md` — Pravilo o uvozima kao arhitektonski test klijenta i čitanje prijave koja je oborila build. Preduslovi: `1-javna-povrsina.md`, `server/3-modularni-monolit/3-arhitektonski-testovi.md`.
+
 ## Testovi
 
 - `testovi/xunit.md` — Normativan dokument. Automatsko testiranje sa xUnit i pomoćni kod za integracione testove. Preduslovi: nema.
