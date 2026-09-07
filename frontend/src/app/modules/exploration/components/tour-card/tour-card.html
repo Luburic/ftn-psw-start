@@ -1,0 +1,25 @@
+<article class="card stack">
+  <h3>{{ tour().name }}</h3>
+
+  <p>{{ tour().description }}</p>
+
+  <p class="meta">Difficulty: {{ tour().difficulty }}</p>
+
+  @if (tour().tags.length > 0) {
+    <ul class="tags">
+      @for (tag of tour().tags; track tag) {
+        <li>{{ tag }}</li>
+      }
+    </ul>
+  }
+
+  @if (tour().transportTimes.length > 0) {
+    <ul class="times">
+      @for (time of tour().transportTimes; track time.transport) {
+        <li class="meta">{{ time.transport }}: {{ time.minutes }} min</li>
+      }
+    </ul>
+  } @else {
+    <p class="meta">No transport times yet.</p>
+  }
+</article>

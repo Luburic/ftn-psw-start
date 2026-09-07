@@ -1,0 +1,93 @@
+<div class="stack">
+  <h1>My tours</h1>
+
+  <p><a routerLink="/exploration/create">Create tour</a></p>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (tours.mine.isLoading()) {
+    <p>Loading your tours...</p>
+  } @else if (tours.mine.error()) {
+    <p class="error">Could not load your tours. Log in and try again.</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Difficulty</th>
+          <th scope="col">Status</th>
+          <th scope="col">Transport times</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (tour of tours.mine.value() ?? []; track tour.id) {
+          <tr>
+            <td>{{ tour.name }}</td>
+            <td>{{ tour.difficulty }}</td>
+            <td>{{ tour.status }}</td>
+            <td>
+              @for (time of tour.transportTimes; track time.transport) {
+                <span class="time">{{ time.transport }} {{ time.minutes }} min</span>
+              } @empty {
+                <span class="meta">none</span>
+              }
+            </td>
+            <td class="actions">
+              <button class="button" type="button" (click)="select(tour.id)">Add time</button>
+              @if (tour.status === 'Draft') {
+                <button
+                  class="button button--primary"
+                  type="button"
+                  [disabled]="pending()"
+                  (click)="publish(tour.id)"
+                >
+                  Publish
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5">You have no tours yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+
+  @if (selectedTourId()) {
+    <form class="card stack" (submit)="addTransportTime($event)">
+      <h2>Add transport time</h2>
+
+      <div class="field">
+        <label for="transport">Transport</label>
+        <select id="transport" [formField]="form.transport">
+          <option value="Walking">Walking</option>
+          <option value="Bicycle">Bicycle</option>
+          <option value="Car">Car</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="minutes">Minutes</label>
+        <input id="minutes" type="number" [formField]="form.minutes" />
+        @if (form.minutes().touched()) {
+          @for (message of form.minutes().errors(); track $index) {
+            <p class="error">{{ message.message }}</p>
+          }
+        }
+      </div>
+
+      <button
+        class="button button--primary"
+        type="submit"
+        [disabled]="!form().valid() || pending()"
+      >
+        Save
+      </button>
+    </form>
+  }
+</div>

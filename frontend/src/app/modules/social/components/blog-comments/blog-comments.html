@@ -1,0 +1,35 @@
+<ul class="comments">
+  @for (comment of comments(); track comment.id) {
+    <li class="stack">
+      <p>{{ comment.text }}</p>
+      <p class="meta">{{ comment.createdAt }}</p>
+
+      @if (comment.userId === currentUserId()) {
+        <div class="comment-actions">
+          <input #editInput type="text" aria-label="Edit comment" [value]="comment.text" />
+          <button
+            class="button"
+            type="button"
+            (click)="editComment.emit({ commentId: comment.id, text: editInput.value })"
+          >
+            Save
+          </button>
+          <button class="button" type="button" (click)="deleteComment.emit(comment.id)">
+            Delete
+          </button>
+        </div>
+      }
+    </li>
+  } @empty {
+    <li class="meta">No comments yet.</li>
+  }
+</ul>
+
+@if (currentUserId()) {
+  <form class="comment-form" (submit)="submitComment($event)">
+    <input type="text" aria-label="New comment" [formField]="form.text" />
+    <button class="button button--primary" type="submit" [disabled]="!form().valid()">
+      Comment
+    </button>
+  </form>
+}

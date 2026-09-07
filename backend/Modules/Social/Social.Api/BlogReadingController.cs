@@ -23,4 +23,10 @@ public sealed class BlogReadingController : ControllerBase
     {
         return await _readingQueries.GetPublishedAsync(page, pageSize);
     }
+
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<BlogDto>> GetById(Guid id)
+    {
+        return await _readingQueries.GetByIdAsync(id);
+    }
 }

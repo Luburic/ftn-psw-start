@@ -14,6 +14,11 @@ internal sealed class BlogReadRepository : IBlogReadRepository
         _dbContext = dbContext;
     }
 
+    public Task<BlogDto?> GetByIdAsync(Guid id)
+    {
+        return ProjectToDtos(_dbContext.Blogs.Where(blog => blog.Id == id)).FirstOrDefaultAsync();
+    }
+
     public Task<List<BlogDto>> GetByAuthorAsync(Guid authorId)
     {
         return ProjectToDtos(_dbContext.Blogs.Where(blog => blog.AuthorId == authorId)).ToListAsync();

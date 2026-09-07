@@ -1,0 +1,11 @@
+<article class="card stack">
+  <h3>{{ blog().title }}</h3>
+
+  <p>{{ blog().description }}</p>
+
+  <p class="meta">Status: {{ blog().status }}</p>
+
+  <p class="meta">Comments: {{ blog().comments.length }}</p>
+
+  <a [routerLink]="['/social', blog().id]">Read more</a>
+</article>

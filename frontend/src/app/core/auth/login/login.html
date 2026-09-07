@@ -1,0 +1,35 @@
+<div class="card stack">
+  <h1>Log in</h1>
+
+  <form class="stack" (submit)="submit($event)">
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" type="email" [formField]="form.email" />
+      @if (form.email().touched()) {
+        @for (message of form.email().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" type="password" [formField]="form.password" />
+      @if (form.password().touched()) {
+        @for (message of form.password().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <button class="button button--primary" type="submit" [disabled]="!form().valid() || pending()">
+      Log in
+    </button>
+  </form>
+
+  <p>No account yet? <a routerLink="/register">Register</a></p>
+</div>

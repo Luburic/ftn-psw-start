@@ -1,0 +1,23 @@
+<header>
+  <nav class="container">
+    <a routerLink="/">Home</a>
+    <a routerLink="/exploration">Exploration</a>
+    <a routerLink="/games">Games</a>
+    <a routerLink="/social">Social</a>
+    <a routerLink="/payment">Payment</a>
+
+    <span class="nav-user">
+      @if (auth.user(); as user) {
+        <span>{{ user.email }}</span>
+        <button class="button" type="button" (click)="auth.logout()">Logout</button>
+      } @else {
+        <a routerLink="/login">Login</a>
+        <a routerLink="/register">Register</a>
+      }
+    </span>
+  </nav>
+</header>
+
+<main class="container stack">
+  <router-outlet />
+</main>

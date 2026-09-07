@@ -1,0 +1,33 @@
+<div class="card stack">
+  <h1>Create blog</h1>
+
+  <form class="stack" (submit)="submit($event)">
+    <div class="field">
+      <label for="title">Title</label>
+      <input id="title" type="text" [formField]="form.title" />
+      @if (form.title().touched()) {
+        @for (message of form.title().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    <div class="field">
+      <label for="description">Description</label>
+      <textarea id="description" rows="6" [formField]="form.description"></textarea>
+      @if (form.description().touched()) {
+        @for (message of form.description().errors(); track $index) {
+          <p class="error">{{ message.message }}</p>
+        }
+      }
+    </div>
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <button class="button button--primary" type="submit" [disabled]="!form().valid() || pending()">
+      Create
+    </button>
+  </form>
+</div>
