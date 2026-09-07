@@ -1,8 +1,8 @@
-Svi moduli jedne aplikacije prate istu arhitekturu, pa se ista tehnička potreba javlja u svakom od njih. Svakom entitetu treba identifikator. Svaki modul prijavljuje prekršeno domensko pravilo izuzetkom. Svaki modul vraća stranicu rezultata za spiskove koji rastu bez granice. Kada bi svaki tim ovo pisao za sebe, dobili bismo više različitih rešenja istog problema, a čitalac bi morao da nauči rešenje svakog tima. Ovde razmatramo gde takav kod živi, šta u njemu sme da bude i kako u njega stiže.
+Svi feature moduli prate istu arhitekturu, pa se ista tehnička potreba javlja u svakom od njih. Svakom entitetu treba identifikator. Svaki modul prijavljuje prekršeno domensko pravilo izuzetkom. Svaki modul vraća stranicu rezultata za spiskove sa mnogo stavki. Kada bi svaki tim ovo pisao za sebe, dobili bismo više različitih rešenja istog problema, a čitalac bi morao da nauči rešenje svakog tima. Ovde razmatramo gde kod koji je zajednički za sve module živi.
 
 ## Zajedničko jezgro
 
-**Zajedničko jezgro** (engl. *shared kernel*) je deo koda koji koriste svi moduli, a ne poseduje nijedan. Poseduje ga platformski tim, koji uz njega održava glavnu aplikaciju, build i automatske provere. U našem projektu ga čine projekti `Shared.Domain`, `Shared.Api`, `Shared.Infrastructure` i `Shared.Tests`, po jedan za svaki sloj modula koji ima zajednički kod. Svaki sloj modula referencira samo projekat jezgra svog sloja, pa domenski sloj vidi `Shared.Domain`, a ne vidi `Shared.Infrastructure`.
+**Zajedničko jezgro** (engl. *shared kernel*) je deo koda koji koriste svi moduli. U našem projektu ga čine projekti `Shared.Domain`, `Shared.Api`, `Shared.Infrastructure` i `Shared.Tests`, po jedan za svaki sloj modula koji ima zajednički kod. Svaki sloj modula referencira samo projekat jezgra svog sloja, pa domenski sloj vidi `Shared.Domain`, a ne vidi `Shared.Infrastructure`.
 
 Zajedničko jezgro se drži namerno malim, jer svaka njegova promena pogađa sve module. Kada bi zajednički kod pripadao jednom modulu, svi moduli bi zavisili od jednog tima, a svaka promena tog modula bi mogla da lomi ostale.
 
@@ -66,6 +66,6 @@ Ostali slojevi imaju manje zajedničkog koda, ali istog oblika:
 
 ## Platformski radni okvir
 
-Vremenom zajedničko jezgro prerasta u **platformski radni okvir** (engl. *platform framework*), nadskup radnog okvira i biblioteka koje aplikacija koristi, proširen klasama specifičnim za tu aplikaciju. Tim modula programira nad njim kao nad ASP.NET-om, gde koristi njegove klase, a ne menja ih.
+U praksi zajedničko jezgro vremenom prerasta u **platformski radni okvir** (engl. *platform framework*), nadskup radnog okvira i biblioteka koje aplikacija koristi, proširen klasama specifičnim za tu aplikaciju. Programeri koji rade nad feature modulima koriste platformski radni okvir isto kao što koriste ASP.NET, čime dobijaju moćne funkcionalnosti koje je platforma sakupila kroz godine.
 
 Gradivni element se ne piše unapred, već nastaje **promocijom**. Kada se isto rešenje zatraži u drugom modulu, platformski tim ga izdvaja iz modula u kom je nastalo i uvodi u zajedničko jezgro. Dodavanje u zajedničko jezgro time ostaje odluka koja se donosi za ceo sistem, a ne pogodnost jednog modula.

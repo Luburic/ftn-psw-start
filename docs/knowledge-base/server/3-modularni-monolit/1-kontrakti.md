@@ -19,8 +19,8 @@ public sealed record CompletedSurveyDto(Guid SurveyId, string Title, DateTime Co
 
 U datom kodu treba uočiti sledeće:
 
-- Kontrakt ne referencira nijedan drugi deo modula. Njegove DTO strukture sadrže proste tipove i identifikatore, pa modul Nagrade ne vidi agregate, repozitorijume ni bazu modula Ankete. U našem projektu kontrakt živi u zasebnom projektu `Contracts`, koji ne referencira nijedan drugi projekat, pa unutrašnjost modula ne može da procuri kroz njega.
-- `CompletedSurveyDto` je odvojen od DTO struktura koje modul Ankete koristi za svoje kontrolere. Kontrakt se dogovara između timova dva modula i namerno je minimalan, jer sadrži samo podatke koje je modul Nagrade zatražio. Proširenje kontrakta je zato nov dogovor dva tima, a ne izmena unutar jednog modula.
+- Kontrakt ne referencira nijedan drugi deo modula. Njegove DTO strukture sadrže proste tipove i identifikatore, pa modul Nagrade ne vidi agregate ni repozitorijume modula Ankete. U našem projektu kontrakt živi u zasebnom projektu `Contracts`, koji ne referencira nijedan drugi projekat, pa unutrašnjost modula ne može da procuri kroz njega.
+- `CompletedSurveyDto` je odvojen od DTO struktura koje modul Ankete koristi za svoje kontrolere. Kontrakt se dogovara između timova dva modula i namerno je minimalan, jer sadrži samo podatke koje je modul Nagrade zatražio.
 - Poziv ide od modula kome podatak treba ka modulu koji ga poseduje. Modul Nagrade pita modul Ankete, a modul Ankete ne zna da modul Nagrade postoji.
 
 ## Implementacija i poziv kontrakta
@@ -58,6 +58,6 @@ U datom kodu treba uočiti sledeće:
 - Pozivalac ne zna niti ga zanima kako modul Ankete dolazi do odgovora. Pravilo o predatim odgovorima ostaje u agregatu `SurveyResponse` i primenjuje se unutar modula koji ga poseduje.
 - Projekat aplikacionog sloja modula Nagrade referencira projekat `Contracts` modula Ankete i nijedan drugi njegov projekat.
 
-Kontrakt je time druga javna površina modula, pored kontrolera. Kontroleri služe klijentskoj aplikaciji, a kontrakt služi drugim modulima. Sledeća slika prikazuje elemente jednog modula i njihove zavisnosti kada se kontrakt doda na slojeve čiste arhitekture, gde su interfejs i DTO struktura kontrakta označeni kao `InternalAPI` i `InternalDto`, a DTO strukture aplikacionog sloja kao `ExternalDto`:
+Kontrakt je dakle druga javna površina modula, pored kontrolera. Kontroleri služe eksternim klijentskim aplikacijama, a kontrakt služi drugim modulima. Sledeća slika prikazuje elemente jednog modula i njihove zavisnosti kada se kontrakt doda na slojeve čiste arhitekture, gde su interfejs i DTO struktura kontrakta označeni kao `InternalAPI` i `InternalDto`, a DTO strukture aplikacionog sloja kao `ExternalDto`:
 
 ![](1-kontrakti.png)
