@@ -1,14 +1,119 @@
-TODO: lesson not written. Below is the planned outline: one line per instructional item, stated as its goal, with the expected format in brackets.
-Prior knowledge assumed everywhere in klijent/: HTML, CSS, JavaScript (ES2015+, async/await, fetch), React basics (function components, props, useState), the server segments of this knowledge base.
+Sve što smo do sada napisali iscrtava se unutar korenske komponente, na jednoj adresi. Aplikacija projekta ima više stranica, a svaka ima svoju adresu, pa korisnik može da sačuva adresu jednog bloga ili da se dugmetom pregledača vrati na prethodnu stranicu. Pri tome pregledač ne učitava nov HTML dokument, već se menja samo adresa i sadržaj koji radni okvir iscrtava. U React-u je čitalac za to koristio React Router, biblioteku koju je sam dodao i podesio. Angular taj posao, četvrti od pet problema iz lekcije o Angular-u, rešava ugrađenim delom radnog okvira. Ovde upoznajemo kako se adresi dodeljuje komponenta, gde se ta komponenta iscrtava i kako iz adrese čita podatak.
 
-Scope: the route table, outlet, links, directives, route parameters as inputs, and the module's own route table. First appearance of routing anywhere in the segment; the Angular lesson showed a root component without it. No injection needed.
+## Tabela ruta
 
-Outline:
-1. Anchor: a single page application changes the address without reloading; what the students saw with React Router; the fourth of the five problems from the Angular lesson [text]
-2. Definition of route and route table; core/app.routes.ts with its three literal entries (the module entries omitted from the listing); provideRouter(routes) added to app.config.ts as the first framework part enabled after ng new; note that lesson 2's directory tree did not list the routes file and that it lives in core/ [code + text]
-3. The real root component: router-outlet (self-closing, as in the project) as the place the routed component renders and routerLink as the navigation link, which changes the address and swaps the outlet's content without a reload; definition of directive as a class that goes into imports and attaches behaviour to an element without being a component; imports recalled from the composition lesson [code + text]
-4. Route with a parameter, on the blog detail page from the project: the :id entry, the page declaring input.required<string>() with the same name, and the array form [routerLink]="['/social', blog().id]" for the link that leads there; route order, literal paths before :id, read from social.routes.ts. The mechanism of withComponentInputBinding presented in the analysis: after matching a route the router writes every route parameter into the input of the same name, exactly as a parent writes [id]="..." in a template; the value is always a string because it comes from the address; when only the parameter changes the router keeps the component and sets the input again, so the input behaves as any other signal [code + text]
-5. The module's route table: socialRoutes as the file the team edits, its paths relative to the /social prefix that the root table assigns to the module; one sentence that the root table attaches each module's table under its prefix, mechanism owned by the monolith segment [code + text]
-6. Integration: trace /social/123 from the address bar through the root table, the module table, the outlet and into the id input of the detail page, stopping at the input [numbered list]
+**Ruta** (engl. *route*) je par koji čine deo adrese i komponenta koju radni okvir iscrtava kada se adresa u pregledaču poklopi sa tim delom. **Tabela ruta** (engl. *route table*) je niz ruta iz kog radni okvir bira prvu koja se poklapa sa trenutnom adresom. Tabela ruta aplikacije živi u datoteci `core/app.routes.ts`. Direktorijum `core` drži kod koji ne pripada nijednom modulu, a stablo iz lekcije o Angular-u ga nije prikazalo. Sledeći kod prikazuje tabelu sa tri rute:
 
-Out of scope: programmatic navigation (submitting-a-form lesson), lazy loading and loadChildren (monolith segment, building blocks lesson), guards, resolvers, query parameters.
+```ts
+export const routes: Routes = [
+  { path: '', component: Home },
+  { path: 'login', component: Login },
+  { path: 'register', component: Register },
+];
+```
+
+Da bi radni okvir tabelu koristio, uključujemo je u konfiguraciju aplikacije:
+
+```ts
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideBrowserGlobalErrorListeners(),
+    provideRouter(routes, withComponentInputBinding()),
+  ],
+};
+```
+
+U datom kodu treba uočiti sledeće:
+- Anotacija `Routes` je tip niza ruta iz radnog okvira. Svaka ruta je objekat sa svojstvima `path` i `component`.
+- Svojstvo `path` je deo adrese bez početne kose crte. Prazan tekst se poklapa sa adresom `localhost:4200`, a `login` sa adresom `localhost:4200/login`.
+- Svojstvo `component` je klasa komponente. Klase `Home`, `Login` i `Register` su komponente početne stranice, prijave i registracije. Komponentu rute ne pravi šablon nekog roditelja, već radni okvir, kada se adresa poklopi sa rutom. Kada korisnik otvori adresu druge rute, radni okvir tu komponentu uništava i pravi komponentu nove rute.
+- Poziv `provideRouter` je prvi deo radnog okvira koji smo dodali u konfiguraciju nakon `ng new`. Prima tabelu ruta, a drugi argument objašnjavamo uz rutu sa parametrom.
+
+## Mesto iscrtavanja i veza
+
+Tabela kaže koja se komponenta iscrtava, ali ne i gde. Zaglavlje sa navigacijom je isto na svakoj stranici, a menja se samo deo ispod njega. Zato korenska komponenta u svom šablonu označava mesto na kom radni okvir iscrtava komponentu rute. **Mesto iscrtavanja** (engl. *router outlet*) je element `router-outlet`, na čije mesto radni okvir iscrtava komponentu rute koja se poklapa sa trenutnom adresom. **Veza** (engl. *router link*) je zapis `routerLink="adresa"` na elementu `a`, koji pri kliku menja adresu u pregledaču bez učitavanja novog dokumenta. Klase koje stoje iza ta dva zapisa nisu komponente, jer nemaju šablon. **Direktiva** (engl. *directive*) je klasa koja elementu na kom se koristi dodaje ponašanje, a nema sopstveni šablon. Sledeći kod prikazuje korensku komponentu projekta, skraćenu na dve veze:
+
+```ts
+@Component({
+  imports: [RouterLink, RouterOutlet],
+  selector: 'app-root',
+  styleUrl: './app.scss',
+  templateUrl: './app.html',
+})
+export class App {}
+```
+
+```html
+<header>
+  <nav>
+    <a routerLink="/">Home</a>
+    <a routerLink="/login">Login</a>
+  </nav>
+</header>
+
+<main>
+  <router-outlet />
+</main>
+```
+
+U datom kodu treba uočiti sledeće:
+- Direktive `RouterLink` i `RouterOutlet` navedene su u podešavanju `imports`, isto kao klasa deteta. Bez njih prevodilac prijavljuje da element `router-outlet` nije poznat, a `routerLink` ostaje običan HTML atribut bez dejstva.
+- Element `router-outlet` je prazan, pa se piše samozatvarajuće. Kada se adresa promeni, radni okvir na tom mestu zamenjuje komponentu stare rute komponentom nove. Zaglavlje iznad ostaje netaknuto.
+- Običan atribut `href` bi pregledaču naložio da učita nov dokument, čime bi radni okvir bio pokrenut ispočetka. Direktiva `RouterLink` pri kliku presreće događaj, menja adresu u pregledaču i prepušta radnom okviru da izabere rutu.
+- Adresa u vezi počinje kosom crtom, jer je to cela adresa od korena. Deo adrese u tabeli ruta je bez nje, jer se nadovezuje na ono što je ispred njega.
+
+## Ruta sa parametrom
+
+Stranica koja prikazuje jedan blog treba da zna koji blog prikazuje. Za svaki blog ne može da postoji posebna ruta, pa deo adrese sadrži parametar. **Parametar rute** (engl. *route parameter*) je deo adrese oblika `:naziv`, koji se poklapa sa bilo kojom vrednošću na tom mestu i tu vrednost pod tim nazivom predaje komponenti. Sledeći kod prikazuje, iz modula Social u projektu, tabelu ruta modula, stranicu koja prima parametar i vezu sa kartice bloga koja vodi na nju:
+
+```ts
+export const socialRoutes: Routes = [
+  { path: '', component: BlogList },
+  { path: 'mine', component: MyBlogs },
+  { path: 'create', component: CreateBlog },
+  { path: ':id', component: BlogDetail },
+];
+```
+
+```ts
+export class BlogDetail {
+  readonly id = input.required<string>();
+}
+```
+
+```html
+<a [routerLink]="['/social', blog().id]">Read more</a>
+```
+
+U datom kodu treba uočiti sledeće:
+- Deo adrese `:id` se poklapa sa adresama `/social/1` i `/social/42`. Vrednost iza `/social` je parametar `id`.
+- Parametar stiže u komponentu kao ulaz istog naziva. To omogućava `withComponentInputBinding` iz konfiguracije aplikacije. Nakon što izabere rutu, radni okvir svaki parametar rute upiše u ulaz komponente istog naziva, isto kao što roditelj upisuje vrednost u ulaz deteta zapisom `[id]="..."`. Bez tog podešavanja radni okvir parametar ne upisuje u ulaz.
+- Prevodilac obavezan ulaz proverava u šablonu roditelja. Komponentu rute ne koristi nijedan šablon, pa proveru nema ko da prekrši, a ulaz popunjava radni okvir.
+- Vrednost parametra je uvek tekst, jer dolazi iz adrese. Zato je ulaz tipa `string`, i kada identifikator na serveru nije tekst.
+- Kada korisnik sa adrese `/social/1` otvori `/social/2`, ruta je ista i komponenta je ista, pa radni okvir komponentu ne uništava. Zadržava postojeću i upisuje novu vrednost u ulaz `id`. Ulaz je signal, pa se sve što ga čita ponovo računa, kao pri svakoj promeni signala.
+- Veza sa parametrom se piše kao vezivanje svojstva sa nizom. Prvi element niza je deo adrese koji je isti za sve blogove, a drugi je vrednost parametra. Radni okvir od niza sastavlja adresu `/social/1`.
+- Radni okvir bira prvu rutu u tabeli koja se poklapa sa adresom. Adresa `/social/create` se poklapa i sa rutom `create` i sa rutom `:id`. Ruta `create` je navedena pre, pa se otvara stranica za pravljenje bloga. Da je `:id` prva u tabeli, svaka adresa bi vodila na stranicu bloga. Zato su rute sa parametrom uvek na kraju tabele.
+
+## Tabela ruta modula
+
+Klijentska aplikacija je, kao i serverska, podeljena na feature module, po jedan direktorijum `modules/<naziv>` za svaki. Prethodni odeljak je zato pokazao tabelu `socialRoutes`, a ne tabelu iz datoteke `core/app.routes.ts`. Svaki modul ima sopstvenu tabelu ruta, u datoteci `social.routes.ts` unutar direktorijuma modula, i to je tabela koju tim modula menja. Tabela aplikacije modulu dodeljuje prefiks, ovde `social`, a delovi adrese u tabeli modula se nadovezuju na njega. Prazan tekst se tako poklapa sa adresom `/social`, a `mine` sa adresom `/social/mine`. Kako tabela aplikacije uključuje tabelu svakog modula pod njegovim prefiksom, obrađuje segment o modularnom monolitu na klijentu.
+
+Sledeći kod prikazuje veze iz stranice sa spiskom blogova, koje vode na rute istog modula:
+
+```html
+<a routerLink="/social/mine">My blogs</a>
+<a routerLink="/social/create">Create blog</a>
+```
+
+U datom kodu treba uočiti sledeće:
+- Veza uvek sadrži celu adresu, sa prefiksom modula, i kada vodi na rutu istog modula.
+- Dodavanje nove stranice u modul ima dva koraka. Komponenta se doda u tabelu modula sa svojim delom adrese, a veza koja na nju vodi se doda u šablon stranice sa koje se otvara.
+
+## Od adrese do stranice bloga
+
+Povežimo pojmove. Korisnik je na spisku blogova i klikne na vezu „Read more“ prve kartice. Dešava se sledeće:
+1. Direktiva `RouterLink` presreće klik, od niza `['/social', '1']` sastavlja adresu `/social/1` i upisuje je u pregledač.
+2. Radni okvir u tabeli aplikacije nalazi stavku sa prefiksom `social` i prelazi na tabelu modula Social sa ostatkom adrese, `1`.
+3. U tabeli modula redom proverava `''`, `mine` i `create`, koji se ne poklapaju sa `1`, i staje na `:id`, koji se poklapa sa vrednošću `1`.
+4. Na mestu iscrtavanja uništava komponentu `BlogList` i pravi komponentu `BlogDetail`. Zaglavlje korenske komponente ostaje.
+5. Upisuje tekst `'1'` u ulaz `id` komponente `BlogDetail`, jer ulaz nosi isti naziv kao parametar.
