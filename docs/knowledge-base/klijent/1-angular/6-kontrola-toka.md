@@ -39,19 +39,24 @@ U datom kodu treba uočiti sledeće:
 
 ## Grananje sa aliasom
 
-Vrednost koja može da nedostaje, tipa `T | null`, u šablonu se čita više puta. Svako čitanje bi moralo da proveri `null`. Naredba `@if` zato dozvoljava da vrednost uslova dobije **alias** (engl. *alias*), naziv pod kojim se koristi unutar bloka. Sledeći kod prikazuje prikaz prijavljenog korisnika:
+Vrednost koja može da nedostaje, tipa `T | null`, u šablonu se čita više puta. Svako čitanje bi moralo da proveri `null`. Naredba `@if` zato dozvoljava da vrednost uslova dobije **alias** (engl. *alias*), naziv pod kojim se koristi unutar bloka. Sledeći kod prikazuje prikaz izabrane ture:
+
+```ts
+protected readonly selectedTour = signal<TourDto | null>(null);
+```
 
 ```html
-@if (auth.user(); as user) {
-  <span>{{ user.email }}</span>
+@if (selectedTour(); as tour) {
+  <h2>{{ tour.name }}</h2>
+  <p>{{ tour.description }}</p>
 } @else {
-  <a routerLink="/login">Prijava</a>
+  <p>Nijedna tura nije izabrana.</p>
 }
 ```
 
 U datom kodu treba uočiti sledeće:
-- Zapis `as user` uvodi promenljivu `user` koja unutar bloka drži vrednost izraza. Blok se prikazuje samo kada vrednost nije `null`, pa je tip promenljive `User`, bez `null`.
-- Bez aliasa bi svako čitanje bilo `auth.user()?.email`, a prevodilac ne bi znao da je vrednost unutar bloka sigurno prisutna.
+- Zapis `as tour` uvodi promenljivu `tour` koja unutar bloka drži vrednost izraza. Blok se prikazuje samo kada vrednost nije `null`, pa je tip promenljive `TourDto`, bez `null`.
+- Bez aliasa bi svako čitanje bilo `selectedTour()?.name`, a prevodilac ne bi znao da je vrednost unutar bloka sigurno prisutna.
 
 ## Referenca na element šablona
 
@@ -68,7 +73,7 @@ U datom kodu treba uočiti sledeće:
 
 ## Pretraga tura
 
-Povežimo pojmove u stranicu koja filtrira spisak tura po nazivu. Spisak je ovde upisan u klasu, a kako stiže sa servera obrađuje [lekcija o čitanju podataka](9-citanje-podataka.md):
+Povežimo pojmove u stranicu koja filtrira spisak tura po nazivu. Spisak je upisan u klasu:
 
 ```ts
 @Component({
@@ -78,8 +83,8 @@ Povežimo pojmove u stranicu koja filtrira spisak tura po nazivu. Spisak je ovde
 })
 export class TourList {
   private readonly tours: TourDto[] = [
-    { id: '1', name: 'Stari grad', difficulty: 'Easy' },
-    { id: '2', name: 'Fruška gora', difficulty: 'Hard' },
+    { id: '1', name: 'Stari grad', description: 'Šetnja kroz tvrđavu.', difficulty: 'Easy' },
+    { id: '2', name: 'Fruška gora', description: 'Planinarenje do manastira.', difficulty: 'Hard' },
   ];
 
   protected readonly nameFilter = signal('');

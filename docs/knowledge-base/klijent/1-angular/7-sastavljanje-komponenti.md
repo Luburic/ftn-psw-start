@@ -89,7 +89,7 @@ U datom kodu treba uočiti sledeće:
 
 ## Podaci naniže, događaji naviše
 
-Prethodna dva odeljka daju pravilo po kom se komponente sastavljaju. Podaci putuju naniže, od roditelja ka detetu, kroz ulaze. Događaji putuju naviše, od deteta ka roditelju, kroz izlaze. Dete drži samo stanje potrebno za sopstveni prikaz, ne poziva server i ne zna na kojoj se stranici nalazi. Zato istu karticu mogu da koriste spisak svih tura i spisak tura jednog autora, a svaki roditelj sam odlučuje šta radi kada kartica javi događaj.
+Prethodna dva odeljka daju pravilo po kom se komponente sastavljaju. Podaci putuju naniže, od roditelja ka detetu, kroz ulaze. Događaji putuju naviše, od deteta ka roditelju, kroz izlaze. Dete drži samo stanje potrebno za sopstveni prikaz i ne zna na kojoj se stranici nalazi. Zato istu karticu mogu da koriste spisak svih tura i spisak tura jednog autora, a svaki roditelj sam odlučuje šta radi kada kartica javi događaj.
 
 ## Stranica i kartica
 
@@ -104,8 +104,8 @@ Povežimo pojmove u stranicu koja prikazuje kartice i uklanja turu koju kartica 
 })
 export class TourList {
   protected readonly tours = signal<TourDto[]>([
-    { id: '1', name: 'Stari grad', description: 'Šetnja kroz tvrđavu.' },
-    { id: '2', name: 'Fruška gora', description: 'Planinarenje do manastira.' },
+    { id: '1', name: 'Stari grad', description: 'Šetnja kroz tvrđavu.', difficulty: 'Easy' },
+    { id: '2', name: 'Fruška gora', description: 'Planinarenje do manastira.', difficulty: 'Hard' },
   ]);
 
   protected remove(tourId: string): void {
@@ -127,5 +127,3 @@ Kada korisnik klikne na dugme za brisanje na drugoj kartici, dešava se sledeće
 2. Roditelj je na taj izlaz vezao izraz `remove($event)`, pa se poziva `remove('2')`.
 3. Metoda `remove` predaje signalu `tours` nov niz bez te ture.
 4. Petlja `@for` je pretplatnik signala `tours`, pa radni okvir ponovo iscrtava spisak. Kartica sa identifikatorom `1` ostaje, a kartica sa identifikatorom `2` se uklanja.
-
-Kartica u ovom primeru je kartica iz projekta. Stranica u projektu spisak ne drži u klasi, već ga čita sa servera, a brisanje šalje serveru pre nego što spisak osveži. Oba koraka obrađuju [lekcija o čitanju podataka](9-citanje-podataka.md) i [lekcija o komandama](10-komande.md).

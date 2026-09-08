@@ -52,7 +52,7 @@ export class TourCard {
 
 U datom kodu treba uočiti sledeće:
 - Šablon vidi članove klase po nazivu, bez `this`. Polje `name` u klasi i `name` u šablonu su isto polje.
-- Polja su `protected`, a ne `private`, jer ih šablon čita. Prevodilac proverava šablon isto kao klasu i prijavljuje grešku ako šablon pristupa privatnom članu ili članu koji ne postoji.
+- Prevodilac šablon prevodi kao deo klase, pa šablon vidi članove označene sa `protected`, a ne vidi one označene sa `private`. Zato su polja koja šablon čita `protected`. Prevodilac proverava šablon isto kao klasu i prijavljuje grešku ako šablon pristupa privatnom članu ili članu koji ne postoji.
 
 ## Vezivanje svojstva
 
@@ -90,7 +90,7 @@ export class TourCard {
 
 U datom kodu treba uočiti sledeće:
 - Oble zagrade oko `click` znače da je desna strana izraz koji se izvršava pri kliku. Naziv događaja je isti kao u čistom JavaScript-u, bez prefiksa `on`.
-- Reč `$event` je objekat događaja koji pregledač pravi, isti onaj koji `addEventListener` prosleđuje slušaocu. Prosleđujemo ga metodi kada joj treba, na primer da forma ne bi osvežila stranicu pri slanju. Kada metodi ne treba, poziv je `(click)="publish()"`.
+- Reč `$event` je objekat događaja koji pregledač pravi, isti onaj koji `addEventListener` prosleđuje slušaocu. Prosleđujemo ga metodi kada joj treba. Kada metodi ne treba, poziv je `(click)="publish()"`.
 
 ## Kartica ture
 
@@ -124,6 +124,6 @@ export class TourCard {
 U datom kodu treba uočiti sledeće:
 - Interpolacija ispisuje dva polja, vezivanje svojstva veže dostupnost dugmeta za treće polje, a vezivanje događaja poziva metodu koja to polje menja.
 - Polje `published` nije `readonly`, jer ga metoda menja.
-- Ovo je kartica iz projekta, s tim što je naziv ture upisan u klasu umesto da stigne spolja. Kako kartica prima podatke od druge komponente obrađuje [lekcija o sastavljanju komponenti](6-sastavljanje-komponenti.md).
+- Naziv i opis ture su upisani u klasu, pa svaka kartica prikazuje istu turu.
 
 Kada pokrenemo aplikaciju i kliknemo na dugme, metoda `publish` se izvršava i polje `published` dobija vrednost `true`. Dugme ostaje dostupno. Prikaz ne prati promenu običnog polja klase. Zašto se to dešava i kako se piše polje čiju promenu prikaz prati obrađuje [lekcija o signalima](4-signali.md).
