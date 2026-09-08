@@ -5,11 +5,9 @@ Scope: sending a form: submit, pending, navigation, reset.
 
 Outline:
 1. Anchor: the create form from the previous lesson must reach the server and land on the list [text]
-2. Submit: the (submit) event and preventDefault, since there is no framework submit event [code + text]
-3. Disabled while invalid or pending; the command pattern from the commands lesson reused unchanged [code + text]
-4. Navigating after success with inject(Router).navigate [code + text]
-5. reset after submit for a form that stays on screen, as the transport-time form does [code]
-6. Reactive Forms named once as what older codebases use [text]
-7. Integration: the create tour page in full [code + analysis]
+2. The submit handler: the (submit) event on the form element and preventDefault, since there is no framework submit event; the command pattern from the commands lesson reused unchanged; the button disabled on !form().valid() || pending() [code + text]
+3. Navigating after success with inject(Router).navigate, the second injection the students meet, reused without re-explaining [code + text]
+4. reset with the initial model for a form that stays on screen, on the project's comment form [code]
+5. Integration: the create tour page in full, completing the forms lesson's example [code + analysis]
 
-Out of scope: the submit() helper, cross-field validation.
+Out of scope: the submit() helper, cross-field validation, Reactive Forms.

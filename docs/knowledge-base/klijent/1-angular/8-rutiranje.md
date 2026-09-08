@@ -1,16 +1,14 @@
 TODO: lesson not written. Below is the planned outline: one line per instructional item, stated as its goal, with the expected format in brackets.
 Prior knowledge assumed everywhere in klijent/: HTML, CSS, JavaScript (ES2015+, async/await, fetch), React basics (function components, props, useState), the server segments of this knowledge base.
 
-Scope: the route table, outlet, links, directives, parameters, lazy loading. First appearance of routing anywhere in the segment; the Angular lesson showed a root component without it. No injection needed.
+Scope: the route table, outlet, links, directives, route parameters as inputs, and the module's own route table. First appearance of routing anywhere in the segment; the Angular lesson showed a root component without it. No injection needed.
 
 Outline:
 1. Anchor: a single page application changes the address without reloading; what the students saw with React Router; the fourth of the five problems from the Angular lesson [text]
-2. Definition of route and route table; app.routes.ts with the three literal entries; provideRouter(routes) added to app.config.ts as the first framework part enabled after ng new [code + text]
-3. The real root component: router-outlet as the place a routed component renders and routerLink as the navigation link; definition of directive as a class that goes into imports and attaches behaviour to an element without being a component; imports recalled from the composition lesson [code + text]
-4. A route with a parameter :id, arriving in the component as input.required<string>(); withComponentInputBinding added to provideRouter as the option that makes this happen; the input is a signal like any other [code + text]
-5. The array form [routerLink]="['/social', id]" for links with parameters, shown on the same example as item 4 [code + text]
-6. Route order: literal paths before :id, read from the project's social.routes.ts [code + text]
-7. A child route table per module and loadChildren with dynamic import(), read from the project's app.routes.ts, with one sentence that public-api re-exports the module's routes and a TODO for the monolith segment; why lazy (one bundle per module, loaded on first visit) [code + text]
-8. Integration: trace /social/123 from the address bar to the id input of the detail page, stopping at the input [numbered list]
+2. Definition of route and route table; core/app.routes.ts with its three literal entries (the module entries omitted from the listing); provideRouter(routes) added to app.config.ts as the first framework part enabled after ng new; note that lesson 2's directory tree did not list the routes file and that it lives in core/ [code + text]
+3. The real root component: router-outlet (self-closing, as in the project) as the place the routed component renders and routerLink as the navigation link, which changes the address and swaps the outlet's content without a reload; definition of directive as a class that goes into imports and attaches behaviour to an element without being a component; imports recalled from the composition lesson [code + text]
+4. Route with a parameter, on the blog detail page from the project: the :id entry, the page declaring input.required<string>() with the same name, and the array form [routerLink]="['/social', blog().id]" for the link that leads there; route order, literal paths before :id, read from social.routes.ts. The mechanism of withComponentInputBinding presented in the analysis: after matching a route the router writes every route parameter into the input of the same name, exactly as a parent writes [id]="..." in a template; the value is always a string because it comes from the address; when only the parameter changes the router keeps the component and sets the input again, so the input behaves as any other signal [code + text]
+5. The module's route table: socialRoutes as the file the team edits, its paths relative to the /social prefix that the root table assigns to the module; one sentence that the root table attaches each module's table under its prefix, mechanism owned by the monolith segment [code + text]
+6. Integration: trace /social/123 from the address bar through the root table, the module table, the outlet and into the id input of the detail page, stopping at the input [numbered list]
 
-Out of scope: programmatic navigation (submitting-a-form lesson), guards, resolvers, query parameters.
+Out of scope: programmatic navigation (submitting-a-form lesson), lazy loading and loadChildren (monolith segment, building blocks lesson), guards, resolvers, query parameters.
