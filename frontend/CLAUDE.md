@@ -36,25 +36,41 @@ frontend/src/
     modules/
       <name>/
         api/                 this module's generated DTO types, do not hand-edit
-        pages/               routed (smart) components, one folder per component
-          tour-list/
+        tour-browsing/       one folder per use-case group, named as on the backend
+          tour-list/         a page: routed, injects the group's service
             tour-list.ts
             tour-list.html
             tour-list.scss
-        components/          presentational (dumb) components, used only inside this
-                             module, one folder per component
-        services/            state service, api calls
-        models/
+          tour-card/         a presentational component, used by the pages next to it
+        tour-authoring/
+          create-tour/
+          my-tours/
+          tour-authoring.ts  the group's service: its commands, nothing else
         <name>.routes.ts
         public-api.ts        the only file other modules may import
 ```
 
-The `pages/`, `components/`, `services/` folders are a deliberate divergence from the
-2025 Angular style guide, which groups by feature. Here the folder names make the
-smart/dumb split physical, which is the one architecture idea the frontend teaches.
-Inside those folders the layout is exactly what `ng generate component` produces: a
-folder per component holding `tour-list.ts`, `tour-list.html`, `tour-list.scss`, no
-`.component` suffix. Generate with `ng g c pages/tour-list` from the module folder.
+A module is a flat list of use-case groups. A group is a flat list of component
+folders plus at most one service file. That is the whole layout, and it follows the
+2025 Angular style guide: organise by feature, never by type, so there are no
+`pages/`, `components/` or `services/` folders. Three rules place any file:
+
+1. A group is the set of screens serving one user goal. Reuse the backend's
+   application-layer group names (`blog-reading`, `blog-authoring`). A component that
+   only appears inside another group's screen lives with that screen; the frontend has
+   fewer groups than the backend because it groups screens, not operations.
+2. Every component gets its own folder inside its group, exactly what
+   `ng generate component` produces: `tour-list.ts`, `tour-list.html`,
+   `tour-list.scss`, no `.component` suffix. Generate with `ng g c tour-browsing/tour-list`
+   from the module folder. A type used only by one component is exported from that
+   component's file.
+3. Queries live in the page as an `httpResource`; commands live in the group's
+   service. A page that runs a command reloads its own resource afterwards.
+
+The smart/dumb split is visible in the code rather than in folder names: the routes
+file lists every page, a page injects a service, a presentational component injects
+nothing. Placeholder modules (Games, Payment) hold a single home page at the module
+root until their first group exists.
 
 ## Rules
 
@@ -87,11 +103,12 @@ construct means adding a lesson, so treat it as a platform decision.
 - Templates: built-in control flow (`@if`, `@for`, `@switch`), `class` and `style`
   bindings. No `*ngIf`, `*ngFor`, `NgClass`, `NgStyle`.
 - State: `signal()` and `computed()`. `effect()` only when a signal must
-  drive something outside the component tree, and it needs a reason. The one
-  instance is the blog detail page passing its route input to the service's resource. State that outlives
-  a page lives in a service holding signals, `providedIn: 'root'`.
-- HTTP: `httpResource()` for reads (it carries loading and error state as signals);
-  `HttpClient` with `firstValueFrom` for writes. Functional interceptors
+  drive something outside the component tree, and it needs a reason; the current code
+  has no instance. Page-scoped state, including its read resources, lives in the page.
+  State that outlives a page lives in a service holding signals, `providedIn: 'root'`.
+- HTTP: `httpResource()` in the page for reads (it carries loading and error state as
+  signals, and a fresh one is created on every visit); `HttpClient` with
+  `firstValueFrom` in the group's service for writes. Functional interceptors
   (`HttpInterceptorFn`, `withInterceptors`) in `core/`.
 - Forms: Signal Forms (`form()`, `FormField`, validators from
   `@angular/forms/signals`). No Reactive Forms, no template-driven forms.
@@ -127,9 +144,9 @@ assigned to the platform team, and misalignment is an accepted learning experien
   tag) into `modules/<name>/api/`, shared envelope types into `shared/api/`, so the
   import boundary covers types as well. The platform team owns the generation script.
   Students never hand-write a DTO.
-- A page component owns the interaction: it injects the module's service, reads its
-  signals, and passes plain values down to presentational components, which take
-  `input()`s and raise `output()`s and inject nothing.
+- A page component owns the interaction: it declares its read resource, injects its
+  group's service for commands, and passes plain values down to presentational
+  components, which take `input()`s and raise `output()`s and inject nothing.
 - Do not produce Vitest tests unless specifically instructed. Frontend testing is not
   taught; it is a platform-team assignment.
 - One fully implemented reference module exists as the pattern to copy: list with

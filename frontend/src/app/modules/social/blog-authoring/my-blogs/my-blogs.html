@@ -1,0 +1,51 @@
+<div class="stack">
+  <h1>My blogs</h1>
+
+  <p><a routerLink="/social/create">Create blog</a></p>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (blogs.isLoading()) {
+    <p>Loading your blogs...</p>
+  } @else if (blogs.error()) {
+    <p class="error">Could not load your blogs. Log in and try again.</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Title</th>
+          <th scope="col">Status</th>
+          <th scope="col">Comments</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (blog of blogs.value() ?? []; track blog.id) {
+          <tr>
+            <td>{{ blog.title }}</td>
+            <td>{{ blog.status }}</td>
+            <td>{{ blog.comments.length }}</td>
+            <td>
+              @if (blog.status === 'Draft') {
+                <button
+                  class="button button--primary"
+                  type="button"
+                  [disabled]="pending()"
+                  (click)="publish(blog.id)"
+                >
+                  Publish
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4">You have no blogs yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

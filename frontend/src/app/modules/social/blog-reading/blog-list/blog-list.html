@@ -1,0 +1,24 @@
+<div class="stack">
+  <h1>Blogs</h1>
+
+  @if (auth.isLoggedIn()) {
+    <p class="links">
+      <a routerLink="/social/mine">My blogs</a>
+      <a routerLink="/social/create">Create blog</a>
+    </p>
+  }
+
+  @if (blogs.isLoading()) {
+    <p>Loading blogs...</p>
+  } @else if (blogs.error()) {
+    <p class="error">Could not load blogs. Log in and try again.</p>
+  } @else {
+    <div class="grid">
+      @for (blog of blogs.value()?.items ?? []; track blog.id) {
+        <app-blog-card [blog]="blog" />
+      } @empty {
+        <p>No blogs published yet.</p>
+      }
+    </div>
+  }
+</div>

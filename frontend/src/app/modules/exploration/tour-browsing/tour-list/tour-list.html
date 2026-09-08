@@ -1,0 +1,52 @@
+<div class="stack">
+  <h1>Tours</h1>
+
+  @if (auth.isLoggedIn()) {
+    <p class="links">
+      <a routerLink="/exploration/mine">My tours</a>
+      <a routerLink="/exploration/create">Create tour</a>
+    </p>
+  }
+
+  <div class="filters">
+    <div class="field">
+      <label for="name-filter">Search by name</label>
+      <input
+        #nameInput
+        id="name-filter"
+        type="search"
+        [value]="nameFilter()"
+        (input)="nameFilter.set(nameInput.value)"
+      />
+    </div>
+
+    <div class="field">
+      <label for="difficulty-filter">Difficulty</label>
+      <select
+        #difficultyInput
+        id="difficulty-filter"
+        [value]="difficultyFilter()"
+        (change)="difficultyFilter.set(difficultyInput.value)"
+      >
+        <option value="">All</option>
+        <option value="Easy">Easy</option>
+        <option value="Moderate">Moderate</option>
+        <option value="Hard">Hard</option>
+      </select>
+    </div>
+  </div>
+
+  @if (tours.isLoading()) {
+    <p>Loading tours...</p>
+  } @else if (tours.error()) {
+    <p class="error">Could not load tours. Log in and try again.</p>
+  } @else if (visibleTours().length === 0) {
+    <p>No tours match the filter.</p>
+  } @else {
+    <div class="grid">
+      @for (tour of visibleTours(); track tour.id) {
+        <app-tour-card [tour]="tour" />
+      }
+    </div>
+  }
+</div>

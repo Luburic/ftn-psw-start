@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
-import { CreateTour } from './pages/create-tour/create-tour';
-import { MyTours } from './pages/my-tours/my-tours';
-import { TourList } from './pages/tour-list/tour-list';
+import { CreateTour } from './tour-authoring/create-tour/create-tour';
+import { MyTours } from './tour-authoring/my-tours/my-tours';
+import { TourList } from './tour-browsing/tour-list/tour-list';
 
 export const explorationRoutes: Routes = [
   { path: '', component: TourList },

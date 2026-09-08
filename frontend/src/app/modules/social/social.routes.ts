@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
-import { BlogDetail } from './pages/blog-detail/blog-detail';
-import { BlogList } from './pages/blog-list/blog-list';
-import { CreateBlog } from './pages/create-blog/create-blog';
-import { MyBlogs } from './pages/my-blogs/my-blogs';
+import { CreateBlog } from './blog-authoring/create-blog/create-blog';
+import { MyBlogs } from './blog-authoring/my-blogs/my-blogs';
+import { BlogDetail } from './blog-reading/blog-detail/blog-detail';
+import { BlogList } from './blog-reading/blog-list/blog-list';
 
 export const socialRoutes: Routes = [
   { path: '', component: BlogList },
