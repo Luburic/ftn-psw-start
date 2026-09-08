@@ -2,37 +2,34 @@ Svaka klijentska aplikacija rešava iste tehničke probleme, nezavisno od toga �
 1. Prikaže podatke u HTML dokumentu.
 2. Osveži prikaz kada se podaci promene.
 3. Reaguje na akcije korisnika.
-4. Po adresi u pregledaču odluči koju stranicu prikazuje.
+4. Po adresi u internet čitaču odluči koju stranicu prikazuje.
 5. Razmenjuje podatke sa serverom.
 
-React, koji čitalac poznaje, rešava prva dva problema. Za ostale programer bira i povezuje dodatne biblioteke, pa dve React aplikacije retko imaju istu strukturu. Angular rešava svih pet problema i propisuje strukturu aplikacije. Razlika između radnog okvira i biblioteke, poznata sa serverske strane, važi i ovde. Biblioteku pozivamo iz svog koda, a radni okvir drži kontrolu toka i poziva naš kod na mestima koja smo mu deklarativno označili.
+Biblioteke po pravilu rešavaju samo deo ovih problema, pa programer bira i povezuje više njih, zbog čega dve aplikacije retko imaju istu strukturu (čest slučaj sa React-om). Angular rešava svih pet problema i uz to propisuje strukturu aplikacije.
 
 **Angular** je radni okvir za izgradnju klijentskih veb aplikacija u jeziku TypeScript. Ovde čitamo najmanju Angular aplikaciju dovoljnu za rad, datoteku po datoteku, koristeći skraćene verzije datoteka iz našeg projekta.
 
 ## Struktura radnog prostora
 
-Komanda `ng new` pravi radni prostor. Sledeći prikaz daje njegove datoteke, bez onih koje se retko otvaraju:
+Komanda `ng new [naziv-projekta]` kreira novi projekat. Sledeći prikaz daje početne datoteke jednog projekta, pri čemu su izostavljene datoteke koje se retko menjaju:
 
 ```
-frontend/
-  angular.json          Podešavanja alata za prevođenje i pokretanje
-  package.json          Zavisnosti i komande projekta
-  src/
-    index.html          Jedina HTML stranica aplikacije
-    main.ts             Ulazna tačka
-    styles.scss         Globalni stilovi
-    app/
-      app.config.ts     Konfiguracija aplikacije
-      app.ts            Korenska komponenta
-      app.html          Šablon korenske komponente
+  angular.json          Podešavanje alata za prevođenje i pokretanje
+  package.json          Spisak biblioteka od kojih projekat zavisi i komande za pokretanje (npr. start)
+  src/                  Izvorni kod aplikacije; u okviru ovog direktorijuma se dešava najviše izmena u toku razvoja projekta
+    index.html          Korenska HTML stranica aplikacije, jedina koju čitač učitava
+    main.ts             Ulazna tačka od koje kreće izvršavanje projekta; pokreće Angular aplikaciju
+    styles.scss         Globalni stilovi koji važe za celu aplikaciju
+    app/                Kod same aplikacije: komponente, servisi i njihova konfiguracija
+      app.config.ts     Konfiguracija aplikacije: delovi radnog okvira koji se uključuju pri pokretanju
+      app.ts            Korenska komponenta, prva koju Angular iscrtava
+      app.html          Šablon korenske komponente (šta se prikazuje)
       app.scss          Stilovi korenske komponente
 ```
 
-Datoteke van direktorijuma `src/` su podešavanja alata i menja ih platformski tim. Kod aplikacije živi u `src/app/`.
-
 ## Ulazna tačka
 
-Datoteka `index.html` je jedina HTML stranica koju pregledač učitava. Njeno telo sadrži jedan element:
+Datoteka `index.html` je jedina HTML stranica koju internet čitač učitava. Njeno telo sadrži jedan element:
 
 ```html
 <body>
@@ -40,7 +37,7 @@ Datoteka `index.html` je jedina HTML stranica koju pregledač učitava. Njeno te
 </body>
 ```
 
-Element `app-root` nije standardan HTML element i pregledač ga ne poznaje. Angular ga pri pokretanju zamenjuje sadržajem korenske komponente. Pokretanje se dešava u datoteci `main.ts`:
+Element `app-root` nije standardan HTML element i internet čitač ga ne poznaje. Angular ga pri pokretanju ne uklanja, već unutar njega iscrtava sadržaj korenske komponente. Pokretanje se dešava u datoteci `main.ts`:
 
 ```ts
 bootstrapApplication(App, appConfig);
@@ -48,29 +45,17 @@ bootstrapApplication(App, appConfig);
 
 Poziv `bootstrapApplication` prima klasu korenske komponente i konfiguraciju aplikacije. Od tog trenutka Angular upravlja sadržajem stranice.
 
-## Konfiguracija aplikacije
-
-Datoteka `app.config.ts` sadrži spisak delova radnog okvira koje aplikacija uključuje jednom, pri pokretanju:
-
-```ts
-export const appConfig: ApplicationConfig = {
-  providers: [
-    provideBrowserGlobalErrorListeners(),
-  ],
-};
-```
-
-Stavka `provideBrowserGlobalErrorListeners` je podrazumevana stavka koju `ng new` upisuje. Ostavljamo je i ne bavimo se njome. Svaki deo radnog okvira koji aplikacija koristi uključuje se ovde, a kod aplikacije ga zatim koristi bez daljeg podešavanja. Ova datoteka je klijentski pandan datoteci `Program.cs`.
-
 ## Korenska komponenta
 
-**Komponenta** (engl. *component*) je klasa sa pridruženim HTML šablonom koja upravlja jednim delom stranice. Korenska komponenta upravlja celom stranicom. Sledeći kod prikazuje njenu klasu:
+**Komponenta** (engl. *component*) je osnovni gradivni blok Angular aplikacije: klasa sa pridruženim HTML šablonom i CSSom koja upravlja jednim delom stranice. Klasa čuva podatke i logiku (šta se prikazuje i kako se reaguje na akcije), a šablon opisuje izgled (kako se to iscrtava). Stranicu gradimo od više komponenti. Na primer jedna prikazuje zaglavlje, druga spisak tura, treća formu. Korenska komponenta je prva koju Angular iscrtava i unutar sebe smešta sve ostale.
+
+Komponentu čine tri datoteke istog naziva: `.ts` (klasa), `.html` (šablon) i `.scss` (stilovi). Sledeći kod prikazuje klasu korenske komponente:
 
 ```ts
 @Component({
   selector: 'app-root',
-  styleUrl: './app.scss',
   templateUrl: './app.html',
+  styleUrl: './app.scss',
 })
 export class App {}
 ```
@@ -90,19 +75,69 @@ Sledeći kod prikazuje njen šablon, iz datoteke `app.html`:
 U datom kodu treba uočiti sledeće:
 - Zapis `@Component({ ... })` je dekorator. **Dekorator** (engl. *decorator*) je oznaka iznad klase kojom radni okvir prepoznaje ulogu klase, isto kao atribut `[ApiController]` na serveru. Objekat u zagradi nosi podešavanja komponente.
 - Podešavanje `selector` određuje naziv HTML elementa pod kojim se komponenta koristi. Zato `index.html` sadrži element `app-root`.
-- Podešavanja `templateUrl` i `styleUrl` vezuju klasu za šablon i za datoteku stilova. Tri datoteke istog naziva, sa nastavcima `.ts`, `.html` i `.scss`, čine jednu komponentu.
+- Podešavanja `templateUrl` i `styleUrl` vezuju klasu za šablon i za datoteku stilova.
 - Klasa je prazna, jer šablon ne prikazuje nijedan podatak iz nje. Sve što korisnik vidi upisano je u šablon.
+
+## Podatak iz klase u šablonu
+
+Prazna klasa retko je korisna — komponenta obično čuva podatke koje prikazuje. Vrednost iz klase u šablon prenosimo zapisom `{{ ... }}`, koji nazivamo **interpolacija** (engl. *interpolation*). Sledeći kod dodaje polje u klasu:
+
+```ts
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.html',
+  styleUrl: './app.scss',
+})
+export class App {
+  protected readonly title = 'Explorer';
+}
+```
+
+Šablon zatim čita to polje umesto tvrdo upisanog teksta:
+
+```html
+<header>
+  <h1>{{ title }}</h1>
+</header>
+```
+
+U datom kodu treba uočiti sledeće:
+- Zapis `{{ title }}` u šablonu prevodi se u vrednost polja `title` iz klase. U internet čitaču se prikazuje `Explorer`.
+- Šablon vidi samo članove komponente kojoj pripada; polja druge komponente nisu mu dostupna.
+
+Naredna lekcija će detaljno razraditi koncept komponente.
 
 ## Od pokretanja do prikaza
 
 Kada korisnik otvori adresu `localhost:4200`, dešava se sledeće:
-1. Pregledač učitava `index.html` i u njemu nalazi element `app-root`.
+1. Internet čitač učitava `index.html` i u njemu nalazi element `app-root`.
 2. Izvršava se `main.ts`, koji poziva `bootstrapApplication` sa klasom `App` i konfiguracijom iz `app.config.ts`.
-3. Angular pravi korensku komponentu i njenim šablonom zamenjuje element `app-root`.
+3. Angular pravi korensku komponentu i njen šablon iscrtava unutar elementa `app-root`.
 4. Korisnik vidi zaglavlje i poruku iz šablona korenske komponente.
 
-## Pokretanje
+## Priprema okruženja
 
-Komanda `npm start` prevodi aplikaciju i pokreće razvojni server na adresi `localhost:4200`. Nakon svake izmene datoteke razvojni server ponovo prevodi aplikaciju i osvežava stranicu u pregledaču.
+Da bi se Angular projekat pokrenuo na tvojoj mašini, neophodno je da instaliraš:
 
-Greške se pojavljuju na dva mesta. Greške prevođenja, poput prekršene anotacije tipa, prijavljuje terminal u kom je pokrenut `npm start`. Greške pri izvršavanju prijavljuje konzola pregledača.
+1. **Node.js** — okruženje u kom se izvršava alat za prevođenje (provera: `node --version`). Preporučuje se aktuelna LTS verzija.
+2. **npm** — menadžer paketa, stiže uz Node.js (provera: `npm --version`).
+3. **Angular CLI** — alat komandne linije radnog okvira, instalira se jednom, globalno: `npm install -g @angular/cli` (provera: `ng --version`).
+
+## Preuzimanje i pokretanje projekta
+
+Kod tima preuzimamo klonom repozitorijuma, a zatim se u korenu projekta pokreće:
+
+1. `git clone <url>` — preuzima kod projekta na lokalnu mašinu.
+2. `npm install` — čita `package.json` i preuzima sve biblioteke u direktorijum `node_modules/`.
+3. `ng serve` (ili `npm start`, koji ga najčešće samo poziva) — prevodi aplikaciju i pokreće razvojni server na adresi `localhost:4200`.
+
+Razvojni server nakon svake izmene datoteke ponovo prevodi aplikaciju i osvežava stranicu u internet čitaču, pa se rezultat vidi bez ručnog ponovnog pokretanja.
+
+Direktorijum `node_modules/` naveden je u `.gitignore` i ne šalje se na repozitorijum. Zato posle svakog preuzimanja tuđih izmena (`git pull`) treba ponovo pokrenuti `npm install`, kako bi se lokalno instalirale eventualne nove biblioteke koje su saradnici dodali.
+
+## Generisanje koda alatom CLI
+
+Delove aplikacije ne pravimo ručno, datoteku po datoteku, nego ih generiše Angular CLI. Komande se pokreću iz korena projekta:
+
+- `ng generate component putanja/naziv` (skraćeno `ng g c putanja/naziv`) pravi komponentu, sa sve tri njene datoteke (`.ts`, `.html`, `.scss`) u istoimenom direktorijumu.
+- `ng generate service putanja/naziv` (skraćeno `ng g s putanja/naziv`) pravi servis.
