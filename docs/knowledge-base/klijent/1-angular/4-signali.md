@@ -10,7 +10,7 @@ Outline:
 4. computed() as a derived value that recomputes when the signals it read change; a doubled counter as the example [code + text]
 5. Dependency tracking happens only inside a reactive context; reading a signal in an ordinary method tracks nothing [text]
 6. Changing arrays and objects held in a signal: update with a new array, not push on the old one; stated as a trap for the students' own modules, since every list in this project arrives from the server [code + text]
-7. effect() in two sentences: exists, runs when its signals change, and any use inside the component tree is a smell; the project's single use is shown in the reading-data lesson [text]
+7. effect() in two sentences: exists, runs when its signals change, and any use inside the component tree is a smell; the project has no use of it [text]
 8. React counterparts: useState / signal, useMemo / computed; an explicit non-equivalence row saying that useEffect's data-loading job belongs to a resource here, not to effect [table]
 9. Integration: the counter with a computed label, both driven by one signal [code + analysis]
 
