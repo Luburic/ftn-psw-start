@@ -9,27 +9,58 @@ Biblioteke po pravilu rešavaju samo deo ovih problema, pa programer bira i pove
 
 **Angular** je radni okvir za izgradnju klijentskih veb aplikacija u jeziku TypeScript. Ovde čitamo najmanju Angular aplikaciju dovoljnu za rad, datoteku po datoteku, koristeći skraćene verzije datoteka iz našeg projekta.
 
+## Priprema okruženja
+
+Da bi se Angular projekat pokrenuo na tvojoj mašini, neophodno je da instaliraš:
+
+1. **Node.js** — okruženje u kom se izvršava alat za prevođenje (provera: `node --version`). Preporučuje se aktuelna LTS verzija.
+2. **npm** — menadžer paketa, stiže uz Node.js (provera: `npm --version`).
+3. **Angular CLI** — alat komandne linije radnog okvira, instalira se jednom, globalno: `npm install -g @angular/cli` (provera: `ng --version`).
+
 ## Struktura radnog prostora
 
-Komanda `ng new [naziv-projekta]` kreira novi projekat. Sledeći prikaz daje početne datoteke jednog projekta, pri čemu su izostavljene datoteke koje se retko menjaju:
+Komanda `ng new [naziv-projekta]` kreira novi projekat. Kreiranjem novog projekata dobijamo skup datoteka i direktorijuma koji čine naš projekat a koje su opisane u nastavku.
 
-```
-  angular.json          Podešavanje alata za prevođenje i pokretanje
-  package.json          Spisak biblioteka od kojih projekat zavisi i komande za pokretanje (npr. start)
-  src/                  Izvorni kod aplikacije; u okviru ovog direktorijuma se dešava najviše izmena u toku razvoja projekta
-    index.html          Korenska HTML stranica aplikacije, jedina koju čitač učitava
-    main.ts             Ulazna tačka od koje kreće izvršavanje projekta; pokreće Angular aplikaciju
-    styles.scss         Globalni stilovi koji važe za celu aplikaciju
-    app/                Kod same aplikacije: komponente, servisi i njihova konfiguracija
-      app.config.ts     Konfiguracija aplikacije: delovi radnog okvira koji se uključuju pri pokretanju
-      app.ts            Korenska komponenta, prva koju Angular iscrtava
-      app.html          Šablon korenske komponente (šta se prikazuje)
-      app.scss          Stilovi korenske komponente
-```
+Iako datoteke van src direktorijuma retko menjamo vredi znati čemu služe:
 
-## Ulazna tačka
+1. <b>.editorconfig</b> je datoteka koji nam omogućava konfiguraciju našeg editora koda (VSC, WebStorm). Potrebno je da svi u okviru tima imaju identičan .editorconfig kako git ne bi prijavljivao razlike u formatiranju koda (space-ing, indentacija, prelamanje koda itd.).
+2. <b>.gitignore</b> sadrži putanje do datoteka koje git ne treba da prati i koji se ne šalju na repozitorijum. Obratiti pažnju da je node_modules (folder koji sadrži sve biblioteke potrebne za pokretanje našeg projekta) takođe u .gitignore stoga je potrebno uvek nakon pull-a projekta pokrenuti npm install kako bi se instalirale sve potrebne biblioteke u okviru node_modules foldera.
+3. <b>angular.json</b> - datoteka za konfiguraciju Angular projekta (npr. ubacivanje eksternih stilova). Sadrži informacije o arhitekturi projekta, zavisnostima, build i test konfiguracije projekta itd.
+4. <b>package-lock.json</b> - sadrži spisak svih instaliranih biblioteke u našem projektu.
+5. <b>package.json</b> - sadrži sve potrebne biblioteke za naš projekat pri čemu naglašava koje su dodatno potrebne za dev i za prod.
+6. <b>readme</b> - najčešće predstavlja korake koji su potrebni za pokretanje projekta.
+7. <b>tsconfig.app.json/tsconfig.json</b> - konfiguracija typescript-a.
+8. <b>node_modules</b> - folder u okviru kog su instalirane sve biblioteke za naš projekat.
 
-Datoteka `index.html` je jedina HTML stranica koju internet čitač učitava. Njeno telo sadrži jedan element:
+Sa druge strane datoteke u okviru src direktorijuma ćemo intenzivno menjati i dodavati:
+
+1. <b>index.html</b> - korenska HTML stranica aplikacije, jedina koju čitač učitava.
+2. <b>main.ts</b> - ulazna tačka od koje kreće izvršavanje projekta; pokreće Angular aplikaciju.
+3. <b>styles.scss</b> - globalni stilovi koji važe za celu aplikaciju.
+4. <b>app/</b> - kod same aplikacije: komponente, servisi i njihova konfiguracija. U okviru ovog direktorijuma se nalaze:
+    - <b>app.config.ts</b> - konfiguracija aplikacije: delovi radnog okvira koji se uključuju pri pokretanju.
+    - <b>app.ts</b> - korenska komponenta, prva koju Angular iscrtava.
+    - <b>app.html</b> - šablon korenske komponente (šta se prikazuje).
+    - <b>app.scss</b> - stilovi korenske komponente.
+
+## Preuzimanje i pokretanje projekta
+
+Kod preuzimamo kloniranjem repozitorijuma, a zatim se u korenu projekta pokreće:
+
+1. `npm install` čita `package.json` i preuzima sve biblioteke u direktorijum `node_modules/`.
+2. `ng serve` (ili `npm start`, koji ga najčešće samo poziva) prevodi aplikaciju i pokreće razvojni server na adresi `localhost:4200`. Šta se pri tome tačno dešava opisano je u narednom odeljku „Pokretanje projekta".
+
+**Napomena:** Direktorijum `node_modules/` naveden je u `.gitignore` i ne šalje se na repozitorijum. Zato posle svakog preuzimanja tuđih izmena (`git pull`) treba ponovo pokrenuti `npm install`, kako bi se lokalno instalirale eventualne nove biblioteke koje su saradnici dodali.
+
+## Pokretanje projekta
+
+Projekat pokrećemo iz njegovog korena komandom `ng serve` (ili `npm start`, koji je najčešće samo poziva). Ta komanda pokreće niz koraka koji izvorni kod pretvaraju u aplikaciju koju internet čitač ume da prikaže. U nastavku pratimo taj put, od komande do prikaza na ekranu.
+
+**1. Prevođenje i pakovanje (build).** Internet čitač ne razume TypeScript ni recimo SCSS već samo JavaScript, CSS i HTML. Zato Angular CLI prvo prevodi aplikaciju: TypeScript kod (`.ts`) u JavaScript, Angular šablone i dekoratore (`@Component`) u JavaScript koji ume da iscrta prikaz, a SCSS stilove (`.scss`) u CSS. Sav taj kod, zajedno sa delovima biblioteka iz `node_modules/` koje aplikacija koristi, CLI potom sažima u nekoliko JavaScript datoteka (paketa). Ovaj korak zovemo *build*.
+
+**2. Pokretanje razvojnog servera.** Po završenom prevođenju CLI pokreće razvojni veb server koji osluškuje na adresi `localhost:4200`. Server drži prevedene datoteke i isporučuje ih čitaču kada ih zatraži. U razvoju se te datoteke drže u memoriji i ne upisuju na disk, pa u projektu nećemo videti novi direktorijum sa rezultatom prevođenja.
+
+**3. Učitavanje stranice u čitaču.** Kada u čitaču otvorimo `localhost:4200`, server vraća datoteku `index.html` — jedinu HTML stranicu koju čitač učitava. Njeno telo sadrži jedan element:
 
 ```html
 <body>
@@ -37,13 +68,28 @@ Datoteka `index.html` je jedina HTML stranica koju internet čitač učitava. Nj
 </body>
 ```
 
-Element `app-root` nije standardan HTML element i internet čitač ga ne poznaje. Angular ga pri pokretanju ne uklanja, već unutar njega iscrtava sadržaj korenske komponente. Pokretanje se dešava u datoteci `main.ts`:
+U isporučeni `index.html` CLI je ubacio i `<script>` oznake koje pokazuju na prevedene pakete, iako ih u izvornoj datoteci ne vidimo. Čitač te pakete zatim učitava i izvršava.
+
+**4. Pokretanje Angular aplikacije.** Izvršavanjem paketa pokreće se kod iz datoteke `main.ts`, ulazne tačke aplikacije:
 
 ```ts
 bootstrapApplication(App, appConfig);
 ```
 
-Poziv `bootstrapApplication` prima klasu korenske komponente i konfiguraciju aplikacije. Od tog trenutka Angular upravlja sadržajem stranice.
+Poziv `bootstrapApplication` prima klasu korenske komponente (`App`) i konfiguraciju aplikacije (`appConfig` iz `app.config.ts`). Od tog trenutka Angular upravlja sadržajem stranice.
+
+**5. Iscrtavanje korenske komponente.** Element `app-root` nije standardan HTML element i internet čitač ga sam ne poznaje. Angular ga pri pokretanju ne uklanja, već unutar njega iscrtava šablon korenske komponente. Korisnik tada vidi ono što je u tom šablonu opisano.
+
+**6. Osvežavanje pri izmenama (live reload).** Razvojni server nastavlja da radi i prati izvorne datoteke. Čim sačuvamo izmenu, on ponovo prevodi samo ono što se promenilo i osvežava stranicu u čitaču, pa rezultat vidimo bez ručnog ponovnog pokretanja.
+
+Ukratko, put od komande do prikaza:
+1. `ng serve` prevodi i pakuje aplikaciju, pa pokreće razvojni server na `localhost:4200`.
+2. Čitač otvara tu adresu i dobija `index.html` sa elementom `app-root` i ubačenim `<script>` oznakama.
+3. Čitač učitava pakete, izvršava se `main.ts`, koji poziva `bootstrapApplication(App, appConfig)`.
+4. Angular pravi korensku komponentu i njen šablon iscrtava unutar elementa `app-root`.
+5. Korisnik vidi zaglavlje i poruku; svaka naredna izmena koda automatski osvežava prikaz.
+
+Kao vežbu možeš kreirati jedan Angular projekat komandom `ng new` i pokrenuti komandom `ng serve` a potom kroz internet čitač proveriti šta se nalazi na `localhost:4200`
 
 ## Korenska komponenta
 
@@ -106,38 +152,3 @@ U datom kodu treba uočiti sledeće:
 - Šablon vidi samo članove komponente kojoj pripada; polja druge komponente nisu mu dostupna.
 
 Naredna lekcija će detaljno razraditi koncept komponente.
-
-## Od pokretanja do prikaza
-
-Kada korisnik otvori adresu `localhost:4200`, dešava se sledeće:
-1. Internet čitač učitava `index.html` i u njemu nalazi element `app-root`.
-2. Izvršava se `main.ts`, koji poziva `bootstrapApplication` sa klasom `App` i konfiguracijom iz `app.config.ts`.
-3. Angular pravi korensku komponentu i njen šablon iscrtava unutar elementa `app-root`.
-4. Korisnik vidi zaglavlje i poruku iz šablona korenske komponente.
-
-## Priprema okruženja
-
-Da bi se Angular projekat pokrenuo na tvojoj mašini, neophodno je da instaliraš:
-
-1. **Node.js** — okruženje u kom se izvršava alat za prevođenje (provera: `node --version`). Preporučuje se aktuelna LTS verzija.
-2. **npm** — menadžer paketa, stiže uz Node.js (provera: `npm --version`).
-3. **Angular CLI** — alat komandne linije radnog okvira, instalira se jednom, globalno: `npm install -g @angular/cli` (provera: `ng --version`).
-
-## Preuzimanje i pokretanje projekta
-
-Kod tima preuzimamo klonom repozitorijuma, a zatim se u korenu projekta pokreće:
-
-1. `git clone <url>` — preuzima kod projekta na lokalnu mašinu.
-2. `npm install` — čita `package.json` i preuzima sve biblioteke u direktorijum `node_modules/`.
-3. `ng serve` (ili `npm start`, koji ga najčešće samo poziva) — prevodi aplikaciju i pokreće razvojni server na adresi `localhost:4200`.
-
-Razvojni server nakon svake izmene datoteke ponovo prevodi aplikaciju i osvežava stranicu u internet čitaču, pa se rezultat vidi bez ručnog ponovnog pokretanja.
-
-Direktorijum `node_modules/` naveden je u `.gitignore` i ne šalje se na repozitorijum. Zato posle svakog preuzimanja tuđih izmena (`git pull`) treba ponovo pokrenuti `npm install`, kako bi se lokalno instalirale eventualne nove biblioteke koje su saradnici dodali.
-
-## Generisanje koda alatom CLI
-
-Delove aplikacije ne pravimo ručno, datoteku po datoteku, nego ih generiše Angular CLI. Komande se pokreću iz korena projekta:
-
-- `ng generate component putanja/naziv` (skraćeno `ng g c putanja/naziv`) pravi komponentu, sa sve tri njene datoteke (`.ts`, `.html`, `.scss`) u istoimenom direktorijumu.
-- `ng generate service putanja/naziv` (skraćeno `ng g s putanja/naziv`) pravi servis.
