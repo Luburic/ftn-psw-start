@@ -19,9 +19,9 @@ export class TourList {
 }
 ```
 
-Čitalac koji poznaje JavaScript (JS) prepoznaje klasu, polja, metode, `async` i `await`, kao i poziv `fetch`. Međutim u klasi vidimo i TS simbole poput `private`, `protected` i `readonly` ispred polja, `: string` iza parametra, `: Promise<void>` iza liste parametara i `: TourDto[]` iza naziva polja.
+Čitalac koji poznaje JavaScript (JS) prepoznaje klasu, polja, metode, `async`, `await`, kao i poziv `fetch`. Međutim u klasi vidimo i novine poput `private`, `protected` i `readonly` ispred polja, `: string` iza parametra, `: Promise<void>` iza liste parametara i `: TourDto[]` iza naziva polja.
 
-TS je jezik koji proširuje JS prvenstveno tipovima ali i drugim mehanizmima. Prevodilac (engl. *compiler*) prevodi TS u JS pre nego što kod stigne do pregledača (engl. *browser*) tj. pregledač i dalje isključivo razume samo JS. Dakle, TS je samo proširenje JSa, što znači da sve što važi u JSu važi i u TSu, ali uz dodatne mogućnosti koje TS uvodi.
+TS je jezik koji proširuje JS prvenstveno tipovima ali i drugim mehanizmima. Prevodilac (engl. *compiler*) prevodi TS u JS pre nego što kod stigne do internet čitača (engl. *browser*) tj. internet čitač i dalje isključivo razume samo JS. Dakle, TS je samo proširenje JSa, što znači da sve što važi u JSu važi i u TSu, ali uz dodatne mogućnosti koje TS uvodi.
 
 ## Anotacija tipa
 
@@ -38,11 +38,10 @@ protected select(tourId: string): void {
 U datom kodu treba uočiti sledeće:
 - Anotacija `tourId: string` znači da poziv `select(5)` ne prolazi prevođenje, jer je `5` broj, a ne tekst.
 - Anotacija `: void` znači da metoda ništa ne vraća. Prevodilac prijavljuje grešku ako u telu metode napišemo `return` sa vrednošću.
-- Lokalne promenljive najčešće nemaju anotaciju, jer prevodilac tip zaključuje iz dodeljene vrednosti. Promenljiva `const name = ''` je tipa `string` bez ikakve oznake.
 
 ## Interfejs
 
-TS **interfejs** definiše strukturu koju objekat mora da ima (koja polja mora sadržati). Interfejse najčešće koristimo kada definišemo model podataka na klijentskom delu veb aplikacije, koji odgovara podacima koji stižu sa servera.
+TS **interfejs** definiše strukturu koju objekat mora da ima tj. koja polja mora sadržati. Interfejse najčešće koristimo kada definišemo model podataka na klijentskom delu veb aplikacije, koji odgovara podacima koji stižu sa servera.
 
 Sledi primer interfejsa za osobu:
 
