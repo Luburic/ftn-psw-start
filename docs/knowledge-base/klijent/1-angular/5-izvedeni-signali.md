@@ -80,4 +80,4 @@ Kada korisnik klikne na dugme, dešava se sledeće:
 3. Izvedeni signal `tagsLabel` je čitalac signala `tags`, pa se označava za ponovno računanje.
 4. Šablon je čitalac signala `tagsLabel`, pa radni okvir ponovo iscrtava komponentu. Pri iscrtavanju šablon čita `tagsLabel`, koji tek tada računa novu vrednost.
 
-Signal drži izvor stanja, izvedeni signal drži vrednost izračunatu iz njega. Kad god vrednost u šablonu možeš da izvedeš iz drugih signala — natpis, filtriran spisak, zbir — izvedi je izvedenim signalom. Tako stanje ima jedan izvor istine, a vrednosti koje iz njega slede same se održavaju u skladu s njim.
+Signal drži izvor stanja, izvedeni signal drži vrednost izračunatu iz njega. Kad god vrednost u šablonu možeš da izvedeš iz drugih signala: natpis, filtriran spisak, zbir uradi to izvedenim signalom. Tako stanje ima jedan izvor istine, a vrednosti koje iz njega slede same se održavaju u skladu sa njegovom promenom.
