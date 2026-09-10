@@ -81,7 +81,7 @@ U datom kodu treba uočiti sledeće:
 
 ## Vezivanje svojstva
 
-Interpolacija ispisuje tekst između oznaka elementa. Kada vrednost iz klase treba da odredi svojstvo elementa, poput toga da li je dugme onemogućeno, koristimo vezivanje svojstva. **Vezivanje svojstva** (engl. *property binding*) je zapis `[svojstvo]="izraz"` na elementu, koji svojstvu elementa dodeljuje vrednost izraza. Sledeći kod prikazuje dugme čija dostupnost zavisi od polja klase:
+Interpolacija ispisuje tekst između oznaka elementa. Kada vrednost iz klase treba da odredi svojstvo elementa, poput toga da li je dugme onemogućeno, koristimo vezivanje svojstva. **Vezivanje svojstva** (engl. *property binding*) se ostvaruje kroz zapis `[svojstvo]="izraz"` na elementu, koji svojstvu elementa dodeljuje vrednost izraza. Sledeći kod prikazuje dugme čija dostupnost zavisi od polja klase:
 
 ```ts
 export class TourCard {
@@ -99,7 +99,7 @@ U datom kodu treba uočiti sledeće:
 
 ## Vezivanje događaja
 
-**Vezivanje događaja** (engl. *event binding*) je zapis `(događaj)="izraz"` na elementu, koji izvršava izraz kada se na elementu desi navedeni događaj. Izraz najčešće poziva metodu klase. Sledeći kod prikazuje dugme koje poziva metodu:
+**Vezivanje događaja** (engl. *event binding*) se ostvaruje kroz zapis `(događaj)="izraz"` na elementu, koji izvršava izraz kada se na elementu desi navedeni događaj. Izraz najčešće poziva metodu klase. Sledeći kod prikazuje dugme koje poziva metodu:
 
 ```ts
 export class TourCard {
@@ -114,8 +114,8 @@ export class TourCard {
 ```
 
 U datom kodu treba uočiti sledeće:
-- Oble zagrade oko `click` znače da je desna strana izraz koji se izvršava pri kliku.
-- Reč `$event` je objekat događaja koji pregledač pravi. Prosleđujemo ga metodi kada joj treba. Kada metodi ne treba, poziv je `(click)="publish()"`.
+- Zagrade oko `click` znače da je desna strana izraz koji se izvršava pri kliku.
+- Reč `$event` je objekat događaja koji pregledač pravi. Prosleđujemo ga metodi kada joj treba, kada metodi ne treba, poziv je `(click)="publish()"`.
 
 ## Kartica ture
 
@@ -149,15 +149,14 @@ export class TourCard {
 U datom kodu treba uočiti sledeće:
 - Interpolacija ispisuje dva polja, vezivanje svojstva veže dostupnost dugmeta za treće polje, a vezivanje događaja poziva metodu koja to polje menja.
 - Polje `published` nije `readonly`, jer ga metoda menja.
-- Naziv i opis ture su upisani u klasu, pa svaka kartica prikazuje istu turu.
 
-Kada pokrenemo aplikaciju i kliknemo na dugme, metoda `publish` se izvršava, polje `published` dobija vrednost `true`, a dugme postaje onemogućeno. Prikaz se osvežio jer je promenu izazvao događaj iz šablona (klik) a o događaju iz šablona Angular zna, pošto je sam pozvao našu metodu, pa nakon nje ponovo iscrta karticu.
+Kada pokrenemo aplikaciju i kliknemo na dugme, metoda `publish` se izvršava, polje `published` dobija vrednost `true`, a dugme postaje onemogućeno. Prikaz se osvežio jer je promenu izazvao događaj iz šablona (klik).
 
 ## Prikaz ne prati svaku promenu
 
 Logično je pomisliti da Angular stalno posmatra polje `published` i osvežava prikaz čim se ono promeni. Međutim, Angular ponovo iscrta komponentu samo kada zna da se nešto promenilo, a najčešći povod za to je upravo događaj iz šablona, na primer klik, unos teksta i slično. Pošto je taj događaj Angular sam pokrenuo, on zna da posle njega treba osvežiti prikaz.
 
-Problem nastaje kada se polje promeni bez takvog događaja. Zamislimo da se tura objavi sama, tek pošto podatak stigne sa servera. To ovde simuliramo tajmerom koji posle jedne sekunde postavi `published` na `true`, a dugme ovoga puta nema klik:
+Problem nastaje kada se polje promeni bez takvog događaja. Zamislimo da se tura objavi van šablona tj. da je taj podatak stigao sa servera. To ovde simuliramo tajmerom koji posle jedne sekunde postavi `published` na `true`, a dugme ovoga puta nema klik:
 
 ```ts
 @Component({
@@ -192,4 +191,4 @@ U datom kodu treba uočiti sledeće:
 
 **Napomena:** ovo ponašanje važi u modernom, *zoneless* Angular-u tj. verziji Angulara koja u sebe uvodi signale.
 
-Obično polje, dakle, prikaz prati samo kada uz promenu ide i događaj iz šablona. Nama treba polje čiju svaku promenu Angular primeti, bez obzira odakle promena dolazi. Takvo polje zove se **signal** i njime se bavi [naredna lekcija o signalima](4-signali.md).
+Obično polje, dakle, prikaz prati samo kada uz promenu ide i događaj iz šablona. Nama treba polje čiju svaku promenu Angular primeti, bez obzira odakle promena dolazi. Navedeni zahtev ispunjavaju **signali** i njima se bavimo u [narednoj lekciji o signalima](4-signali.md).
