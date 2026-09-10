@@ -1,4 +1,4 @@
-Stranica sa spiskom tura mora da prikaže po jednu karticu za svaku turu, a kada tura nema, poruku da je spisak prazan. U React-u je čitalac to pisao kao poziv `tours.map(...)` unutar JSX-a i uslovni izraz za prazan spisak. U Angular-u šablon ima sopstvene naredbe za grananje i petlju, koje zovemo **kontrola toka** (engl. *control flow*). Ovde upoznajemo naredbe koje projekat koristi i način na koji šablon čita vrednost iz elementa.
+Stranica sa spiskom tura mora da prikaže po jednu karticu za svaku turu, a kada tura nema, poruku da je spisak prazan. U React-u se to pisalo kao poziv `tours.map(...)` unutar JSX-a i uslovni izraz za prazan spisak. U Angular-u šablon ima sopstvene naredbe za grananje i petlju, koje zovemo **kontrola toka** (engl. *control flow*). Ovde upoznajemo naredbe koje projekat koristi i način na koji šablon čita vrednost iz elementa.
 
 ## Grananje
 
@@ -39,11 +39,24 @@ U datom kodu treba uočiti sledeće:
 
 ## Grananje sa aliasom
 
-Vrednost koja može da nedostaje, tipa `T | null`, u šablonu se čita više puta. Svako čitanje bi moralo da proveri `null`. Naredba `@if` zato dozvoljava da vrednost uslova dobije **alias** (engl. *alias*), naziv pod kojim se koristi unutar bloka. Sledeći kod prikazuje prikaz izabrane ture:
+Izabrana tura je signal koji drži izabranu turu, ili null kada nijedna nije izabrana.
 
 ```ts
 protected readonly selectedTour = signal<TourDto | null>(null);
 ```
+
+U sledećem primeru kada je prikazujemo čitamo je više puta, jednom za naziv i jednom za opis:
+
+```html
+@if (selectedTour()) {
+  <h2>{{ selectedTour()?.name }}</h2>
+  <p>{{ selectedTour()?.description }}</p>
+}
+```
+
+Ovde su problematične dve stvari. Signal `selectedTour` pozivamo iznova u svakom redu. Iako smo već unutar `@if` bloka, prevodilac svaki `selectedTour()` i dalje vidi kao moguć `null`. Zato `.name` prolazi samo uz upitnik `?.`, iako mi znamo da tura sigurno postoji kad smo ušli u blok.
+
+Oba problema rešava alias. **Alias** (engl. *alias*) je naziv koji vrednosti uslova damo zapisom `as` i pod kojim je koristimo unutar bloka:
 
 ```html
 @if (selectedTour(); as tour) {
@@ -55,8 +68,9 @@ protected readonly selectedTour = signal<TourDto | null>(null);
 ```
 
 U datom kodu treba uočiti sledeće:
-- Zapis `as tour` uvodi promenljivu `tour` koja unutar bloka drži vrednost izraza. Blok se prikazuje samo kada vrednost nije `null`, pa je tip promenljive `TourDto`, bez `null`.
-- Bez aliasa bi svako čitanje bilo `selectedTour()?.name`, a prevodilac ne bi znao da je vrednost unutar bloka sigurno prisutna.
+- Zapis `as tour` pročita `selectedTour()` jednom, na ulasku u blok, i tu vrednost zadrži u promenljivoj `tour`. Dalje u bloku čitamo `tour`, bez ponovnog pozivanja signala.
+- Blok se prikazuje samo kada vrednost nije `null`, pa promenljiva `tour` ima tip `TourDto`, bez `null`. Zato pišemo `tour.name`, a ne `selectedTour()?.name` tj. prevodilac zna da tura sigurno postoji.
+- Promenljiva `tour` postoji samo unutar `@if` bloka, isto kao promenljiva petlje `@for`.
 
 ## Referenca na element šablona
 
@@ -78,8 +92,8 @@ Povežimo pojmove u stranicu koja filtrira spisak tura po nazivu. Spisak je upis
 ```ts
 @Component({
   selector: 'app-tour-list',
-  styleUrl: './tour-list.scss',
   templateUrl: './tour-list.html',
+  styleUrl: './tour-list.scss',
 })
 export class TourList {
   private readonly tours: TourDto[] = [
@@ -110,6 +124,8 @@ export class TourList {
 
 Kada korisnik unese slovo u polje za pretragu, dešava se sledeće:
 1. Događaj `input` upisuje sadržaj polja u signal `nameFilter`.
-2. Izvedeni signal `visibleTours` je pretplatnik signala `nameFilter`, pa se označava za ponovno računanje.
+2. Izvedeni signal `visibleTours` je čitalac signala `nameFilter`, pa se označava za ponovno računanje.
 3. Petlja `@for` čita `visibleTours`, pa radni okvir ponovo iscrtava spisak. Ture čiji je identifikator i dalje u nizu zadržava, a ostale uklanja.
 4. Kada nijedna tura ne odgovara, niz je prazan i prikazuje se blok `@empty`.
+
+Kontrola toka se izvršava u reaktivnom kontekstu, kao i interpolacija. Pošto `@if` i `@for` čitaju signale u svojim uslovima, grana i spisak se ponovo biraju čim se ti signali promene, bez ručnog osvežavanja prikaza.
