@@ -6,10 +6,10 @@ Komponenta koristi drugu komponentu tako što njenu klasu navede u podešavanju 
 
 ```ts
 @Component({
-  imports: [TourCard],
   selector: 'app-tour-list',
-  styleUrl: './tour-list.scss',
+  imports: [TourCard],
   templateUrl: './tour-list.html',
+  styleUrl: './tour-list.scss',
 })
 export class TourList { ... }
 ```
@@ -79,13 +79,21 @@ export class TourCard {
 }
 ```
 
+Roditelj u svojoj klasi ima metodu `remove`, koja prima poslatu vrednost i uklanja turu iz spiska:
+
+```ts
+export class TourList {
+  protected remove(tourId: string): void {
+    this.tours.update((tours) => tours.filter((tour) => tour.id !== tourId));
+  }
+}
+```
+
 U datom kodu treba uočiti sledeće:
 - Poziv `output<string>()` deklariše izlaz koji nosi tekst. Tip u zagradi je tip vrednosti koju izlaz šalje roditelju.
 - Poziv `emit` okida izlaz sa vrednošću. Ovde se poziva iz vezivanja događaja na dugmetu, sa identifikatorom ture.
 - Roditelj sluša izlaz vezivanjem događaja, `(deleteTour)="remove($event)"`. Naziv u zagradi je naziv izlaza u detetu, a `$event` je vrednost koju je dete poslalo kroz `emit`. Metoda `remove` pripada roditelju.
 - Kartica ne zna ko je sluša niti šta se posle klika dešava. Njen posao se završava pozivom `emit`.
-
-Čitalac koji poznaje React isti je smer rešavao tako što roditelj kroz svojstva prosledi funkciju, a dete je pozove. Angular za taj smer ima zaseban mehanizam, jer se u šablonu vezuje istim zapisom kao događaj elementa.
 
 ## Podaci naniže, događaji naviše
 
@@ -97,10 +105,10 @@ Povežimo pojmove u stranicu koja prikazuje kartice i uklanja turu koju kartica 
 
 ```ts
 @Component({
-  imports: [TourCard],
   selector: 'app-tour-list',
-  styleUrl: './tour-list.scss',
+  imports: [TourCard],
   templateUrl: './tour-list.html',
+  styleUrl: './tour-list.scss',
 })
 export class TourList {
   protected readonly tours = signal<TourDto[]>([
