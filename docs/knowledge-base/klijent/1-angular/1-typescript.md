@@ -21,11 +21,11 @@ export class TourList {
 
 Čitalac koji poznaje JavaScript (JS) prepoznaje klasu, polja, metode, `async`, `await`, kao i poziv `fetch`. Međutim u klasi vidimo i novine poput `private`, `protected` i `readonly` ispred polja, `: string` iza parametra, `: Promise<void>` iza liste parametara i `: TourDto[]` iza naziva polja.
 
-TS je jezik koji proširuje JS prvenstveno tipovima ali i drugim mehanizmima. Prevodilac (engl. *compiler*) prevodi TS u JS pre nego što kod stigne do internet čitača (engl. *browser*) tj. internet čitač i dalje isključivo razume samo JS. Dakle, TS je samo proširenje JSa, što znači da sve što važi u JSu važi i u TSu, ali uz dodatne mogućnosti koje TS uvodi.
+TS je jezik koji proširuje JS prvenstveno tipovima ali i drugim mehanizmima. Sve što važi u JSu važi i u TSu, ali uz dodatne mogućnosti koje TS uvodi. Internet čitač (engl. browser) i dalje isključivo samo razume JS, što znači da se TS transpajlira u JS pre nego što ga internet čitač obradi.
 
 ## Anotacija tipa
 
-**Anotacija tipa** (engl. *type annotation*) je oznaka oblika `: tip` iza naziva polja, iza naziva parametra ili iza liste parametara metode, koja prevodiocu saopštava kog tipa je vrednost. Osnovni tipovi su `string`, `number` i `boolean`. Metoda koja ne vraća vrednost ima povratni tip `void`.
+**Anotacija tipa** (engl. *type annotation*) je oznaka oblika `: tip` iza naziva polja, parametra itd. koja prevodiocu saopštava kog tipa je vrednost. Osnovni tipovi su `string`, `number` i `boolean`. Metoda koja ne vraća vrednost ima povratni tip `void`.
 
 Sledeći kod prikazuje metodu sa anotiranim parametrom i povratnom vrednošću:
 
@@ -132,7 +132,7 @@ JS klasa ima polja i metode koji su svima dostupni. TS dodaje modifikatore koji 
 2. `protected` znači da je član vidljiv kodu unutar klase i kodu klasa koje je nasleđuju.
 3. `readonly` znači da se polje dodeljuje jednom i više ne menja.
 
-Sledeći kod prikazuje uobičajen početak klase:
+Sledeći kod prikazuje jednu klasu sa modifikatorima pristupa:
 
 ```ts
 export class TourList {
@@ -143,5 +143,4 @@ export class TourList {
 
 U datom kodu treba uočiti sledeće:
 - Polja dobijaju vrednost odmah pri deklaraciji, pa klasa nema konstruktor.
-- Polje `tours` je `readonly`, jer se niz koji čuva ne zamenjuje drugim nizom. Dodavanje elementa u taj niz `readonly` ne sprečava, jer se time menja sadržaj niza, a ne polje.
-- Polje `selectedTourId` nije `readonly`, jer mu metoda `select` dodeljuje novu vrednost.
+- Polje `tours` je `readonly`. Dodavanje elementa u taj niz `readonly` ne sprečava, jer se time menja sadržaj niza, a ne polje.
