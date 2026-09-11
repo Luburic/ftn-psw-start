@@ -1,4 +1,6 @@
-Komponenta je klasa sa pridruženim HTML šablonom koja upravlja jednim delom stranice. U React-u je istu ulogu imala funkcija koja vraća JSX. Sledeći kod prikazuje jednu karticu u oba oblika:
+# Komponente
+
+Komponenta je klasa sa pridruženim HTML šablonom koja upravlja jednim delom stranice. U React-u istu ulogu ima funkcija koja vraća JSX. Sledeći kod prikazuje jednu karticu u oba oblika:
 
 ```jsx
 function TourCard() {
@@ -26,7 +28,9 @@ Razlika je u podeli. React drži podatke i prikaz u jednoj funkciji, a Angular i
 Komponentu čine tri datoteke istog naziva u istom direktorijumu:
 1. `tour-card.ts` sadrži klasu sa dekoratorom `@Component`.
 2. `tour-card.html` sadrži šablon, na koji dekorator upućuje podešavanjem `templateUrl`.
-3. `tour-card.scss` sadrži stilove, na koje dekorator upućuje podešavanjem `styleUrl`.
+3. `tour-card.css` sadrži stilove, na koje dekorator upućuje podešavanjem `styleUrl`.
+
+Ove datoteke ne pravimo ručno, već komandom `ng generate component tour-card` (skraćeno `ng g c tour-card`). Komanda pravi direktorijum `src/app/tour-card/` sa sve tri datoteke, kao i datotekom `tour-card.spec.ts` u kojoj se piše test komponente.
 
 ## Interpolacija
 
@@ -38,7 +42,7 @@ Klasa (`tour-card.ts`):
 @Component({
   selector: 'app-tour-card',
   templateUrl: './tour-card.html',
-  styleUrl: './tour-card.scss',
+  styleUrl: './tour-card.css',
 })
 export class TourCard {
   protected readonly name = 'Stari grad';
@@ -55,9 +59,9 @@ export class TourCard {
 </article>
 ```
 
-Stilovi (`tour-card.scss`):
+Stilovi (`tour-card.css`):
 
-```scss
+```css
 article {
   padding: 1rem;
   border: 1px solid #ddd;
@@ -76,12 +80,39 @@ p {
 
 U datom kodu treba uočiti sledeće:
 - Šablon vidi članove klase po nazivu, bez `this`. Polje `name` u klasi i `name` u šablonu su isto polje.
-- Prevodilac šablon prevodi kao deo klase, pa šablon vidi članove označene sa `protected`, a ne vidi one označene sa `private`. Zato su polja koja šablon čita `protected`. Prevodilac proverava šablon isto kao klasu i prijavljuje grešku ako šablon pristupa privatnom članu ili članu koji ne postoji.
-- Stilovi iz `tour-card.scss` važe samo za ovu komponentu. Angular ih ograničava na njen šablon, pa selektori `article`, `h3` i `p` ovde ne utiču na iste elemente u drugim komponentama.
+- Šablon vidi članove označene sa `public` i `protected`, a ne vidi one označene sa `private`. Zato su polja koja šablon čita `protected`. Angular prevodilac proverava i šablon i prijavljuje grešku ako šablon pristupa privatnom članu ili članu koji ne postoji.
+- Stilovi iz `tour-card.css` važe samo za ovu komponentu. Angular ih ograničava na njen šablon, pa selektori `article`, `h3` i `p` ovde ne utiču na iste elemente u drugim komponentama.
+
+## Upotreba komponente
+
+Napravljena komponenta se ne prikazuje sama od sebe. Da bi se kartica pojavila na stranici, treba da je upotrebimo u šablonu neke druge komponente, na primer korenske. Sledeći kod prikazuje korensku komponentu koja koristi karticu:
+
+```ts
+import { Component } from '@angular/core';
+import { TourCard } from './tour-card/tour-card';
+
+@Component({
+  selector: 'app-root',
+  imports: [TourCard],
+  templateUrl: './app.html',
+  styleUrl: './app.css',
+})
+export class App {}
+```
+
+```html
+<main>
+  <app-tour-card></app-tour-card>
+</main>
+```
+
+U datom kodu treba uočiti sledeće:
+- Niz `imports` u dekoratoru navodi komponente koje šablon korenske komponente sme da koristi. Klasu `TourCard` najpre uvozimo naredbom `import`, a zatim je navodimo u tom nizu. Ako to izostavimo, prevodilac prijavljuje grešku da ne poznaje element `app-tour-card`.
+- Naziv elementa `app-tour-card` odgovara vrednosti `selector` iz dekoratora kartice. Na tom mestu Angular iscrtava šablon kartice, isto kao što šablon korenske komponente iscrtava unutar elementa `app-root`.
 
 ## Vezivanje svojstva
 
-Interpolacija ispisuje tekst između oznaka elementa. Kada vrednost iz klase treba da odredi svojstvo elementa, poput toga da li je dugme onemogućeno, koristimo vezivanje svojstva. **Vezivanje svojstva** (engl. *property binding*) se ostvaruje kroz zapis `[svojstvo]="izraz"` na elementu, koji svojstvu elementa dodeljuje vrednost izraza. Sledeći kod prikazuje dugme čija dostupnost zavisi od polja klase:
+Kada vrednost iz klase treba da odredi svojstvo elementa, poput toga da li je dugme onemogućeno, koristimo vezivanje svojstva. **Vezivanje svojstva** (engl. *property binding*) se ostvaruje kroz zapis `[svojstvo]="izraz"` na elementu, koji svojstvu elementa dodeljuje vrednost izraza. Sledeći kod prikazuje dugme čija dostupnost zavisi od polja klase:
 
 ```ts
 export class TourCard {
@@ -94,7 +125,7 @@ export class TourCard {
 ```
 
 U datom kodu treba uočiti sledeće:
-- Uglaste zagrade oko `disabled` znače da se desna strana tumači kao izraz, a ne kao tekst. Bez zagrada bi `disabled="published"` bio običan HTML atribut sa tekstom `published`.
+- Uglaste zagrade oko `disabled` znače da se desna strana tumači kao izraz, a ne kao tekst. Bez zagrada bi `disabled="published"` bio običan HTML atribut sa tekstom `published`. Tada bi dugme bilo uvek onemogućeno, jer za atribut `disabled` nije bitna vrednost, već samo to da li je naveden.
 - Kada je `published` tačno, dugme je onemogućeno. Isti zapis radi za svako svojstvo elementa, na primer `[value]` za sadržaj polja za unos.
 
 ## Vezivanje događaja
@@ -103,19 +134,19 @@ U datom kodu treba uočiti sledeće:
 
 ```ts
 export class TourCard {
-  protected publish(event: Event): void {
+  protected logClick(event: Event): void {
     console.log(event.target);
   }
 }
 ```
 
 ```html
-<button type="button" (click)="publish($event)">Objavi</button>
+<button type="button" (click)="logClick($event)">Objavi</button>
 ```
 
 U datom kodu treba uočiti sledeće:
 - Zagrade oko `click` znače da je desna strana izraz koji se izvršava pri kliku.
-- Reč `$event` je objekat događaja koji pregledač pravi. Prosleđujemo ga metodi kada joj treba, kada metodi ne treba, poziv je `(click)="publish()"`.
+- Reč `$event` je objekat događaja koji pravi internet čitač. Prosleđujemo ga metodi kada joj treba. Kada metodi ne treba, poziv je `(click)="logClick()"`.
 
 ## Kartica ture
 
@@ -125,7 +156,7 @@ Povežimo pojmove u jednu komponentu. Kartica prikazuje naziv i opis ture i ima 
 @Component({
   selector: 'app-tour-card',
   templateUrl: './tour-card.html',
-  styleUrl: './tour-card.scss',
+  styleUrl: './tour-card.css',
 })
 export class TourCard {
   protected readonly name = 'Stari grad';
@@ -150,19 +181,19 @@ U datom kodu treba uočiti sledeće:
 - Interpolacija ispisuje dva polja, vezivanje svojstva veže dostupnost dugmeta za treće polje, a vezivanje događaja poziva metodu koja to polje menja.
 - Polje `published` nije `readonly`, jer ga metoda menja.
 
-Kada pokrenemo aplikaciju i kliknemo na dugme, metoda `publish` se izvršava, polje `published` dobija vrednost `true`, a dugme postaje onemogućeno. Prikaz se osvežio jer je promenu izazvao događaj iz šablona (klik).
+Kada pokrenemo aplikaciju i kliknemo na dugme, metoda `publish` se izvršava, polje `published` dobija vrednost `true`, a dugme postaje onemogućeno. Prikaz se automatski osvežio jer je promenu izazvao događaj iz šablona (klik).
 
 ## Prikaz ne prati svaku promenu
 
-Logično je pomisliti da Angular stalno posmatra polje `published` i osvežava prikaz čim se ono promeni. Međutim, Angular ponovo iscrta komponentu samo kada zna da se nešto promenilo, a najčešći povod za to je upravo događaj iz šablona, na primer klik, unos teksta i slično. Pošto je taj događaj Angular sam pokrenuo, on zna da posle njega treba osvežiti prikaz.
+Logično je pomisliti da Angular stalno posmatra polje `published` i osvežava prikaz čim se ono promeni. Međutim, Angular osvežava prikaz komponente samo kada zna da se nešto promenilo, a najčešći povod za to je upravo događaj iz šablona, na primer klik, unos teksta i slično. Pošto je Angular sam postavio osluškivač za taj događaj, on zna da posle njega treba osvežiti prikaz. Pri tome Angular ne iscrtava komponentu iznova, već menja samo one delove stranice čija se vrednost promenila.
 
-Problem nastaje kada se polje promeni bez takvog događaja. Zamislimo da se tura objavi van šablona tj. da je taj podatak stigao sa servera. To ovde simuliramo tajmerom koji posle jedne sekunde postavi `published` na `true`, a dugme ovoga puta nema klik:
+Problem nastaje kada se polje promeni bez takvog događaja. Zamislimo da se tura objavi van šablona, tj. da je taj podatak stigao sa servera. To ovde simuliramo tajmerom koji posle jedne sekunde postavi `published` na `true`, a dugme ovoga puta nema klik:
 
 ```ts
 @Component({
   selector: 'app-tour-card',
   templateUrl: './tour-card.html',
-  styleUrl: './tour-card.scss',
+  styleUrl: './tour-card.css',
 })
 export class TourCard {
   protected readonly name = 'Stari grad';
@@ -172,6 +203,7 @@ export class TourCard {
   constructor() {
     setTimeout(() => {
       this.published = true;
+      console.log('published:', this.published);
     }, 1000);
   }
 }
@@ -186,9 +218,9 @@ export class TourCard {
 ```
 
 U datom kodu treba uočiti sledeće:
-- Posle jedne sekunde polje `published` zaista dobija vrednost `true`, u to se uverimo ispisom u konzoli unutar tajmera.
-- Ipak, dugme ostaje omogućeno. Prikaz je zaostao za podatkom, jer promenu nije izazvao nijedan događaj iz šablona, pa Angular ne zna da treba ponovo da iscrta karticu.
+- Posle jedne sekunde polje `published` zaista dobija vrednost `true`. U to se uveravamo ispisom u konzoli unutar tajmera.
+- Ipak, dugme ostaje omogućeno. Prikaz je zaostao za podatkom, jer promenu nije izazvao nijedan događaj iz šablona, pa Angular ne zna da treba da osveži karticu.
 
-**Napomena:** ovo ponašanje važi u modernom, *zoneless* Angular-u tj. verziji Angulara koja u sebe uvodi signale.
+**Napomena:** Opisano ponašanje važi za najnovije verzije Angulara, koje ne koriste biblioteku Zone.js (engl. *zoneless*) i u kojima komponente podrazumevano osvežavaju prikaz samo kada Angular dobije obaveštenje da se nešto promenilo (strategija *OnPush*). Starije verzije Angulara koristile su Zone.js, biblioteku koja presreće tajmere, zahteve ka serveru i slične operacije i posle svake od njih osvežava prikaz. U takvim projektima bi se dugme iz primera ipak osvežilo. Zato ćete na internetu naići na starije primere koji menjaju obično polje i očekuju da se prikaz sam osveži.
 
 Obično polje, dakle, prikaz prati samo kada uz promenu ide i događaj iz šablona. Nama treba polje čiju svaku promenu Angular primeti, bez obzira odakle promena dolazi. Navedeni zahtev ispunjavaju **signali** i njima se bavimo u [narednoj lekciji o signalima](4-signali.md).
