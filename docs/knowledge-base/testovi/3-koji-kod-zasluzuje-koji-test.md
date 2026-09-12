@@ -1,76 +1,119 @@
 # Koji kod zaslužuje koji test
 
-> **Nacrt.** Struktura lekcije sa beleškama po odeljcima. Svaki odeljak navodi definiciju, problem, primer, šta se uočava, izvor u knjizi i planirani obim.
+Prethodna lekcija je pokazala da test trivijalnog koda ima vrednost nula, a test koji proverava korake umesto ishoda takođe. Ostaje pitanje koje klase modula sadrže kod vredan testiranja i kojom vrstom testa. Modul Exploration ima agregat `Tour`, aplikacioni servis `TourAuthoringService`, upitnu klasu `TourBrowsingQueries`, repozitorijum `TourRepository`, API kontroler `TourAuthoringController` i strukturu `TourDto`. Kada bi svaka od tih klasa dobila svoj test, veći deo testova bi bio bezvredan, a njihovo održavanje bi koštalo koliko i održavanje vrednih. Bolje je ne napisati test nego napisati loš, pa je odluka šta se ne testira jednako važna kao odluka šta se testira.
 
-**Preduslovi:** `testovi/2-sta-cini-dobar-test.md`, `server/2-arhitektura-modula/5-čista-arhitektura.md`.
-**Ciljevi učenja:** čitalac ume da za svaku klasu modula odluči da li dobija jedinični test, integracioni test ili nijedan, i da prepozna klasu koju treba podeliti pre testiranja. Ovo je glavna ljudska odluka pri testiranju.
-**Radni primer:** modul Exploration: `Tour` (domen), `TourAuthoringService` (aplikacioni sloj), `TourRepository` (infrastruktura), `TourAuthoringController` (API), `TourDto`.
-**Planirani obim:** oko 1600 reči.
+Ova lekcija daje postupak kojim se za svaku klasu odlučuje da li dobija jedinični test, integracioni test ili nijedan. Postupak polazi od dve dimenzije koda.
 
-## Uvod (oko 120 reči)
+## Dve dimenzije koda
 
-Sidro: lekcija 2 je pokazala da test trivijalnog koda ima vrednost nula. Pitanje: koje klase modula imaju kod vredan testiranja i kojom vrstom testa. Bolje je ne napisati test nego napisati loš, pa je odluka šta se ne testira jednako važna.
+**Složenost** (engl. *complexity*) koda je broj tačaka grananja u njemu. **Domenski značaj** (engl. *domain significance*) koda je mera koliko kod neposredno iskazuje pravilo domena. Ove dve osobine čine prvu dimenziju i posmatraju se zajedno, jer je kod vredan testa ako ima bilo koju od njih. Složen kod je mesto gde greške nastaju, a domenski značajan kod je mesto gde greška najviše košta. Izračunavanje cene bez ijednog grananja je domenski značajno i zaslužuje test.
 
-## Dve dimenzije koda (oko 300 reči)
+**Saradnik** (engl. *collaborator*) je zavisnost koda koja ima promenljivo stanje ili živi van procesa, poput repozitorijuma ili baze podataka. Vrednosni objekti i nepromenljivi ulazi nisu saradnici. Broj saradnika je druga dimenzija i određuje trošak testa, jer test svakog saradnika mora da dovede u očekivano stanje pre akcije i da ga proveri posle nje. Test koda sa mnogo saradnika je dug, a dug test je teško održavati.
 
-- **Definicija:** složenost koda je broj tačaka grananja u njemu; domenski značaj je koliko kod neposredno iskazuje pravilo domena. Saradnik (engl. *collaborator*) je zavisnost koja ima promenljivo stanje ili živi van procesa, poput baze podataka; vrednosni objekti i nepromenljivi ulazi se ne računaju.
-- **Problem:** složen ili domenski značajan kod je mesto gde greške nastaju, pa njegov test najviše štiti. Kod sa mnogo saradnika traži dugu pripremu, pa je njegov test skup za pisanje i održavanje. Dve dimenzije su nezavisne: izračunavanje bez ijednog `if` može biti domenski značajno.
-- **Primer:** `Tour.Publish()` (tri pravila, nula saradnika) naspram `TourAuthoringService.Publish(...)` (nula pravila, repozitorijum i jedinica posla kao saradnici).
-- **Uočiti:** implicitni saradnici se računaju, npr. statički pristup vremenu; što je kod važniji, treba da ima manje saradnika.
-- **Izvor:** Khorikov 7.1.1 (bez ciklomatske formule).
+Sledeći kod uporedo prikazuje metodu agregata i metodu aplikacionog servisa iz projekta:
 
-## Četiri tipa koda i slojevi modula (oko 600 reči)
+```cs
+public void Publish()
+{
+    if (Status == TourStatus.Published)
+    {
+        throw new DomainException("The tour is already published.");
+    }
+    if (Description.Length < MinimumDescriptionLengthForPublishing)
+    {
+        throw new DomainException("...");
+    }
+    if (_transportTimes.Count == 0)
+    {
+        throw new DomainException("...");
+    }
 
-Kičma lekcije: tabela dva puta dva, a zatim jedan pododeljak po polju sa preslikavanjem na sloj modula.
+    Status = TourStatus.Published;
+    PublishedAt = DateTime.UtcNow;
+}
 
-### Domenski model: jedinični testovi
+public async Task PublishAsync(Guid tourId, Guid authorId)
+{
+    var tour = await GetOwnedTourAsync(tourId, authorId);
 
-- Agregati, entiteti, vrednosni objekti i domenski servisi. Visok značaj, bez saradnika. Testovi su kratki, brzi i najviše štite.
-- **Primer:** `TourTests` iz lekcije 1.
-- **Uočiti:** test gradi agregat konstruktorom i poziva metode, bez baze i bez zamena za zavisnosti; direktorijum `Unit/` sadrži samo ovakve testove.
+    tour.Publish();
+    await _unitOfWork.SaveChangesAsync();
+}
+```
 
-### Kontroleri: integracioni testovi
+U datom kodu treba uočiti sledeće:
 
-- U knjizi je kontroler svaki kod koji koordinira rad drugih: u modulu su to zajedno aplikacioni servis, repozitorijum i API kontroler. Nizak značaj, mnogo saradnika.
-- **Primer:** put komande `Publish` kroz tri klase, prikazan kao niz poziva bez koda.
-- **Uočiti:** ovaj kod se ne testira jedinično, jer bi test morao da zameni sve saradnike i proverio bi tri reda orkestracije; testira se kratko, kroz mali broj integracionih testova koji prolaze kroz sve tri klase odjednom (lekcija 4).
+- Metoda `Tour.Publish` ima tri grananja i sva tri su pravila domena. Osim poziva `DateTime.UtcNow`, radi samo nad sopstvenim stanjem.
+- Metoda `TourAuthoringService.PublishAsync` nema nijedno pravilo domena. Ima dva saradnika, repozitorijum kroz koji učitava turu i jedinicu posla kroz koju čuva izmene.
+- Saradnik se računa i kada nije prosleđen kao parametar. Poziv `DateTime.UtcNow` je takav saradnik, jer test ne može da predvidi tačno vreme, pa test iz prve lekcije proverava samo da `PublishedAt` nije prazno.
 
-### Trivijalan kod: bez testa
+Što je kod važniji, to manje saradnika treba da ima. Kod koji ima i pravila i saradnike je najskuplji za testiranje i o njemu govori jedno od polja u nastavku.
 
-- Konstruktori koji dodeljuju, svojstva, DTO strukture, mapiranje na DTO.
-- **Primer:** `TourDto`.
-- **Uočiti:** test bi izvršio kod bez grananja i bez domenskog pravila; greška u mapiranju se hvata usput, kada integracioni test pročita odgovor.
+## Četiri tipa koda
 
-### Prekomplikovan kod: podeliti
+Dve dimenzije daju četiri tipa koda. Sledeća tabela ih prikazuje, zajedno sa slojem modula u kome se svaki tip nalazi i vrstom testa koju dobija:
 
-- Kod koji je i značajan i ima mnogo saradnika, npr. aplikacioni servis koji sadrži domensko pravilo, ili agregat koji poziva repozitorijum.
-- **Primer:** `TourAuthoringService.Publish` koji proverava dužinu opisa pre poziva `tour.Publish()`; ispravka je premeštanje provere u agregat.
-- **Uočiti:** kod može da bude dubok (složen) ili širok (mnogo saradnika), nikada oboje; podela na domen i aplikacioni sloj iz čiste arhitekture je upravo ta podela, pa u modulu koji je poštuje ovo polje ostaje prazno.
-- **Izvor za ceo odeljak:** Khorikov 7.1.1, 7.3.1, 7.3.2 (bez imena Humble Object).
+| | Malo saradnika | Mnogo saradnika |
+|---|---|---|
+| **Složen ili domenski značajan** | Domenski model: agregati, entiteti, vrednosni objekti, domenski servisi. Jedinični testovi. | Prekomplikovan kod. Deli se pre testiranja. |
+| **Jednostavan i bez domenskog značaja** | Trivijalan kod: konstruktori, svojstva, DTO strukture. Bez testa. | Kontroleri: aplikacioni servis, repozitorijum, API kontroler. Integracioni testovi. |
 
-## Preduslovi (oko 150 reči)
+Naredni odeljci obrađuju polja tabele jedno po jedno.
 
-- **Definicija:** preduslov je provera na ulazu metode koja odbija nedozvoljeno stanje izuzetkom.
-- **Problem:** nije svaki preduslov vredan testa.
-- **Primer:** `Constructor_rejects_empty_tags` (pravilo domena: tura mora imati oznaku) naspram provere da niz ulaznih podataka ima bar tri elementa (tehnička zaštita).
-- **Uočiti:** preduslov sa domenskim značajem je invarijanta agregata i dobija test; tehnički preduslov ne.
-- **Izvor:** Khorikov 7.3.3.
+### Domenski model
 
-## Repozitorijumi i upiti (oko 250 reči)
+Domenski model ima visok značaj i nema saradnike, pa je njegov test kratak, brz i najviše štiti. Klasa `TourTests` iz prve lekcije je test domenskog modela. Test gradi agregat konstruktorom, poziva njegove metode i proverava stanje. Ne koristi bazu, ne pokreće aplikaciju i ne zamenjuje nijednu zavisnost, jer zavisnosti nema. Direktorijum `Unit/` test projekta sadrži samo ovakve testove.
 
-- **Problem:** dve klase modula izgledaju kao da zaslužuju zaseban test, a ne zaslužuju.
-- Repozitorijum pripada polju kontrolera: mala složenost, saradnik van procesa. Zaseban test košta koliko integracioni, a greška u mapiranju se hvata kada integracioni test komande pročita red iz baze.
-- Upitna klasa nema domenski sloj, pa nema jedinični test; greška u čitanju ne kvari podatke, pa je prag za njen test viši nego za komande. Kada se testira, testira se samo integraciono, kroz projekciju koju vraća.
-- **Uočiti:** ni jedna ni druga klasa nema direktorijum u `Unit/`.
-- **Izvor:** Khorikov 10.5.
+### Kontroleri
 
-## Piramida testova (oko 150 reči)
+U ovoj tabeli **kontroler** je svaki kod koji koordinira rad drugih klasa, a sam ne sadrži pravila. U modulu su to zajedno aplikacioni servis, repozitorijum i API kontroler. Put komande `Publish` prolazi kroz sve tri klase. `TourAuthoringController.Publish` čita identifikator korisnika iz zahteva i poziva `TourAuthoringService.PublishAsync`. Servis kroz `TourRepository` učitava turu, poziva `tour.Publish()` i čuva izmene kroz jedinicu posla.
 
-- **Definicija:** piramida testova je odnos u kome jedinični testovi čine većinu, a integracioni manjinu.
-- **Problem:** integracioni test je sporiji i skuplji, pa se piše samo tamo gde jedinični ne dopire.
-- **Uočiti:** oblik zavisi od modula. Modul sa bogatim agregatom ima piramidu; modul koji uglavnom čuva i čita podatke ima pravougaonik, i to nije nedostatak.
-- **Izvor:** Khorikov 8.1.2, 4.5.1.
+Jedinični test ovog koda bi morao da zameni repozitorijum i jedinicu posla, a proverio bi tri reda koordinacije. Takav test ima malu zaštitu od regresija i veliki trošak. Umesto toga, kod iz polja kontrolera se testira malim brojem integracionih testova koji prolaze kroz sve tri klase odjednom, sa pravom bazom. Oblik tih testova razmatra naredna lekcija.
 
-## Van opsega
+### Trivijalan kod
 
-Refaktorisanje ka testabilnom kodu korak po korak (Khorikov 7.2), obrasci CanExecute i domenski događaji (7.4), mock objekti.
+Trivijalan kod nema ni grananja ni pravila. U modulu su to konstruktori koji samo dodeljuju vrednosti, svojstva, DTO strukture i mapiranje agregata na DTO. Struktura `TourDto` je zapis sa devet svojstava i ničim drugim. Njen test bi izvršio kod u kome greške nema. Greška u mapiranju na DTO se hvata usput, kada integracioni test pročita odgovor krajnje tačke.
+
+### Prekomplikovan kod
+
+Prekomplikovan kod ima i pravila i saradnike. U modulu bi to bio aplikacioni servis koji sam proverava pravilo domena ili agregat koji poziva repozitorijum. Sledeći kod prikazuje takav servis:
+
+```cs
+public async Task PublishAsync(Guid tourId, Guid authorId)
+{
+    var tour = await GetOwnedTourAsync(tourId, authorId);
+    if (tour.Description.Length < 100)
+    {
+        throw new DomainException("A tour can be published only with a longer description.");
+    }
+
+    tour.Publish();
+    await _unitOfWork.SaveChangesAsync();
+}
+```
+
+U datom kodu treba uočiti sledeće:
+
+- Pravilo o dužini opisa sada živi u servisu, pored dva saradnika. Jedinični test pravila mora da zameni repozitorijum, a integracioni test mora da poseje turu sa kratkim opisom u bazu. Oba testa su skuplja od testa `Publish_rejects_a_short_description` iz prve lekcije.
+- Ispravka nije bolji test, nego premeštanje pravila u metodu `Tour.Publish`, gde ono i jeste u projektu. Servis ostaje bez pravila i vraća se u polje kontrolera.
+- Kod može da bude dubok, sa mnogo pravila, ili širok, sa mnogo saradnika, ali ne oboje. Podela na domenski i aplikacioni sloj iz čiste arhitekture je upravo ta podela, pa u modulu koji je poštuje ovo polje ostaje prazno.
+
+## Preduslovi
+
+**Preduslov** (engl. *precondition*) je uslov koji ulaz metode mora da ispuni, a čije kršenje metoda odbija izuzetkom. Konstruktor klase `Tour` ima tri preduslova, a metoda `Publish` još tri. Nije svaki preduslov vredan testa.
+
+Preduslov koji iskazuje pravilo domena je invarijanta agregata i dobija test. Uslov da tura ima bar jednu oznaku je pravilo domena, pa test `Constructor_rejects_empty_tags` postoji. Preduslov koji štiti od greške u kodu, na primer uslov da niz sa podacima za rehidraciju ima očekivan broj elemenata, nema domensko značenje. Takav preduslov postoji da bi greška u kodu bila otkrivena rano, i test za njega se ne piše.
+
+## Repozitorijumi i upiti
+
+Dve klase modula izgledaju kao da zaslužuju zaseban test, a ne zaslužuju.
+
+Repozitorijum `TourRepository` ima dve metode bez grananja i jednog saradnika van procesa, bazu. Pripada polju kontrolera. Njegov zaseban test bi tražio bazu, pa bi koštao koliko integracioni test, a proverio bi samo ponašanje biblioteke EF Core. Greška u mapiranju agregata na tabelu se hvata kada integracioni test komande pročita red iz baze posle zahteva.
+
+Upitna klasa `TourBrowsingQueries` ne prolazi kroz domenski sloj, jer čitanje ne menja stanje, pa nema šta da se jedinično testira. Greška u čitanju vraća pogrešan spisak, ali ne kvari podatke, pa je cena te greške manja od cene greške u komandi. Kada se upit testira, testira se integraciono, kroz projekciju koju krajnja tačka vraća. Ni repozitorijum ni upitna klasa nemaju direktorijum u `Unit/`.
+
+## Piramida testova
+
+**Piramida testova** (engl. *test pyramid*) je odnos u kome jedinični testovi čine većinu skupa testova, a integracioni manjinu. Integracioni test je sporiji i skuplji za održavanje, pa se piše samo tamo gde jedinični ne dopire, za polje kontrolera i za spoj sa bazom. Sva pravila domena ostaju u jediničnim testovima.
+
+Oblik zavisi od modula. Modul sa bogatim agregatom, poput Exploration, ima mnogo jediničnih i malo integracionih testova. Modul koji uglavnom čuva i čita podatke, bez pravila, ima približno isti broj jednih i drugih. Takav oblik nije nedostatak modula, nego posledica toga što u njemu nema pravila koja bi jedinični testovi proveravali.

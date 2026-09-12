@@ -1,52 +1,127 @@
 # Podaci integracionih testova
 
-> **Nacrt.** Struktura lekcije sa beleškama po odeljcima. Svaki odeljak navodi definiciju, problem, primer, šta se uočava, izvor u knjizi i planirani obim.
+U prethodnoj lekciji test `Publish_publishes_a_complete_tour` šalje zahtev za objavu ture sa identifikatorom `TourSeed.PublishableRiverside.Id`. Ostaje pitanje odakle je ta tura u bazi, šta se sa njom dešava posle testa i zašto naredni test zatiče istu bazu kao prethodni. Baza je jedina zavisnost koju integracioni testovi dele, pa je ona i jedini put kojim jedan test može da pokvari drugi. Ova lekcija opisuje kako testovi modula dele jednu bazu, a ostaju nezavisni, i kako se početni podaci i provere pišu tako da ih rast modula ne obara.
 
-**Preduslovi:** `testovi/4-integracioni-testovi.md`, `server/2-arhitektura-modula/3-infrastrukturni-sloj/5-jedinica-posla.md`.
-**Ciljevi učenja:** čitalac razume kako integracioni testovi dele jednu bazu a ostaju nezavisni, ume da doda novu imenovanu instancu u početne podatke modula i ume da napiše proveru koju novi red u početnim podacima ne obara. Ovo je lekcija o tome kako skup testova preživljava rast modula.
-**Radni primer:** `TourSeed`, `ExplorationSeed` i `BaseIntegrationTest` iz modula Exploration; `Reseed` i `CreateContext` iz `ExplorerApiFactory`; `Create_stores_a_draft_tour` i `GetPublished_returns_only_published_tours`.
-**Planirani obim:** oko 1500 reči.
+## Poznato stanje pre svakog testa
 
-## Uvod (oko 120 reči)
+**Početni podaci** (engl. *seed*) su skup redova koji se upisuje u testnu bazu pre svakog testa. Test koji čita mora unapred da zna šta je u bazi, a test koji piše ne sme da ostavi trag narednom testu. Oba zahteva rešava isti postupak, kojim se pre svakog testa sve tabele modula isprazne i napune istim početnim podacima.
 
-Sidro: u lekciji 4 test `Publish_publishes_a_complete_tour` šalje zahtev za turu `TourSeed.PublishableRiverside.Id`. Pitanje: odakle ta tura u bazi, šta se dešava sa njom posle testa i zašto naredni test zatiče istu bazu kao i prethodni. Baza je jedina zavisnost koju testovi dele, pa je ona jedini put kojim jedan test može da pokvari drugi.
+Postupak se izvršava na početku testa, a ne na kraju. Čišćenje na kraju se preskače kada se izvršavanje testa prekine, na primer u debageru, pa zaostali red obara naredne testove. Čišćenje na početku ne može da se preskoči, pa posebna faza čišćenja posle testa ne postoji. Testovi u kolekciji se izvršavaju jedan za drugim, pa dva testa nikada ne dele bazu u istom trenutku.
 
-## Poznato stanje pre svakog testa (oko 300 reči)
+Postupak pokreće konstruktor osnovne klase, prikazan u prethodnoj lekciji:
 
-- **Definicija:** početni podaci (engl. *seed*) su skup redova koji se upisuje u testnu bazu pre svakog testa. `Reseed` prazni sve tabele modula i upisuje početne podatke.
-- **Problem:** test koji čita mora unapred da zna šta je u bazi; test koji piše ne sme da ostavi trag narednom. Čišćenje na kraju testa se preskače kada test pukne ili se prekine u debageru; zato se čisti na početku, a posebna faza čišćenja ne postoji. Testovi u kolekciji se izvršavaju jedan za drugim, pa dva testa nikada ne dele bazu u istom trenutku.
-- **Primer:** konstruktor `BaseIntegrationTest` sa pozivom `Factory.Reseed<ExplorationDbContext>(ExplorationSeed.All)`.
-- **Uočiti:** konstruktor osnovne klase se izvršava pre svakog testa, jer test okvir pravi novu instancu po testu (lekcija 1); struktura baze se postavlja jednom po pokretanju, a podaci pre svakog testa; `Reseed` je jedini put kojim podaci ulaze u bazu mimo krajnje tačke pod testom.
-- **Izvor:** xunit.md (Početni podaci, Povezivanje); Khorikov 10.3.1, 10.3.2.
+```cs
+protected BaseIntegrationTest(ExplorationApiFactory factory)
+{
+    Factory = factory;
+    Factory.Reseed<ExplorationDbContext>(ExplorationSeed.All);
+    Client = Factory.CreateClient();
+}
+```
 
-## Početni podaci koji preživljavaju rast (oko 400 reči)
+U datom kodu treba uočiti sledeće:
 
-- **Problem:** početni podaci rastu sa svakom novom funkcionalnošću i svakim novim testom. Ako svaki test upisuje svoje redove, priprema se ponavlja i testovi postaju dugi; ako se podaci grade pomoćnim metodama sa parametrima i granjanjem, klasa početnih podataka postaje program koji se sam mora testirati.
-- **Primer:** skraćen `TourSeed` sa `FortressWalk`, `PublishableRiverside`, `PublishedVineyards`, statičkim konstruktorom i spiskom `All`; `ExplorationSeed.All`.
-- **Uočiti:**
-  - Jedna statička klasa po agregatu, sa imenovanim instancama; ime beleži stanje (`PublishedVineyards` je objavljena, `FortressWalk` je sveža).
-  - Instanca nastaje kroz konstruktor i domenske metode, nikada kroz zaobilaženje pravila, pa je svako posejano stanje ono koje sistem zaista može da dostigne.
-  - Samo linearni iskazi: bez grananja, bez pomoćnih metoda, bez parametara. Varijacija je nova imenovana instanca. Ovo je cena koja se plaća da klasa ostane podaci, a ne kod.
-  - Test se poziva na red imenom (`TourSeed.FortressWalk.Id`), pa agregat generiše identifikator u konstruktoru, a ne baza.
-  - `All` je tipiziran nizom agregata, pa se iz njega izvode očekivani brojevi (naredni odeljci).
-  - Redovi drugog modula dolaze iz klasa početnih podataka tog modula.
-- **Izvor:** xunit.md (Početni podaci); Khorikov 10.4.1 (ideja izdvajanja pripreme, bez imena obrasca).
+- Konstruktor osnovne klase se izvršava pre svakog testa, jer test okvir pravi novu instancu test klase za svaku test metodu.
+- Metoda `Reseed` fabrike prazni sve tabele koje kontekst modula mapira i upisuje prosleđene objekte. Struktura baze se postavlja jednom po pokretanju testova, a podaci pre svakog testa.
+- Poziv `Reseed` je jedini put kojim podaci ulaze u bazu mimo krajnje tačke koja se testira.
 
-## Tri kanala (oko 300 reči)
+## Početni podaci koji preživljavaju rast
 
-- **Definicija:** integracioni test sa sistemom komunicira kroz tri jednosmerna kanala: stanje ulazi kroz početne podatke, akcija ide kroz jedan HTTP zahtev, ishod se posmatra čitanjem baze kroz svež kontekst.
-- **Problem:** ako test priprema stanje pozivom druge krajnje tačke, greška u toj funkcionalnosti obara i testove ove; ako test upisuje kroz kontekst, zaobilazi domenska pravila i može da poseje stanje koje sistem ne može da dostigne.
-- **Primer:** `Create_stores_a_draft_tour`: kontekst u pripremi za broj redova, jedan `PostAsJsonAsync`, poseban kontekst u proveri.
-- **Uočiti:** `CreateContext` vraća svež kontekst, uvek u `using` bloku i samo za čitanje; kontekst otvoren pre akcije se ne čita posle nje, jer EF Core prati jednom učitane objekte i vratio bi zastarelo stanje, pa svaki korak testa ima svoj kontekst kao što svaka poslovna operacija u produkciji ima svoju jedinicu posla; ništa strukturno ne sprečava kršenje, pravilo drži pregled koda.
-- **Izvor:** xunit.md (Tri kanala integracionog testa); Khorikov 10.2.2.
+Početni podaci rastu sa svakom novom funkcionalnošću i svakim novim testom. Ako svaki test upisuje svoje redove, priprema se ponavlja i testovi postaju dugi. Ako se podaci grade pomoćnim metodama sa parametrima i grananjem, klasa početnih podataka postaje program koji i sam može da sadrži grešku. Početni podaci se zato pišu kao imenovane instance u statičkim klasama. Sledeći kod prikazuje skraćenu klasu `TourSeed` iz projekta:
 
-## Provere koje novi red ne obara (oko 300 reči)
+```cs
+internal static class TourSeed
+{
+    public static readonly Tour FortressWalk = new(WellKnownUsers.Explorer, "Šetnja tvrđavom", "Šetnja počinje na Gornjem platou Petrovaradinske tvrđave, vodi pored Sahat kule i podzemnih vojnih galerija, a završava se pogledom na Dunav.", TourDifficulty.Easy, ["istorija", "priroda"]);
+    public static readonly Tour PublishableRiverside;
+    public static readonly Tour PublishedVineyards;
 
-- **Problem:** provera `tours.Should().HaveCount(3)` prolazi danas i pada čim bilo ko doda novu instancu u `TourSeed`, iako se funkcionalnost nije promenila. To je lažni pozitiv iz lekcije 2, ovog puta izazvan podacima.
-- **Primer:** provere iz `Create_stores_a_draft_tour` (`tourCountBefore + 1`, `Count().Should().Be(tourCountBefore)` u testu odbijanja) i iz `GetPublished_returns_only_published_tours` (`OnlyContain`, `Contain` i `NotContain` po identifikatoru, `TotalCount` iz `TourSeed.All.Count(...)`).
-- **Uočiti:** test komande prvo proverava odgovor, zatim upisanu posledicu, uključujući njeno odsustvo kod odbijanja; brojevi se proveravaju kao razlike u odnosu na stanje pročitano u pripremi; test upita ostaje na HTTP nivou jer je projekcija ono što testira, a očekivani broj izvodi iz klase početnih podataka ili proverava članstvo po imenovanoj instanci.
-- **Izvor:** xunit.md (Provere komandi, Provere upita).
+    static TourSeed()
+    {
+        PublishableRiverside = new(WellKnownUsers.Explorer, "Staza uz Dunav", "Staza kreće od Ribarskog ostrva, prati obalu Dunava pored gradske plaže Štrand i završava se kod Mosta slobode, uz više mesta za predah.", TourDifficulty.Easy, ["priroda"]);
+        PublishableRiverside.AddTransportTime(TransportMode.Walking, 90);
 
-## Van opsega
+        PublishedVineyards = new(WellKnownUsers.Explorer, "Vinogradi Sremskih Karlovaca", "Tura vodi kroz vinograde na obroncima Fruške gore, uz obilazak dva porodična podruma i degustaciju bermeta u Sremskim Karlovcima.", TourDifficulty.Moderate, ["vino", "priroda"]);
+        PublishedVineyards.AddTransportTime(TransportMode.Bicycle, 60);
+        PublishedVineyards.Publish();
+    }
 
-Paralelno izvršavanje integracionih testova, baze u memoriji (pomenuto u lekciji 4), migracije i referentni podaci (lekcija o migracijama), pomoćne metode za korak akcije i proširenja za provere.
+    public static Tour[] All => [FortressWalk, PublishableRiverside, PublishedVineyards];
+}
+
+internal static class ExplorationSeed
+{
+    public static object[] All => [.. TourSeed.All];
+}
+```
+
+U datom kodu treba uočiti sledeće:
+
+- Za svaki agregat postoji jedna statička klasa sa imenovanim instancama, a ime beleži stanje instance. `FortressWalk` je nacrt bez vremena transporta, `PublishableRiverside` ima sve što je potrebno za objavu, a `PublishedVineyards` je objavljena.
+- Instanca nastaje kroz konstruktor i domenske metode agregata. Kada je potrebno stanje koje konstruktor ne daje, ono se dostiže pozivima domenskih metoda u statičkom konstruktoru klase. Svako posejano stanje je zato stanje koje sistem zaista može da dostigne, pa početni podaci ne mogu da naruše pravila domena.
+- Klasa sadrži samo linearne iskaze: bez grananja, bez pomoćnih metoda i bez parametara. Kada je potrebna varijacija postojeće instance, dodaje se nova imenovana instanca. To je cena koja se plaća da klasa ostane podaci, a ne kod.
+- Testovi na red upućuju imenom, na primer `TourSeed.FortressWalk.Id`, pa agregat generiše identifikator u konstruktoru, a ne baza pri upisu.
+- Spisak `All` je niz agregata, a ne niz objekata, pa testovi iz njega izvode očekivane brojeve. Klasa `ExplorationSeed` okuplja spiskove svih agregata modula u jedan, koji konstruktor osnovne klase prosleđuje metodi `Reseed`.
+- Redovi drugog modula dolaze iz klasa početnih podataka tog modula. Test projekti smeju da referenciraju jedni druge za tu potrebu.
+
+## Tri kanala
+
+Integracioni test sa sistemom komunicira kroz tri kanala, a svaki kanal ima jedan smer. Stanje ulazi u bazu isključivo kroz početne podatke. Akcija se izvršava isključivo jednim HTTP zahtevom. Ishod se posmatra isključivo kroz odgovor krajnje tačke i čitanje baze kroz svež kontekst.
+
+Prva dva pravila štite nezavisnost funkcionalnosti. Kada bi test stanje pripremao pozivom druge krajnje tačke, greška u toj funkcionalnosti bi obarala i testove ove. Kada bi test pisao kroz kontekst, zaobišao bi pravila domena i mogao bi da poseje stanje koje sistem ne može da dostigne. Sledeći kod prikazuje test koji poštuje sva tri pravila:
+
+```cs
+[Fact]
+public async Task Create_stores_a_draft_tour()
+{
+    var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
+    var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Hard, ["planina"]);
+    using var arrangeContext = Factory.CreateContext<ExplorationDbContext>();
+    var tourCountBefore = arrangeContext.Tours.Count();
+
+    var response = await client.PostAsJsonAsync("/api/exploration/tours", request);
+
+    response.StatusCode.Should().Be(HttpStatusCode.OK);
+    var created = await response.Content.ReadFromJsonAsync<TourDto>(JsonOptions);
+    created!.AuthorId.Should().Be(WellKnownUsers.Explorer);
+    using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+    assertContext.Tours.Count().Should().Be(tourCountBefore + 1);
+    var stored = assertContext.Tours.Single(tour => tour.Id == created.Id);
+    stored.Status.Should().Be(TourStatus.Draft);
+    stored.TransportTimes.Should().BeEmpty();
+}
+```
+
+U datom kodu treba uočiti sledeće:
+
+- Metoda `CreateContext` fabrike vraća svež kontekst modula. Test ga otvara na mestu upotrebe, unutar naredbe `using`, i koristi ga samo za čitanje.
+- Priprema otvara jedan kontekst da pročita broj tura, a provera otvara drugi. Kontekst otvoren pre akcije se ne čita posle nje, jer EF Core prati jednom učitane objekte i vratio bi stanje od pre zahteva. Svaki deo testa ima svoj kontekst, kao što svaka poslovna operacija u aplikaciji ima svoju jedinicu posla.
+- Server serijalizuje enumeracije kao niske, pa test pri čitanju odgovora prosleđuje `JsonOptions` sa istim podešavanjem. Polje je definisano u osnovnoj klasi.
+- Ništa u kodu ne sprečava test da piše kroz kontekst ili da pozove drugu krajnju tačku u pripremi. Pravilo o tri kanala se drži pregledom koda.
+
+## Provere koje novi red ne obara
+
+Provera `tours.Should().HaveCount(3)` prolazi danas i pada čim bilo ko doda novu instancu u klasu `TourSeed`, iako se funkcionalnost nije promenila. To je lažni pozitiv iz druge lekcije, ovog puta izazvan podacima, a ne kodom. Provere se zato pišu tako da ne zavise od tačnog sadržaja početnih podataka.
+
+Test komande broj redova proverava kao razliku. U prethodnom primeru priprema čita `tourCountBefore`, a provera očekuje `tourCountBefore + 1`. Test odbijanja istim obrascem proverava da se broj nije promenio:
+
+```cs
+response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+using var assertContext = Factory.CreateContext<ExplorationDbContext>();
+assertContext.Tours.Count().Should().Be(tourCountBefore);
+```
+
+Test upita ostaje na HTTP nivou, jer je projekcija ono što testira, a očekivanja izvodi iz klase početnih podataka. Sledeći kod prikazuje provere iz testa `GetPublished_returns_only_published_tours`:
+
+```cs
+tours!.Items.Should().OnlyContain(tour => tour.Status == TourStatus.Published);
+tours.Items.Should().Contain(tour => tour.Id == TourSeed.PublishedVineyards.Id);
+tours.Items.Should().NotContain(tour => tour.Id == TourSeed.FortressWalk.Id);
+tours.TotalCount.Should().Be(TourSeed.All.Count(tour => tour.Status == TourStatus.Published));
+```
+
+U datom kodu treba uočiti sledeće:
+
+- Prva provera proverava oblik rezultata, da su svi vraćeni redovi objavljeni, bez obzira na to koliko ih ima.
+- Druga i treća provera proveravaju članstvo po imenovanoj instanci, da objavljena tura jeste u rezultatu, a tura u statusu nacrta nije. Nova instanca u početnim podacima ne menja ni jednu ni drugu.
+- Četvrta provera očekivani ukupan broj izvodi iz spiska `All` istim uslovom koji upit primenjuje. Kada neko doda još jednu objavljenu turu u početne podatke, obe strane provere se pomere za jedan.

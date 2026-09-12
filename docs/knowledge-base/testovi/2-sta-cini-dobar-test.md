@@ -1,56 +1,93 @@
 # Šta čini dobar test
 
-> **Nacrt.** Struktura lekcije sa beleškama po odeljcima. Svaki odeljak navodi definiciju, problem, primer, šta se uočava, izvor u knjizi i planirani obim.
+U prethodnoj lekciji smo videli test `Publish_publishes_a_complete_tour`, koji gradi turu, objavljuje je i proverava status i vreme objave. Zamislimo dva druga testa iste klase. Prvi proverava da tura posle kreiranja ima ime koje joj je dato u konstruktoru. Drugi proverava tačan tekst poruke kojom `Publish` odbija već objavljenu turu. Oba testa prolaze, oba se pokreću i nijedan ne vredi.
 
-**Preduslovi:** `testovi/1-anatomija-jedinicnog-testa.md`.
-**Ciljevi učenja:** čitalac ume da za dati test kaže da li vredi zadržati: da li proverava ishod ili korake, da li bi pao pri refaktorisanju koje ponašanje ne menja i da li uopšte može da otkrije grešku. Ovo je lupa kroz koju se pregledaju testovi koje je napisao neko drugi, uključujući agenta.
-**Radni primer:** testovi agregata `Tour` iz lekcije 1; jedan namerno loš test napisan za ovu lekciju.
-**Planirani obim:** oko 1400 reči.
+Ova lekcija daje merila kojima se za dati test odlučuje da li ga vredi zadržati. Merila važe za svaki automatski test, a primenjuju se najčešće pri pregledu testova koje je napisao neko drugi.
 
-## Uvod (oko 150 reči)
+## Cilj testiranja
 
-Sidro: u lekciji 1 čitalac je video `Publish_publishes_a_complete_tour`. Pitanje: šta bi taj test učinilo beskorisnim, a da i dalje prolazi. Tri odgovora najavljuju lekciju: test koji proverava kako je `Publish()` napisan umesto šta je uradio, test koji pada kada se `Publish()` prepiše a ponašanje ostane isto, test koji proverava nešto što ne može da bude pogrešno.
+Cilj automatskog testiranja je **održiv rast** projekta, stanje u kome izmena koda posle godinu dana rada košta koliko i na početku. Bez testova svaka izmena rizikuje **regresiju** (engl. *regression*), grešku u funkcionalnosti koja je ranije radila. Tim tada usporava, jer posle svake izmene proverava ručno, ili ne usporava i isporučuje regresije.
 
-## Cilj testiranja (oko 200 reči)
+Testovi su i sami kod. Pišu se, čitaju, menjaju kada se menja kod koji proveravaju, i ponekad padaju bez razloga. Svaki test ima trošak i vrednost i zadržava se samo ako je vrednost veća od troška. Cilj nije što više testova, nego skup testova u kome svaki test nešto štiti.
 
-- **Definicija:** cilj automatskog testiranja je održiv rast projekta, odnosno da promena koda posle više meseci rada košta koliko i na početku.
-- **Problem:** bez testova svaka izmena rizikuje regresiju, grešku u funkcionalnosti koja je radila; tim usporava jer proverava ručno ili ne proverava. Testovi su i sami kod: pišu se, čitaju, održavaju i lažno padaju. Test ima vrednost i trošak, i zadržava se samo ako je vrednost veća.
-- **Primer:** narativni. Modul sa deset sprintova rada, novo pravilo o ključnoj tački obara objavljivanje ture, niko ne primećuje do demonstracije.
-- **Uočiti:** pokrivenost koda (procenat izvršenih redova) je samo negativan pokazatelj: niska pokrivenost je siguran znak problema, visoka ne dokazuje ništa, jer meri da je red izvršen, a ne da je ishod proveren. Jedan pasus, bez metrika i primera.
-- **Izvor:** Khorikov 1.2, 1.3 (samo zaključak), 1.4.
+Iz istog razloga **pokrivenost koda** (engl. *code coverage*), procenat redova koje testovi izvrše, ne meri kvalitet testova. Pokrivenost beleži da je red izvršen, a ne da je njegov ishod proveren. Test bez ijedne provere daje istu pokrivenost kao test sa proverama. Niska pokrivenost je siguran znak da nešto nije testirano, dok visoka pokrivenost ne dokazuje ništa.
 
-## Zaštita od regresija (oko 200 reči)
+## Zaštita od regresija
 
-- **Definicija:** zaštita od regresija je mera koliko test može da otkrije grešku, i raste sa količinom i složenošću koda koji test izvršava, uključujući kod biblioteka.
-- **Problem:** test trivijalnog koda (svojstvo sa jednim redom, konstruktor koji samo dodeljuje) ne može da nađe grešku, jer greške tamo nema, a košta koliko i svaki drugi.
-- **Primer:** test koji proverava da `new Tour(...)` ima zadato ime, naspram `Publish_requires_a_transport_time`.
-- **Uočiti:** prvi test izvršava jedan red bez grananja; drugi izvršava pravilo koje sutra neko može da izmeni pogrešno.
-- **Izvor:** Khorikov 4.1.1, 4.4.2.
+**Zaštita od regresija** (engl. *protection against regressions*) je mera verovatnoće da test otkrije grešku. Raste sa količinom i složenošću koda koji test izvršava, uključujući i kod biblioteka kroz koje taj kod prolazi.
 
-## Otpornost na refaktorisanje (oko 350 reči)
+Kod bez grananja i bez domenskog pravila ne može da sadrži grešku koju bi test otkrio. Sledeći kod prikazuje test takvog koda:
 
-- **Definicija:** refaktorisanje je izmena koda koja ne menja ponašanje. Otpornost na refaktorisanje je mera koliko test preživljava takve izmene bez lažnog pozitiva, odnosno pada testa dok funkcionalnost radi.
-- **Problem:** lažni pozitivi navikavaju tim da ignoriše pale testove i obeshrabruju refaktorisanje, jer svaka promena lomi testove. Uzrok je sprega testa sa detaljima implementacije: test proverava kako je nešto urađeno, a ne šta je urađeno.
-- **Primer:** loš test koji proverava da `Publish()` postavlja `PublishedAt` pre nego što promeni `Status` (redosled koraka), ili koji čita privatnu listu preko refleksije, naspram `Publish_publishes_a_complete_tour` koji proverava samo krajnje stanje.
-- **Uočiti:** prvi test pada kada se dva reda zamene mestima, a tura se i dalje ispravno objavljuje; drugi test pada samo kada se ponašanje promeni. Test gleda na agregat kao klijent, kroz javne metode i svojstva (crna kutija). Otpornost je binarna: test ili ima spregu sa implementacijom ili nema, pa se ova osobina ne razmenjuje za druge.
-- **Izvor:** Khorikov 4.1.2 do 4.1.4, 4.4.5 (drugi deo), 4.5.2.
+```cs
+[Fact]
+public void Creation_keeps_the_name()
+{
+    var tour = new Tour(WellKnownUsers.Explorer, "Šetnja tvrđavom", "Opis ture.", TourDifficulty.Easy, ["istorija"]);
 
-## Brzina i održivost (oko 200 reči)
+    tour.Name.Should().Be("Šetnja tvrđavom");
+}
+```
 
-- **Definicija:** brza povratna informacija je vreme izvršavanja testa; održivost je koliko je test teško razumeti (dužina) i pokrenuti (spoljne zavisnosti).
-- **Problem:** spor test se retko pokreće, pa greška živi duže; dug test se ne čita, pa se popravlja nasumice.
-- **Primer:** poređenje testa agregata (milisekunde, bez zavisnosti) i testa kroz HTTP sa bazom iz lekcije 4 (sekunde, potreban PostgreSQL).
-- **Uočiti:** obe vrste testa imaju mesto; razlika u brzini je razlog da se većina ponašanja proverava na nivou agregata.
-- **Izvor:** Khorikov 4.3.
+U datom kodu treba uočiti sledeće:
 
-## Vrednost testa (oko 200 reči)
+- Test izvršava jednu dodelu u konstruktoru. Nema izmene koda koja bi tu dodelu pokvarila, a da je programer ne primeti odmah.
+- Test `Publish_requires_a_transport_time` iz prethodne lekcije izvršava pravilo koje sutra neko može da izmeni pogrešno, na primer da uslov `_transportTimes.Count == 0` zameni uslovom `_transportTimes.Count < 0`. Taj test ima zaštitu od regresija, ovaj nema.
+- Trošak oba testa je isti. Piše se, čita se i održava se.
 
-- **Definicija:** vrednost testa je proizvod četiri ocene, pa nula na bilo kojoj čini test bezvrednim.
-- **Problem:** nijedan test ne može da ima najviše ocene na svemu; zaštita od regresija i brzina se razmenjuju (test kroz više koda je sporiji), a otpornost i održivost se ne razmenjuju, nego se uvek drže na najvišem nivou.
-- **Primer:** tabela sa tri testa iz prethodnih odeljaka (trivijalan, sa spregom, `Publish_publishes_a_complete_tour`) i njihove ocene.
-- **Uočiti:** kada se pregleda tuđi test, prvo se traži nula: da li proverava nešto što ne može da bude pogrešno, da li proverava korake umesto ishoda.
-- **Izvor:** Khorikov 4.4 (bez slika tri ekstrema), 4.4.5.
+## Otpornost na refaktorisanje
 
-## Van opsega
+**Refaktorisanje** (engl. *refactoring*) je izmena koda koja ne menja njegovo ponašanje. **Otpornost na refaktorisanje** je mera koliko test preživljava takve izmene bez pada. **Lažni pozitiv** (engl. *false positive*) je pad testa iako funkcionalnost koju test proverava radi ispravno.
 
-Tabela signal i šum, pokrivenost linija i grana, piramida testova (lekcija 3), mock objekti.
+Lažni pozitivi imaju dve posledice. Prvo, tim se navikava da pali testovi ne znače grešku i prestaje da ih čita. Drugo, tim izbegava refaktorisanje, jer svaka promena obara testove koje zatim treba popravljati. Skup testova sa mnogo lažnih pozitiva vremenom prestaje da se pokreće.
+
+Uzrok lažnih pozitiva je sprega testa sa **detaljima implementacije** (engl. *implementation details*), načinom na koji je ponašanje ostvareno. Sledeći kod prikazuje test koji proverava detalj implementacije:
+
+```cs
+[Fact]
+public void Publish_rejects_an_already_published_tour()
+{
+    var tour = CreateTour(LongDescription);
+    tour.AddTransportTime(TransportMode.Car, 30);
+    tour.Publish();
+
+    var publishing = () => tour.Publish();
+
+    publishing.Should().Throw<DomainException>()
+        .WithMessage("The tour is already published.");
+}
+```
+
+U datom kodu treba uočiti sledeće:
+
+- Test proverava tekst poruke izuzetka. Ako neko poruku prepravi, na primer doda identifikator ture, tura se i dalje ispravno odbija, a test pada.
+- Tekst poruke je detalj implementacije. Ponašanje je da se druga objava odbija, i to ponašanje aplikacioni servis prepoznaje po vrsti izuzetka, ne po tekstu.
+- Test istog imena iz klase `TourTests` proverava samo da je izuzetak vrste `DomainException` izbačen. On pada samo kada se ponašanje promeni.
+
+Test proverava ishod, a ne korake. Test posmatra agregat kao što ga posmatra aplikacioni servis, kroz javne metode i svojstva, i ne zna kako je metoda napisana. Kada se test piše tako, otpornost na refaktorisanje je obezbeđena. Kada test proverava korake, otpornosti nema. Između ta dva slučaja nema prelaza, pa se ova osobina ne razmenjuje za druge.
+
+## Brzina i održivost
+
+**Brzina** (engl. *fast feedback*) je mera koliko brzo se test izvršava. Spor test se retko pokreće, pa greška koju bi otkrio živi duže. Test agregata traje milisekunde i ne traži ništa osim koda. Test koji šalje HTTP zahtev aplikaciji sa bazom traje sekunde i traži pokrenut PostgreSQL server.
+
+**Održivost** (engl. *maintainability*) je mera koliko je test lako razumeti i pokrenuti. Dug test se ne čita, pa se popravlja nasumice. Test sa spoljnim zavisnostima ne radi bez njih, pa se preskače kada zavisnost nije pri ruci.
+
+Obe vrste testova imaju mesto u projektu, a razlika u brzini je razlog da se većina ponašanja proverava na nivou agregata, a manji broj kroz celu aplikaciju. Koji kod dobija koju vrstu testa razmatra naredna lekcija.
+
+## Vrednost testa
+
+Vrednost testa je proizvod četiri ocene: zaštite od regresija, otpornosti na refaktorisanje, brzine i održivosti. Proizvod znači da nula na bilo kojoj oceni čini test bezvrednim, bez obzira na ostale.
+
+Nijedan test nema najviše ocene na svemu. Zaštita od regresija i brzina se razmenjuju, jer test koji prolazi kroz više koda otkriva više grešaka, ali i traje duže. Otpornost na refaktorisanje i održivost se ne razmenjuju, nego se drže na najvišem nivou u svakom testu, jer se dobijaju načinom pisanja, a ne izborom šta se testira.
+
+Sledeća tabela ocenjuje dva testa iz ove lekcije i test iz prethodne po prve tri ocene, jer je održivost sva tri testa ista:
+
+| Test | Zaštita od regresija | Otpornost na refaktorisanje | Brzina | Vrednost |
+|---|---|---|---|---|
+| `Creation_keeps_the_name` | nula | visoka | visoka | nula |
+| `Publish_rejects_an_already_published_tour` sa proverom poruke | visoka | nula | visoka | nula |
+| `Publish_publishes_a_complete_tour` | visoka | visoka | visoka | visoka |
+
+U datoj tabeli treba uočiti sledeće:
+
+- Prva dva testa imaju nulu na po jednoj oceni, i to je dovoljno da ne vrede. Nije bitno što su brzi i što prolaze.
+- Pri pregledu testa se prvo traži nula. Pitanja su dva: da li test proverava nešto što ne može da bude pogrešno i da li proverava korake umesto ishoda. Test bez nule se zatim ocenjuje po tome koliko koda štiti i koliko brzo.
