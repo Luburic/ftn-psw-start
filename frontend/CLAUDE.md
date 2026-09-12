@@ -79,7 +79,8 @@ root until their first group exists.
 - `public-api.ts` stays thin. A growing public API is a design smell worth raising.
 - Enforced by `no-restricted-imports` in `eslint.config.js` (`angular-eslint`, flat
   config), one block per module whose regex names the sibling modules and exempts
-  their `public-api`. This is a lint rule, not a compiler guarantee. Unlike the
+  their `public-api`. It runs locally with `npm run lint` and in CI on every push and
+  pull request. This is a lint rule, not a compiler guarantee. Unlike the
   backend, nothing structurally prevents a violation.
 - Routes are lazy-loaded per module with `loadChildren` from `core/app.routes.ts`. That
   file is platform-owned and set up once.

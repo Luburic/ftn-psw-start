@@ -42,7 +42,8 @@ not started; build it only when asked. Work on the backend unless asked otherwis
 backend/          .NET solution (Explorer.slnx), see backend/CLAUDE.md
 frontend/         Angular workspace (not yet created), see frontend/CLAUDE.md
 docs/             knowledge base (course material, in Serbian), see below
-.github/          CI workflow: restore, build, test (with a Postgres service container)
+.github/          CI workflow: backend restore, build, test (Postgres service container);
+                  frontend install, lint, build
 .config/          dotnet tool manifest (dotnet-ef)
 ```
 
