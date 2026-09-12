@@ -69,7 +69,7 @@ Oba problema rešava alias. **Alias** (engl. *alias*) je naziv koji vrednosti us
 
 U datom kodu treba uočiti sledeće:
 - Zapis `as tour` pročita `selectedTour()` jednom, na ulasku u blok, i tu vrednost zadrži u promenljivoj `tour`. Dalje u bloku čitamo `tour`, bez ponovnog pozivanja signala.
-- Blok se prikazuje samo kada vrednost nije `null`, pa promenljiva `tour` ima tip `TourDto`, bez `null`. Zato pišemo `tour.name`, a ne `selectedTour()?.name` tj. prevodilac zna da tura sigurno postoji.
+- Blok se prikazuje samo kada vrednost nije `null`, pa promenljiva `tour` ima tip `TourDto`, bez `null`. Prevodilac zna da tura sigurno postoji, pa pišemo `tour.name`, a ne `selectedTour()?.name`.
 - Promenljiva `tour` postoji samo unutar `@if` bloka, isto kao promenljiva petlje `@for`.
 
 ## Referenca na element šablona
@@ -128,4 +128,4 @@ Kada korisnik unese slovo u polje za pretragu, dešava se sledeće:
 3. Petlja `@for` čita `visibleTours`, pa radni okvir ponovo iscrtava spisak. Ture čiji je identifikator i dalje u nizu zadržava, a ostale uklanja.
 4. Kada nijedna tura ne odgovara, niz je prazan i prikazuje se blok `@empty`.
 
-Kontrola toka se izvršava u reaktivnom kontekstu, kao i interpolacija. Pošto `@if` i `@for` čitaju signale u svojim uslovima, grana i spisak se ponovo biraju čim se ti signali promene, bez ručnog osvežavanja prikaza.
+Naredbe `@if` i `@for` čitaju signale isto kao interpolacija, pa su njihovi čitaoci. Grana i spisak se zato ponovo biraju čim se ti signali promene, bez ručnog osvežavanja prikaza.

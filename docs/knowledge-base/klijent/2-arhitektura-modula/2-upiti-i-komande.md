@@ -18,7 +18,7 @@ export class Tours {
 
 U datom kodu treba uočiti sledeće:
 
-- Komanda `publish` nakon uspeha ponovo učitava spisak `mine`, jer je objavljena tura promenila status. Isti spisak menja i komanda koja pravi turu i komanda koja dodaje vreme prevoza, pa svaka od njih mora da zna za `mine`.
+- Komanda `publish` nakon uspeha ponovo učitava spisak `mine`, jer je objavljena tura promenila status. Isti spisak menja i komanda koja pravi turu i komanda koja dodaje vreme obilaska, pa svaka od njih mora da zna za `mine`.
 - Objavljena tura se pojavljuje i u spisku objavljenih tura, koji čita druga stranica. Ako taj spisak takođe živi u servisu, komanda `publish` mora da učita i njega. Svaka komanda modula nosi spisak spiskova koje čini zastarelim, a taj spisak raste sa svakom novom stranicom.
 - Stranica koja otvori `mine` pre nego što je iko pozvao `loadMine` prikazuje prazan niz. Stranica koja ga otvori posle vidi ono što je poslednja komanda ostavila, što može biti stanje od pre nekoliko minuta. Ko poziva `loadMine` i kada, nije zapisano nigde.
 
@@ -41,7 +41,7 @@ Isto pitanje se postavlja za svaki signal. **Stanje stranice** je stanje koje im
 | Stanje | Gde živi | Primer |
 |---|---|---|
 | Stanje stranice | Polje stranice | Resurs, filter spiska, izabrani red, `pending`, `error`, model forme |
-| Stanje koje nadživljava stranicu | Signal servisa u `core` | Prijavljeni korisnik u servisu `Auth` |
+| Stanje koje nadživljava stranicu | Signal servisa van svih modula | Prijavljeni korisnik u servisu `Auth` |
 
 Prijavljeni korisnik je jedino stanje projekta koje nadživljava stranicu. Moduli ga čitaju kroz servis `Auth`, a menja ga samo taj servis, pri prijavi i odjavi. Svako drugo stanje koje bi neko poželeo da stavi u servis, poput izabranog filtera koji treba da preživi navigaciju, je odluka koja se donosi sa platformskim timom, a ne po navici.
 
@@ -70,7 +70,7 @@ export class TourAuthoring {
 }
 ```
 
-Sledeći kod prikazuje stranicu `MyTours`, gde je izostavljena metoda koja dodaje vreme prevoza, jer prati oblik metode `publish`:
+Sledeći kod prikazuje stranicu `MyTours`, gde je izostavljena metoda koja dodaje vreme obilaska, jer prati oblik metode `publish`:
 
 ```ts
 export class MyTours {

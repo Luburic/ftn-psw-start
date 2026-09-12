@@ -16,7 +16,7 @@ Posle jedne sekunde polje `published` dobija vrednost `true`, ali dugme vezano z
 
 Nakon promene podataka radni okvir mora da odluči da li i koje delove stranice ponovo iscrtava. Taj postupak zovemo **detekcija promena** (engl. *change detection*). Postavlja se pitanje kako radni okvir uopšte sazna da se vrednost promenila?
 
-Događaj iz šablona je jedan takav znak. Kada korisnik klikne na dugme sa `(click)`, radni okvir sam poziva našu metodu, pa zna da odmah zatim treba da proveri prikaz. Zato se dugme iz prethodne lekcije onemogućilo kada je klik postavio polje, promenu je pratio događaj o kome radni okvir zna.
+Događaj iz šablona je jedan takav znak. Kada korisnik klikne na dugme sa `(click)`, radni okvir sam poziva našu metodu, pa zna da odmah zatim treba da proveri prikaz. Zato se dugme iz prethodne lekcije onemogućilo kada je klik postavio polje. Promenu je pratio događaj o kome radni okvir zna.
 
 Promena iz tajmera nema takav znak. Kada `setTimeout` postavi isto polje, radni okvir za to ne sazna, pa prikaz ostaje zaostao. Tu se vidi razlika u pristupu detekciji promena:
 
@@ -113,4 +113,4 @@ Signali drže stanje koje se menja. Prikaz, međutim, često traži vrednost koj
 <span>{{ likes() >= 10 ? 'popularno' : '' }}</span>
 ```
 
-Za jedan ovako kratak uslov ovo je u redu. Ali kada izvedena vrednost postane složenija, koristi se na više mesta ili spaja više signala, ne želimo da logiku ponavljamo po šablonu niti da je pišemo u običnoj metodi, metoda se izvršava iznova pri svakom iscrtavanju i nije ni sama signal. Treba nam vrednost koja čita druge signale, sama se preračunava kada se oni promene i pamti rezultat dok se ništa ne promeni. Takva vrednost zove se **izvedeni signal** (engl. *computed signal*) i njome se bavi [naredna lekcija o izvedenim signalima](izvedeni-signali.md).
+Za jedan ovako kratak uslov ovo je u redu. Ali kada izvedena vrednost postane složenija, koristi se na više mesta ili spaja više signala, ne želimo da logiku ponavljamo po šablonu niti da je pišemo u običnoj metodi. Metoda se izvršava iznova pri svakom iscrtavanju i nije ni sama signal. Treba nam vrednost koja čita druge signale, sama se preračunava kada se oni promene i pamti rezultat dok se ništa ne promeni. Takva vrednost zove se **izvedeni signal** (engl. *computed signal*) i njome se bavi [naredna lekcija o izvedenim signalima](5-izvedeni-signali.md).

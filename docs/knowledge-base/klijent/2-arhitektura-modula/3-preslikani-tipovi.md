@@ -1,10 +1,10 @@
-Svaki resurs i svaka komanda iz prethodnih lekcija ima tip podatka koji šalje ili prima, poput `TourDto` i `CreateTourDto`. Posmatrajmo šta se dešava kada tim koji radi na serveru svojstvo `Description` strukture `TourDto` preimenuje u `Summary`. Server prevodi i radi. Klijent takođe prevodi i radi, jer njegov interfejs `TourDto` i dalje ima svojstvo `description`, koje niko ne proverava u odnosu na server. Tek stranica ture prikazuje prazan opis, a greška se otkriva u pregledaču, kao i kod mapera na serveru čiji profil nije dopunjen.
+Svaki resurs i svaka komanda iz prethodnih lekcija ima tip podatka koji šalje ili prima, poput `TourDto` i `CreateTourDto`. Posmatrajmo šta se dešava kada tim koji radi na serveru svojstvo `Description` strukture `TourDto` preimenuje u `Summary`. Server prevodi i radi. Klijent takođe prevodi i radi, jer njegov interfejs `TourDto` i dalje ima svojstvo `description`, koje niko ne proverava u odnosu na server. Tek stranica ture prikazuje prazan opis, a greška se otkriva u internet čitaču, kao i kod mapera na serveru čiji profil nije dopunjen.
 
 Uzrok je u tome što klijent ima sopstveni opis podatka koji nije njegov. Lekcija o DTO strukturama je pokazala da je izlazna DTO struktura aplikacionog sloja oblik podatka koji klijent prikazuje, a lekcija o API sloju da je akcija vraća bez prevođenja. DTO struktura servera je zato ugovor između dve strane, a klijentski tip sme da bude samo njena slika.
 
 ## Preslikani tip
 
-**Preslikani tip** (engl. *mirrored type*) je TypeScript tip koji ima ista svojstva kao DTO struktura servera, sa tipovima prevedenim po utvrđenim pravilima. Preslikani tipovi jednog modula stoje u jednoj datoteci, u direktorijumu `api` tog modula. Strukture koje server vraća svim modulima, `PageResult` za spisak sa stranama i `ProblemDetails` za telo odgovora sa greškom, stoje u direktorijumu `shared/api`. Svaki modul uvozi tipove iz sopstvenog direktorijuma `api`, pa granica između modula važi i za tipove.
+**Preslikani tip** (engl. *mirrored type*) je TypeScript tip koji ima ista svojstva kao DTO struktura servera, sa tipovima prevedenim po utvrđenim pravilima. Preslikani tipovi jednog modula stoje u jednoj datoteci, u direktorijumu `api` tog modula. Strukture koje server vraća svim modulima, poput `PageResult` za spisak sa stranama, stoje van modula, u delu koji dele svi moduli. Svaki modul uvozi tipove iz sopstvenog direktorijuma `api`, pa granica između modula važi i za tipove.
 
 Sledeći kod prikazuje DTO strukturu `TourDto` sa servera i njen preslikani tip iz datoteke `exploration-api-types.ts`:
 
@@ -69,7 +69,7 @@ Sledeća tabela sažima pravila preslikavanja:
 
 Preslikani tip se menja samo kada se promeni DTO struktura servera, i to u istoj izmeni koda. Tim koji na serveru preimenuje, doda ili ukloni svojstvo, u istoj izmeni preslikava tu promenu u datoteku `api` svog modula. Ništa drugo tu datoteku ne menja. U nju ne ulazi svojstvo koje postoji samo na klijentu, tip koji server ne vraća, ni drugačije ime od serverskog.
 
-Time preimenovanje sa početka lekcije menja tok. Preslikani tip gubi svojstvo `description` u istoj izmeni u kojoj ga gubi server, pa prevodilac prijavljuje svaki šablon i svaku klasu na klijentu koji to svojstvo čitaju. Greška se otkriva pri prevođenju, sa spiskom mesta koja treba dopuniti, umesto u pregledaču kao prazno polje.
+Time preimenovanje sa početka lekcije menja tok. Preslikani tip gubi svojstvo `description` u istoj izmeni u kojoj ga gubi server, pa prevodilac prijavljuje svaki šablon i svaku klasu na klijentu koji to svojstvo čitaju. Greška se otkriva pri prevođenju, sa spiskom mesta koja treba dopuniti, umesto u internet čitaču kao prazno polje.
 
 ## Tip koji postoji samo na klijentu
 

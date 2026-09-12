@@ -53,12 +53,12 @@ export class TourList {
 U datom kodu treba uočiti sledeće:
 - Poziv `httpResource` stoji u inicijalizatoru polja, kao i `inject`. Resurs šalje zahtev pri prvom iscrtavanju komponente, bez ikakvog poziva iz klase.
 - Argument je funkcija adrese, a ne sama adresa. Zašto je tako, objašnjava sledeći odeljak.
-- Parametar generičkog tipa, `PageResult<TourDto>`, je tip koji prevodilac dodeljuje odgovoru. Server spisak sa stranama vraća u strukturi `PageResult`, sa svojstvima `items` i `totalCount`, pa je tip `PageResult<TourDto>`, a ne `TourDto[]`. Interfejs `PageResult` je zajednički za sve module i živi u direktorijumu `shared/api`. Interfejs sa parametrom `T` je generički tip koji sami deklarišemo, po istom obrascu po kom smo do sada koristili `Promise<T>`.
+- Parametar generičkog tipa, `PageResult<TourDto>`, je tip koji prevodilac dodeljuje odgovoru. Server spisak sa stranama vraća u strukturi `PageResult`, sa svojstvima `items` i `totalCount`, pa je tip `PageResult<TourDto>`, a ne `TourDto[]`. Interfejs `PageResult` je zajednički za sve module. Interfejs sa parametrom `T` je generički tip koji sami deklarišemo, po istom obrascu po kom smo do sada koristili `Promise<T>`.
 - Signal `value` drži odgovor. Pre nego što odgovor stigne, vrednost mu je `undefined`, JavaScript vrednost za ono što još nije dodeljeno, koju prevodilac razlikuje od `null`. Zapis `tours.value()?.items ?? []` daje prazan niz dok odgovora nema, a spisak tura kada stigne. Šablon prihvata operatore `?.` i `??` kao i JavaScript.
 
 ## Adresa kao funkcija signala
 
-Funkcija adrese se izvršava u reaktivnom kontekstu, pa je resurs pretplatnik svakog signala koji ona pročita. Kada se neki od njih promeni, funkcija se ponovo izvršava, a resurs šalje nov zahtev i prekida zahtev koji još putuje. Adresa spiska tura ne čita nijedan signal, pa se zahtev šalje jednom. Sledeći kod prikazuje, iz projekta, stranicu bloga, čija adresa čita parametar rute:
+Resurs je čitalac svakog signala koji funkcija adrese pročita. Kada se neki od njih promeni, funkcija se ponovo izvršava, a resurs šalje nov zahtev i prekida zahtev koji još putuje. Adresa spiska tura ne čita nijedan signal, pa se zahtev šalje jednom. Sledeći kod prikazuje, iz projekta, stranicu bloga, čija adresa čita parametar rute:
 
 ```ts
 export class BlogDetail {
@@ -69,7 +69,7 @@ export class BlogDetail {
 ```
 
 U datom kodu treba uočiti sledeće:
-- Funkcija čita ulaz `id`. Pri prvom iscrtavanju ulaz je već upisan, pa prvi zahtev ide na adresu bloga iz adrese pregledača. Kada korisnik otvori drugi blog, radni okvir zadržava komponentu i upisuje novu vrednost u ulaz, funkcija vraća novu adresu i resurs šalje nov zahtev.
+- Funkcija čita ulaz `id`. Pri prvom iscrtavanju ulaz je već upisan, pa prvi zahtev ide na adresu bloga iz adrese internet čitača. Kada korisnik otvori drugi blog, radni okvir zadržava komponentu i upisuje novu vrednost u ulaz, funkcija vraća novu adresu i resurs šalje nov zahtev.
 - Tip `BlogDto` je tip jednog bloga, jer server jedan blog vraća bez strukture `PageResult`.
 
 ## Stanja resursa
@@ -143,5 +143,5 @@ Kada korisnik otvori adresu `/exploration/mine`, dešava se sledeće:
 1. Radni okvir pravi komponentu `MyTours` na mestu iscrtavanja. Inicijalizator polja `tours` pravi resurs.
 2. Šablon se iscrtava prvi put. Resurs izvršava funkciju adrese i šalje zahtev na `/api/exploration/tours/mine`, a signal `isLoading` je tačan, pa se prikazuje poruka o učitavanju.
 3. Razvojni server zahtev prosleđuje serverskoj aplikaciji, jer adresa počinje sa `/api`.
-4. Odgovor stiže. Resurs upisuje niz tipa `TourDto[]` u `value` i netačno u `isLoading`. Šablon je pretplatnik signala `isLoading`, pa se ponovo iscrtava.
+4. Odgovor stiže. Resurs upisuje niz tipa `TourDto[]` u `value` i netačno u `isLoading`. Šablon je čitalac signala `isLoading`, pa se ponovo iscrtava.
 5. Grana sa učitavanjem se uklanja, a petlja čita `value` i ispisuje po jedan red za svaku turu ili blok `@empty` kada korisnik nema tura.

@@ -1,4 +1,4 @@
-Prethodni segment je za svaku stranicu projekta pisao jednu komponentu. Posmatrajmo šta se dešava kada stranica raste. Stranica bloga prikazuje blog, ispod njega spisak komentara, uz svaki komentar prijavljenog korisnika dugmad za izmenu i brisanje, a na dnu formu za nov komentar. Sledeći kod prikazuje članove klase koja bi sve to radila sama, gde su tela metoda izostavljena:
+Posmatrajmo šta se dešava kada stranica raste. Stranica bloga prikazuje blog, ispod njega spisak komentara, uz svaki komentar prijavljenog korisnika dugmad za izmenu i brisanje, a na dnu formu za nov komentar. Sledeći kod prikazuje članove klase koja bi sve to radila sama, gde su tela metoda izostavljena:
 
 ```ts
 export class BlogDetail {
@@ -23,7 +23,7 @@ U datom kodu treba uočiti sledeće:
 - Spisak komentara sa svojom dugmadi i formom ne može da se prikaže ni na jednom drugom mestu, jer je zapisan u šablonu ove klase, zajedno sa naslovom i opisom bloga.
 - Klasa se ne može proveriti bez servera, jer sve što radi počinje resursom i završava se komandom.
 
-Ovo je isti miris koji na serveru ima kontroler koji sam učitava podatke, proverava pravila i upisuje izmene. Na klijentu je odgovor jednostavniji od slojeva, jer nema domenskih pravila koja treba izolovati. Komponente delimo na dve vrste i razdvajamo ono što razgovara sa serverom od onoga što samo prikazuje.
+Isti problem na serveru ima kontroler koji sam učitava podatke, proverava pravila i upisuje izmene. Na klijentu je odgovor jednostavniji od slojeva, jer nema domenskih pravila koja treba izolovati. Komponente delimo na dve vrste i razdvajamo ono što razgovara sa serverom od onoga što samo prikazuje.
 
 ## Stranica i prikazna komponenta
 

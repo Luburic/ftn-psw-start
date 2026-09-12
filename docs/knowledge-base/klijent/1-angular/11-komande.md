@@ -38,7 +38,7 @@ export class BlogAuthoring {
 
 U datom kodu treba uočiti sledeće:
 - Konstanta `BASE_URL` drži zajednički početak adrese, a svaka metoda na njega nadovezuje svoj deo. Ovo je klijentski pandan atributu `[Route]` na kontroleru.
-- Svaka metoda je jedna komanda i sastoji se od jednog poziva. Metoda `create` šalje DTO strukturu `CreateBlogDto`, koja nosi podatke nove ture, i vraća `BlogDto` iz odgovora. Obećanje vraća bez `await`, jer asinhrona metoda sme da vrati obećanje, a pozivalac ga čeka isto.
+- Svaka metoda je jedna komanda i sastoji se od jednog poziva. Metoda `create` šalje DTO strukturu `CreateBlogDto`, koja nosi podatke novog bloga, i vraća `BlogDto` iz odgovora. Obećanje vraća bez `await`, jer asinhrona metoda sme da vrati obećanje, a pozivalac ga čeka isto.
 - Servis nema signal i ne zna ni za jedan resurs. Šalje zahtev i vraća odgovor, a obradu odgovora prepušta stranici.
 
 ## Greška servera
@@ -52,7 +52,7 @@ export function serverMessage(error: unknown, fallback: string): string
 U datom kodu treba uočiti sledeće:
 - Prvi parametar je tipa `unknown`, što znači bilo koja vrednost, jer blok `catch` ne zna tip onoga što je uhvatio. Funkcija proverava da li je uhvaćeni izuzetak odgovor servera i vraća `title` iz njegovog tela.
 - Drugi parametar je poruka koju funkcija vraća u svakom drugom slučaju.
-- Funkcija živi u direktorijumu `shared/util`, jer je koristi svaki modul. Njeno telo ovde izostavljamo.
+- Funkcija je zajednička za sve module. Njeno telo ovde izostavljamo.
 
 ## Stranica sa komandom
 
@@ -167,6 +167,6 @@ Kada korisnik klikne na dugme za objavljivanje ture koja nema nijedno vreme obil
 2. Servis šalje zahtev na adresu `/api/exploration/tours/<id>/publish`, a `await` čeka odgovor.
 3. Na serveru domenski sloj baca izuzetak, koji middleware pretvara u odgovor sa statusnim kodom 400 i porukom u polju `title`.
 4. Poziv `await` baca izuzetak, pa se `reload` preskače. Blok `catch` iz izuzetka čita poruku servera i upisuje je u signal `error`. Blok `finally` vraća `pending` na netačno.
-5. Šablon je pretplatnik oba signala, pa radni okvir ponovo iscrtava stranicu. Iznad tabele se prikazuje poruka servera, a dugmad su ponovo dostupna.
+5. Šablon je čitalac oba signala, pa radni okvir ponovo iscrtava stranicu. Iznad tabele se prikazuje poruka servera, a dugmad su ponovo dostupna.
 
 Kada tura ima vreme obilaska, server vraća odgovor bez greške. Tada se u četvrtom koraku izvršava `reload`, pa se umesto tabele prikazuje poruka o učitavanju, a kada odgovor stigne, tabela sa turom čiji je status `Published`, bez dugmeta.

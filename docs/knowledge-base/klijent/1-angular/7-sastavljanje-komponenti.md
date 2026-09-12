@@ -79,10 +79,12 @@ export class TourCard {
 }
 ```
 
-Roditelj u svojoj klasi ima metodu `remove`, koja prima poslatu vrednost i uklanja turu iz spiska:
+Roditelj u svojoj klasi ima metodu `remove`, koja prima poslatu vrednost i uklanja turu iz spiska. Spisak je sada signal, da bi uklanjanje osvežilo prikaz:
 
 ```ts
 export class TourList {
+  protected readonly tours = signal<TourDto[]>([ ... ]);
+
   protected remove(tourId: string): void {
     this.tours.update((tours) => tours.filter((tour) => tour.id !== tourId));
   }
@@ -134,4 +136,4 @@ Kada korisnik klikne na dugme za brisanje na drugoj kartici, dešava se sledeće
 1. Vezivanje događaja na dugmetu poziva `deleteTour.emit('2')`.
 2. Roditelj je na taj izlaz vezao izraz `remove($event)`, pa se poziva `remove('2')`.
 3. Metoda `remove` predaje signalu `tours` nov niz bez te ture.
-4. Petlja `@for` je pretplatnik signala `tours`, pa radni okvir ponovo iscrtava spisak. Kartica sa identifikatorom `1` ostaje, a kartica sa identifikatorom `2` se uklanja.
+4. Petlja `@for` je čitalac signala `tours`, pa radni okvir ponovo iscrtava spisak. Kartica sa identifikatorom `1` ostaje, a kartica sa identifikatorom `2` se uklanja.

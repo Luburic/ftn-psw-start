@@ -51,7 +51,7 @@ Poziv `this.form.name().value()` u klasi tako vraća uneti naziv.
 
 ## Vezivanje elementa za polje
 
-Element za unos se za polje forme vezuje direktivom `FormField`, koja se navodi u podešavanju `imports`, a na elementu se piše kao vezivanje svojstva `[formField]`. Sledeći kod prikazuje, iz projekta, tri elementa za unos sa stranice za pravljenje ture:
+Element za unos se za polje forme vezuje vezivanjem svojstva `[formField]`, a klasa `FormField` iz radnog okvira se navodi u podešavanju `imports`. Sledeći kod prikazuje, iz projekta, tri elementa za unos sa stranice za pravljenje ture:
 
 ```ts
 @Component({
@@ -75,9 +75,9 @@ Element za unos se za polje forme vezuje direktivom `FormField`, koja se navodi 
 ```
 
 U datom kodu treba uočiti sledeće:
-- Desna strana vezivanja je polje forme, `form.name`, bez zagrada. Direktiva upisuje vrednost polja u element, a pri svakom događaju `input` sadržaj elementa u model, kroz signal, pa pretplatnici modela dobijaju obaveštenje. Referenca na element i vezivanje događaja iz lekcije o kontroli toka više nisu potrebni.
-- Ista direktiva radi na elementima `input`, `textarea` i `select`. Za `select` u model upisuje `value` izabrane opcije.
-- Kada je element `input` tipa `number`, a svojstvo modela broj, direktiva u model upisuje broj, a ne tekst. Element za minute iz forme za vreme obilaska, `<input id="minutes" type="number" [formField]="form.minutes" />`, zato kada korisnik unese 45 u `minutes` upisuje broj `45`, pa pravilo `min` poredi brojeve.
+- Desna strana vezivanja je polje forme, `form.name`, bez zagrada. Radni okvir upisuje vrednost polja u element, a pri svakom događaju `input` sadržaj elementa u model, kroz signal, pa čitaoci modela dobijaju obaveštenje. Referenca na element i vezivanje događaja iz lekcije o kontroli toka više nisu potrebni.
+- Isto vezivanje radi na elementima `input`, `textarea` i `select`. Za `select` u model upisuje `value` izabrane opcije.
+- Kada je element `input` tipa `number`, a svojstvo modela broj, radni okvir u model upisuje broj, a ne tekst. Element za minute iz forme za vreme obilaska, `<input id="minutes" type="number" [formField]="form.minutes" />`, zato kada korisnik unese 45 u `minutes` upisuje broj `45`, pa pravilo `min` poredi brojeve.
 
 ## Prikaz grešaka
 
@@ -98,7 +98,7 @@ Polje sa pravilom `required` ima grešku čim se stranica otvori, jer je početn
 U datom kodu treba uočiti sledeće:
 - Naredba `@if` čita `touched` iz stanja polja. Polje ostaje dodirnuto i kada se korisnik vrati u element.
 - Petlja prolazi kroz niz grešaka i ispisuje poruku svake. Greške nemaju identifikator, pa se koristi `track $index`.
-- Šablon je pretplatnik signala `touched` i `errors`. Kada korisnik unese naziv, greška nestaje iz niza i radni okvir uklanja poruku bez ikakvog koda u klasi.
+- Šablon je čitalac signala `touched` i `errors`. Kada korisnik unese naziv, greška nestaje iz niza i radni okvir uklanja poruku bez ikakvog koda u klasi.
 
 ## Pravljenje ture
 
@@ -163,8 +163,8 @@ export class CreateTour {
 ```
 
 Kada korisnik otvori stranicu, klikne u element za naziv, pa bez unosa pređe na opis, dešava se sledeće:
-1. Pri prvom iscrtavanju direktiva upisuje početne vrednosti modela u elemente. Polje `name` već ima grešku iz pravila `required`, ali nije dodirnuto, pa se poruka ne prikazuje.
-2. Korisnik napušta element za naziv. Na događaj `blur` direktiva upisuje tačno u `touched` polja `name`.
-3. Šablon je pretplatnik tog signala, pa radni okvir ponovo iscrtava stranicu, sada sa blokom `@if` u kom petlja ispisuje poruku „Name is required.“.
-4. Korisnik se vraća i unosi slovo. Na događaj `input` direktiva upisuje sadržaj elementa u svojstvo `name` modela. Pravilo `required` je zadovoljeno, pa `errors` postaje prazan niz.
+1. Pri prvom iscrtavanju radni okvir upisuje početne vrednosti modela u elemente. Polje `name` već ima grešku iz pravila `required`, ali nije dodirnuto, pa se poruka ne prikazuje.
+2. Korisnik napušta element za naziv. Na događaj `blur` radni okvir upisuje tačno u `touched` polja `name`.
+3. Šablon je čitalac tog signala, pa radni okvir ponovo iscrtava stranicu, sada sa blokom `@if` u kom petlja ispisuje poruku „Name is required.“.
+4. Korisnik se vraća i unosi slovo. Na događaj `input` radni okvir upisuje sadržaj elementa u svojstvo `name` modela. Pravilo `required` je zadovoljeno, pa `errors` postaje prazan niz.
 5. Radni okvir ponovo iscrtava stranicu. Petlja nema elemenata i poruka nestaje. Kada je i opis unet, `form().valid()` postaje tačno.

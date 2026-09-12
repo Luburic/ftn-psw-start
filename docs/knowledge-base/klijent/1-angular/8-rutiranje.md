@@ -1,4 +1,4 @@
-Sve što smo do sada napisali iscrtava se unutar korenske komponente, na jednoj adresi. Projekat će imati više stranica, a svaka ima svoju adresu, tako korisnik može da otvori stranicu bloga ili da se dugmetom pregledača vrati na prethodnu stranicu. Pri tome pregledač ne učitava nov HTML dokument, već se menja samo adresa i sadržaj koji radni okvir iscrtava. U React-u je čitalac za to koristio React Router, biblioteku koju je sam dodao i podesio. Angular taj posao, četvrti od pet problema iz lekcije o Angular-u, rešava ugrađenim delom radnog okvira. Ovde upoznajemo kako se adresi dodeljuje komponenta, gde se ta komponenta iscrtava i kako iz adrese čita podatak.
+Sve što smo do sada napisali iscrtava se unutar korenske komponente, na jednoj adresi. Projekat će imati više stranica, a svaka ima svoju adresu, tako korisnik može da otvori stranicu bloga ili da se dugmetom internet čitača vrati na prethodnu stranicu. Pri tome internet čitač ne učitava nov HTML dokument, već se menja samo adresa i sadržaj koji radni okvir iscrtava. U React-u je čitalac za to koristio React Router, biblioteku koju je sam dodao i podesio. Angular taj posao, četvrti od pet problema iz lekcije o Angular-u, rešava ugrađenim delom radnog okvira. Ovde upoznajemo kako se adresi dodeljuje komponenta, gde se ta komponenta iscrtava i kako iz adrese čita podatak.
 
 ## Tabela ruta
 
@@ -31,7 +31,7 @@ U datom kodu treba uočiti sledeće:
 
 ## Mesto iscrtavanja i veza
 
-Tabela kaže koja se komponenta iscrtava, ali ne i gde. Zaglavlje sa navigacijom je isto na svakoj stranici, a menja se samo deo ispod njega. Zato korenska komponenta u svom šablonu označava mesto na kom radni okvir iscrtava komponentu rute. **Mesto iscrtavanja** (engl. *router outlet*) je element `router-outlet`, na čije mesto radni okvir iscrtava komponentu rute koja se poklapa sa trenutnom adresom. **Veza** (engl. *router link*) je zapis `routerLink="adresa"` na elementu `a`, koji pri kliku menja adresu u pregledaču bez učitavanja novog dokumenta.
+Tabela kaže koja se komponenta iscrtava, ali ne i gde. Zaglavlje sa navigacijom je isto na svakoj stranici, a menja se samo deo ispod njega. Zato korenska komponenta u svom šablonu označava mesto na kom radni okvir iscrtava komponentu rute. **Mesto iscrtavanja** (engl. *router outlet*) je element `router-outlet`, na čije mesto radni okvir iscrtava komponentu rute koja se poklapa sa trenutnom adresom. **Veza** (engl. *router link*) je zapis `routerLink="adresa"` na elementu `a`, koji pri kliku menja adresu u internet čitaču bez učitavanja novog dokumenta.
 
 ```ts
 @Component({
@@ -57,7 +57,7 @@ export class App {}
 ```
 
 U datom kodu treba uočiti sledeće:
-- Direktive `RouterLink` i `RouterOutlet` navedene su u podešavanju `imports`. Bez njih prevodilac prijavljuje da element `router-outlet` nije poznat, a `routerLink` ostaje običan HTML atribut bez dejstva.
+- Klase `RouterLink` i `RouterOutlet` navedene su u podešavanju `imports`, kao i svaka komponenta koju šablon koristi. Bez njih prevodilac prijavljuje da element `router-outlet` nije poznat, a `routerLink` ostaje običan HTML atribut bez dejstva.
 - Element `router-outlet` je prazan. Kada se adresa promeni, radni okvir na tom mestu zamenjuje komponentu stare rute komponentom nove. Zaglavlje iznad ostaje netaknuto.
 - Adresa u vezi počinje kosom crtom, jer je to cela adresa od korena. Deo adrese u tabeli ruta je bez nje, jer se nadovezuje na ono što je ispred njega.
 
@@ -96,8 +96,8 @@ U datom kodu treba uočiti sledeće:
 ## Od adrese do stranice bloga
 
 Povežimo pojmove. Korisnik je na spisku blogova i klikne na vezu „Read more“ prve kartice. Dešava se sledeće:
-1. Direktiva `RouterLink` presreće klik, od niza `['/social', '1']` sastavlja adresu `/social/1` i upisuje je u pregledač.
-2. Radni okvir u tabeli aplikacije nalazi stavku sa prefiksom `social` i prelazi na tabelu modula Social sa ostatkom adrese, `1`.
+1. Veza presreće klik, od niza `['/social', '1']` sastavlja adresu `/social/1` i upisuje je u internet čitač.
+2. Radni okvir u tabeli aplikacije nalazi stavku sa prefiksom `social` i prelazi na tabelu modula Social sa ostatkom adrese, `1`. Kako tabela modula ulazi u tabelu aplikacije opisuje segment o modularnom monolitu.
 3. U tabeli modula redom proverava `''`, `mine` i `create`, koji se ne poklapaju sa `1`, i staje na `:id`, koji se poklapa sa vrednošću `1`.
 4. Na mestu iscrtavanja uništava komponentu `BlogList` i pravi komponentu `BlogDetail`. Zaglavlje korenske komponente ostaje.
 5. Upisuje tekst `'1'` u ulaz `id` komponente `BlogDetail`, jer ulaz nosi isti naziv kao parametar.

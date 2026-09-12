@@ -1,6 +1,4 @@
-# Komponente
-
-Komponenta je klasa sa pridruženim HTML šablonom koja upravlja jednim delom stranice. U React-u istu ulogu ima funkcija koja vraća JSX. Sledeći kod prikazuje jednu karticu u oba oblika:
+U React-u ulogu komponente ima funkcija koja vraća JSX. Sledeći kod prikazuje jednu karticu u oba oblika:
 
 ```jsx
 function TourCard() {
@@ -25,10 +23,10 @@ export class TourCard {
 
 Razlika je u podeli. React drži podatke i prikaz u jednoj funkciji, a Angular ih razdvaja na klasu, koja drži podatke i logiku, i šablon, koji drži prikaz. Ovde upoznajemo kako šablon čita podatke iz klase i kako klasi javlja da je korisnik nešto uradio, a na kraju i jedno ograničenje na koje ćemo naići kada se podatak promeni sam od sebe.
 
-Komponentu čine tri datoteke istog naziva u istom direktorijumu:
+Tri datoteke kartice stoje u istom direktorijumu:
 1. `tour-card.ts` sadrži klasu sa dekoratorom `@Component`.
 2. `tour-card.html` sadrži šablon, na koji dekorator upućuje podešavanjem `templateUrl`.
-3. `tour-card.css` sadrži stilove, na koje dekorator upućuje podešavanjem `styleUrl`.
+3. `tour-card.scss` sadrži stilove, na koje dekorator upućuje podešavanjem `styleUrl`.
 
 Ove datoteke ne pravimo ručno, već komandom `ng generate component tour-card` (skraćeno `ng g c tour-card`). Komanda pravi direktorijum `src/app/tour-card/` sa sve tri datoteke, kao i datotekom `tour-card.spec.ts` u kojoj se piše test komponente.
 
@@ -42,7 +40,7 @@ Klasa (`tour-card.ts`):
 @Component({
   selector: 'app-tour-card',
   templateUrl: './tour-card.html',
-  styleUrl: './tour-card.css',
+  styleUrl: './tour-card.scss',
 })
 export class TourCard {
   protected readonly name = 'Stari grad';
@@ -59,9 +57,9 @@ export class TourCard {
 </article>
 ```
 
-Stilovi (`tour-card.css`):
+Stilovi (`tour-card.scss`):
 
-```css
+```scss
 article {
   padding: 1rem;
   border: 1px solid #ddd;
@@ -81,7 +79,7 @@ p {
 U datom kodu treba uočiti sledeće:
 - Šablon vidi članove klase po nazivu, bez `this`. Polje `name` u klasi i `name` u šablonu su isto polje.
 - Šablon vidi članove označene sa `public` i `protected`, a ne vidi one označene sa `private`. Zato su polja koja šablon čita `protected`. Angular prevodilac proverava i šablon i prijavljuje grešku ako šablon pristupa privatnom članu ili članu koji ne postoji.
-- Stilovi iz `tour-card.css` važe samo za ovu komponentu. Angular ih ograničava na njen šablon, pa selektori `article`, `h3` i `p` ovde ne utiču na iste elemente u drugim komponentama.
+- Stilovi iz `tour-card.scss` važe samo za ovu komponentu. Angular ih ograničava na njen šablon, pa selektori `article`, `h3` i `p` ovde ne utiču na iste elemente u drugim komponentama.
 
 ## Upotreba komponente
 
@@ -95,7 +93,7 @@ import { TourCard } from './tour-card/tour-card';
   selector: 'app-root',
   imports: [TourCard],
   templateUrl: './app.html',
-  styleUrl: './app.css',
+  styleUrl: './app.scss',
 })
 export class App {}
 ```
@@ -156,7 +154,7 @@ Povežimo pojmove u jednu komponentu. Kartica prikazuje naziv i opis ture i ima 
 @Component({
   selector: 'app-tour-card',
   templateUrl: './tour-card.html',
-  styleUrl: './tour-card.css',
+  styleUrl: './tour-card.scss',
 })
 export class TourCard {
   protected readonly name = 'Stari grad';
@@ -193,7 +191,7 @@ Problem nastaje kada se polje promeni bez takvog događaja. Zamislimo da se tura
 @Component({
   selector: 'app-tour-card',
   templateUrl: './tour-card.html',
-  styleUrl: './tour-card.css',
+  styleUrl: './tour-card.scss',
 })
 export class TourCard {
   protected readonly name = 'Stari grad';

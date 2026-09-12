@@ -2,7 +2,7 @@ Forma iz prethodne lekcije prikuplja podatke o turi i proverava ih, ali ih ne š
 
 ## Slanje forme
 
-Čitalac zna da se na elementu `form` pri kliku na dugme tipa `submit` desi događaj `submit` i da pregledač tada učitava nov dokument, osim ako kod koji događaj obrađuje to ne spreči pozivom `preventDefault`. Isto važi i ovde, jer radni okvir nema sopstveni događaj za slanje forme. Sledeći kod prikazuje, iz projekta, metodu za slanje, za sada bez navigacije, i deo šablona koji je poziva:
+Čitalac zna da se na elementu `form` pri kliku na dugme tipa `submit` desi događaj `submit` i da internet čitač tada učitava nov dokument, osim ako kod koji događaj obrađuje to ne spreči pozivom `preventDefault`. Isto važi i ovde, jer radni okvir nema sopstveni događaj za slanje forme. Sledeći kod prikazuje, iz projekta, metodu za slanje, za sada bez navigacije, i deo šablona koji je poziva:
 
 ```ts
 private readonly tourAuthoring = inject(TourAuthoring);
@@ -40,7 +40,7 @@ protected async submit(event: Event): Promise<void> {
 ```
 
 U datom kodu treba uočiti sledeće:
-- Vezivanje događaja `(submit)` stoji na elementu `form`, a ne na dugmetu. Metoda prima objekat događaja i prvo poziva `preventDefault`, da pregledač ne bi učitao nov dokument i time pokrenuo radni okvir ispočetka. Naziv metode ne mora da bude isti kao naziv događaja.
+- Vezivanje događaja `(submit)` stoji na elementu `form`, a ne na dugmetu. Metoda prima objekat događaja i prvo poziva `preventDefault`, da internet čitač ne bi učitao nov dokument i time pokrenuo radni okvir ispočetka. Naziv metode ne mora da bude isti kao naziv događaja.
 - Ostatak metode je obrazac stranice sa komandom iz lekcije o komandama, bez izmene. Komanda `create` servisa `TourAuthoring` prima DTO strukturu `CreateTourDto`, sa istim svojstvima kao model, osim što je `tags` niz, i vraća napravljenu turu.
 - Vrednosti za DTO strukturu se čitaju iz stanja polja, pozivom `value()`. Tekst sa oznakama se deli na zarezu, a prazni delovi odbacuju.
 - Dugme je onemogućeno dok forma nije ispravna i dok komanda traje. Server podatke proverava ponovo i grešku prijavljuje kao i za svaku komandu.
@@ -199,5 +199,5 @@ Kada korisnik unese naziv i opis i klikne na dugme za pravljenje, dešava se sle
 1. Na elementu `form` se desi događaj `submit`, a vezivanje događaja poziva metodu `submit` sa objektom događaja. Metoda poziva `preventDefault` i upisuje tačno u `pending`.
 2. Metoda iz stanja polja čita vrednosti, sastavlja DTO strukturu i poziva komandu `create`. Servis šalje zahtev na `/api/exploration/tours`, a `await` čeka odgovor.
 3. Server pravi turu i vraća je u odgovoru. Metoda odgovor ne koristi, već poziva `navigate` sa adresom spiska tura korisnika.
-4. Radni okvir upisuje adresu `/exploration/mine` u pregledač, bira rutu, uništava komponentu `CreateTour` i na mestu iscrtavanja pravi komponentu `MyTours`.
+4. Radni okvir upisuje adresu `/exploration/mine` u internet čitač, bira rutu, uništava komponentu `CreateTour` i na mestu iscrtavanja pravi komponentu `MyTours`.
 5. Resurs stranice `MyTours` šalje zahtev pri prvom iscrtavanju i u odgovoru dobija i novu turu, pa tabela prikazuje i nju.

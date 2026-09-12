@@ -1,4 +1,4 @@
-Komponentu čine tri datoteke, a treću, sa stilovima, do sada nismo otvarali. Šabloni u projektu na elemente stavljaju klase koje nijedna komponenta ne definiše, na primer `card`, `stack` i `error`, a elementi ipak dobijaju izgled. Sa druge strane, kada u datoteci stilova jedne komponente napišemo `.card { padding: 0; }`, kartice u ostalim komponentama se ne menjaju. Čitalac zna CSS, u kom pravilo iz jedne datoteke važi za ceo dokument, pa mu ni jedno ni drugo nije očekivano. Ovde upoznajemo gde stilovi u projektu žive i kako se za nov stil bira mesto.
+Komponentu čine tri datoteke, a treću, sa stilovima, do sada nismo razmatrali. Šabloni u projektu na elemente stavljaju klase koje nijedna komponenta ne definiše, na primer `card`, `stack` i `error`, a elementi ipak dobijaju izgled. Sa druge strane, kada u datoteci stilova jedne komponente napišemo `.card { padding: 0; }`, kartice u ostalim komponentama se ne menjaju. Čitalac zna CSS, u kom pravilo iz jedne datoteke važi za ceo dokument, pa mu ni jedno ni drugo nije očekivano. Ovde upoznajemo gde stilovi u projektu žive i kako se za nov stil bira mesto.
 
 Datoteke stilova imaju nastavak `.scss`. SCSS je proširenje CSS-a koje alat za prevođenje aplikacije pretvara u običan CSS. Projekat od tog proširenja koristi jednu naredbu, koju upoznajemo uz globalne stilove, a sve ostalo u tim datotekama je običan CSS.
 
@@ -98,7 +98,7 @@ h3 {
 }
 ```
 
-Kada pregledač primeni stilove na karticu, dešava se sledeće:
+Kada internet čitač primeni stilove na karticu, dešava se sledeće:
 1. Element `article` nosi globalnu klasu `card`, pa dobija pozadinu, okvir, poluprečnik i unutrašnji razmak iz datoteke `_components.scss`, sa vrednostima iz tokena.
 2. Na element `h3` deluje globalno pravilo za naslove iz datoteke `_base.scss`, koje mu daje margine i visinu reda.
 3. Isti element nosi atribut komponente, pa na njega deluje i prepisani selektor `h3[_ngcontent-x]` iz datoteke `tour-card.scss`, koji boju čita iz tokena `--color-accent`. Element `h3` u drugoj komponenti taj atribut nema i zadržava boju teksta dokumenta.

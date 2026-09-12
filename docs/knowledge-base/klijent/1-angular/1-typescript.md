@@ -1,6 +1,4 @@
-# TypeScript
-
-Klijentski deo našeg projekta napravljen je u radnom okviru **Angular**, koji kao zvanični jezik koristi **TypeScript (TS)**. U nastavku ćete upoznati osnove TS-a koje su neophodne da biste mogli da čitate Angular projekat.
+Klijentski deo našeg projekta napravljen je u radnom okviru **Angular**, koji kao zvanični jezik koristi **TypeScript (TS)**. U nastavku upoznajemo osnove TS-a koje su neophodne za čitanje Angular projekta.
 
 Za početak razmotrimo jednu TS klasu koja čuva spisak tura i identifikator izabrane ture:
 
@@ -22,9 +20,7 @@ export class TourList {
 
 Čitalac koji poznaje JavaScript (JS) prepoznaje klasu, polja, metode, ključne reči `async` i `await`, kao i poziv funkcije `fetch`. Ipak, u klasi vidimo i novine: reči `private`, `protected` i `readonly` ispred polja i metoda, `: string` iza parametra, `: Promise<void>` iza liste parametara i `: TourDto[]` iza naziva polja. Tip `TourDto` definisaćemo u odeljku o interfejsima.
 
-> **Napomena:** U ovom primeru za slanje zahteva serveru koristimo funkciju `fetch`, jer je poznata iz JS-a. U Angular aplikacijama se za to koristi servis `HttpClient`, koji ćemo upoznati kasnije.
-
-TS je jezik koji proširuje JS, prvenstveno tipovima. Svaki ispravno napisan JS kod sintaksno je ispravan i u TS-u, ali TS dodatno proverava da li se tipovi vrednosti poklapaju. Internet čitač (engl. *browser*) razume samo JS, pa se TS kod pre izvršavanja prevodi u JS (ovaj proces se naziva i transpajliranje). Alat koji to radi zovemo **prevodilac** (engl. *compiler*). Prevodilac najpre proverava tipove i prijavljuje greške, a zatim iz koda uklanja sve što je specifično za TS, kao što su anotacije, interfejsi i modifikatori. Pregledač na kraju dobija običan JS.
+TS je jezik koji proširuje JS, prvenstveno tipovima. Svaki ispravno napisan JS kod sintaksno je ispravan i u TS-u, ali TS dodatno proverava da li se tipovi vrednosti poklapaju. Internet čitač (engl. *browser*) razume samo JS, pa se TS kod pre izvršavanja prevodi u JS. Alat koji to radi zovemo **prevodilac** (engl. *compiler*). Prevodilac najpre proverava tipove i prijavljuje greške, a zatim iz koda uklanja sve što je specifično za TS, kao što su anotacije, interfejsi i modifikatori. Internet čitač na kraju dobija običan JS.
 
 ## Anotacija tipa
 
@@ -63,21 +59,23 @@ Sledi interfejs koji opisuje turu i jedan objekat koji mu odgovara:
 export interface TourDto {
   id: string;
   name: string;
-  description?: string;
-  price: number;
+  description: string;
+  difficulty: string;
   tags: string[];
+  publishedAt?: string;
 }
 
 const tour: TourDto = {
   id: 't-1',
-  name: 'Planinarska tura',
-  price: 1500,
+  name: 'Fruška gora',
+  description: 'Planinarenje do manastira.',
+  difficulty: 'Hard',
   tags: ['priroda', 'šetnja'],
 };
 ```
 
 U datom kodu treba uočiti sledeće:
-- Znak `?` iza naziva polja označava **opciono polje**, koje objekat ne mora da sadrži. Objekat `tour` nema polje `description` i to je dozvoljeno. Ako izostavimo polje koje nije opciono, npr. `price`, prevodilac prijavljuje grešku. Isto važi i ako navedemo polje koje interfejs ne poznaje.
+- Znak `?` iza naziva polja označava **opciono polje**, koje objekat ne mora da sadrži. Objekat `tour` nema polje `publishedAt` i to je dozvoljeno. Ako izostavimo polje koje nije opciono, npr. `difficulty`, prevodilac prijavljuje grešku. Isto važi i ako navedemo polje koje interfejs ne poznaje.
 - Ključna reč `export` omogućava da se interfejs koristi i u drugim datotekama.
 
 Interfejs može da opiše i metodu. Sledeći interfejs zahteva da objekat ima metodu `greet`, koja prima tekst i vraća tekst:
@@ -108,7 +106,7 @@ JS ima dve vrednosti koje označavaju odsustvo vrednosti:
 - `undefined` označava da vrednost nije dodeljena. Tu vrednost ima promenljiva kojoj nismo dodelili vrednost, opciono polje koje objekat ne sadrži, kao i element niza koji ne postoji.
 - `null` označava da vrednost namerno ne postoji. Ovu vrednost uvek dodeljujemo sami.
 
-U JS-u bilo koja promenljiva može da sadrži `null` ili `undefined`. U TS-u (uz strogi režim) to nije slučaj: promenljiva tipa `string` može da sadrži samo tekst. Kada vrednost može da nedostaje, to moramo eksplicitno da navedemo pomoću **unije tipova** (engl. *union type*). Unija se piše uspravnom crtom `|` i znači da vrednost može biti bilo kog od navedenih tipova. Tip `string | null` čitamo kao „tekst ili `null`“. Opciono polje `description?: string` iz prethodnog odeljka zapravo je tipa `string | undefined`.
+U JS-u bilo koja promenljiva može da sadrži `null` ili `undefined`. U TS-u (uz strogi režim) to nije slučaj: promenljiva tipa `string` može da sadrži samo tekst. Kada vrednost može da nedostaje, to moramo eksplicitno da navedemo pomoću **unije tipova** (engl. *union type*). Unija se piše uspravnom crtom `|` i znači da vrednost može biti bilo kog od navedenih tipova. Tip `string | null` čitamo kao „tekst ili `null`“. Opciono polje `publishedAt?: string` iz prethodnog odeljka zapravo je tipa `string | undefined`.
 
 Sledeći kod prikazuje polje klase `TourList` koje čuva identifikator izabrane ture i metodu koja ga koristi:
 
