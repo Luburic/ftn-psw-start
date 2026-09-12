@@ -4,7 +4,7 @@ Uzrok je u tome što klijent ima sopstveni opis podatka koji nije njegov. Lekcij
 
 ## Preslikani tip
 
-**Preslikani tip** (engl. *mirrored type*) je TypeScript tip koji ima ista svojstva kao DTO struktura servera, sa tipovima prevedenim po utvrđenim pravilima. Preslikani tipovi jednog modula stoje u jednoj datoteci, u direktorijumu `api` tog modula. Strukture koje server vraća svim modulima, poput `PageResult`, stoje u direktorijumu `shared/api`. Svaki modul uvozi tipove iz sopstvenog direktorijuma `api`, pa granica između modula važi i za tipove.
+**Preslikani tip** (engl. *mirrored type*) je TypeScript tip koji ima ista svojstva kao DTO struktura servera, sa tipovima prevedenim po utvrđenim pravilima. Preslikani tipovi jednog modula stoje u jednoj datoteci, u direktorijumu `api` tog modula. Strukture koje server vraća svim modulima, `PageResult` za spisak sa stranama i `ProblemDetails` za telo odgovora sa greškom, stoje u direktorijumu `shared/api`. Svaki modul uvozi tipove iz sopstvenog direktorijuma `api`, pa granica između modula važi i za tipove.
 
 Sledeći kod prikazuje DTO strukturu `TourDto` sa servera i njen preslikani tip iz datoteke `exploration-api-types.ts`:
 

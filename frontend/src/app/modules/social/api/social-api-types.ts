@@ -23,3 +23,11 @@ export interface CreateBlogDto {
   description: string;
   images: string[] | null;
 }
+
+export interface CreateCommentDto {
+  text: string;
+}
+
+export interface UpdateCommentDto {
+  text: string;
+}

@@ -81,7 +81,7 @@ of that change.
 - Backend feature or fix: `backend/CLAUDE.md`.
 - Frontend feature or fix: `frontend/CLAUDE.md`.
 - A feature spanning both tiers: both. The seam is the backend's Application DTO, which
-  is the wire contract the frontend's generated types are produced from.
+  is the wire contract the frontend's `api/` types mirror.
 - Understanding a concept or trade-off: the knowledge base, below. Do not load the
   tier instructions for a discussion that changes no code.
 

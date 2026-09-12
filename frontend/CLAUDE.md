@@ -31,11 +31,11 @@ frontend/src/
     core/                    auth state, http interceptors, layout, app.routes.ts [platform]
     shared/
       util/
-      api/                   shared envelope types (PageResult, ProblemDetails),
-                             generated, do not hand-edit                        [platform]
+      api/                   shared types (PageResult, ProblemDetails),
+                             mirror the server, no client-only fields          [platform]
     modules/
       <name>/
-        api/                 this module's generated DTO types, do not hand-edit
+        api/                 this module's DTO types, mirror the server, no client-only fields
         tour-browsing/       one folder per use-case group, named as on the backend
           tour-list/         a page: routed, injects the group's service
             tour-list.ts
@@ -140,10 +140,14 @@ assigned to the platform team, and misalignment is an accepted learning experien
 
 ## Conventions
 
-- DTO types are generated per module from the backend OpenAPI document (split by module
-  tag) into `modules/<name>/api/`, shared envelope types into `shared/api/`, so the
-  import boundary covers types as well. The platform team owns the generation script.
-  Students never hand-write a DTO.
+- DTO types mirror the backend's Application DTOs one to one: one file per module in
+  `modules/<name>/api/`, shared envelope types in `shared/api/`, so the import boundary
+  covers types as well. There is no generator. The change that alters a DTO on the
+  backend also updates the mirrored type in the same commit, and nothing else ever
+  touches these files: no client-only fields, no renames, no extra types. Mapping
+  rules: enum to a union of string literals, `Guid` and `DateTime` to `string`,
+  nullable to `| null`, nested DTO to a nested interface, collection to an array.
+  A field the client does not use is still mirrored.
 - A page component owns the interaction: it declares its read resource, injects its
   group's service for commands, and passes plain values down to presentational
   components, which take `input()`s and raise `output()`s and inject nothing.
@@ -155,6 +159,3 @@ assigned to the platform team, and misalignment is an accepted learning experien
 ## Still open, ask before choosing
 
 - **Reference frontend module.** Follows the backend reference module decision.
-- **Type generation tool.** The per-module split is decided, the tool that produces it
-  is not. Until then the files in `modules/<name>/api/` and `shared/api/` are
-  hand-written stand-ins shaped exactly as a generator would emit them.

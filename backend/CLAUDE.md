@@ -213,12 +213,12 @@ inject the application service or the queries class directly. An action does exa
 things: bind the request, call one application method, map the result to an HTTP response.
 
 Actions return `ActionResult<T>`, never bare `IActionResult`: the OpenAPI document is
-generated from the action signatures, and the frontend's per-module DTO types are
-generated from that document, so an untyped action starves the frontend of types.
+generated from the action signatures, so an untyped action documents nothing.
 
 Controllers bind and return the module's Application DTOs directly; there is no second
 set of request/response types in `Api`. The Application DTO is therefore the wire
-contract, and the frontend's generated types change when it changes. An Api-local record
+contract, and the frontend's mirrored `api/` types change in the same commit when it
+changes. An Api-local record
 is the exception, introduced only when the wire shape genuinely diverges from the
 application shape, and it needs a reason. DTOs never move to `Contracts`, and actions
 never return domain entities (the arch tests enforce the latter).

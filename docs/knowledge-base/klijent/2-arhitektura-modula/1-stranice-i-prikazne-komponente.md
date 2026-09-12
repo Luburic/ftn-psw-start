@@ -103,7 +103,7 @@ export class BlogDetail {
   protected async add(text: string): Promise<void> {
     this.error.set(null);
     try {
-      await this.blogReading.addComment(this.id(), text);
+      await this.blogReading.addComment(this.id(), { text });
       this.detail.reload();
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Could not add the comment.'));

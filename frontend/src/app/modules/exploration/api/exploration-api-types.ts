@@ -1,11 +1,11 @@
-export type Difficulty = 'Easy' | 'Moderate' | 'Hard';
+export type TourDifficulty = 'Easy' | 'Moderate' | 'Hard';
 
 export type TourStatus = 'Draft' | 'Published';
 
-export type Transport = 'Walking' | 'Bicycle' | 'Car';
+export type TransportMode = 'Walking' | 'Bicycle' | 'Car';
 
 export interface TransportTimeDto {
-  transport: Transport;
+  transport: TransportMode;
   minutes: number;
 }
 
@@ -14,7 +14,7 @@ export interface TourDto {
   authorId: string;
   name: string;
   description: string;
-  difficulty: Difficulty;
+  difficulty: TourDifficulty;
   tags: string[];
   status: TourStatus;
   publishedAt: string | null;
@@ -24,6 +24,6 @@ export interface TourDto {
 export interface CreateTourDto {
   name: string;
   description: string;
-  difficulty: Difficulty;
+  difficulty: TourDifficulty;
   tags: string[];
 }
