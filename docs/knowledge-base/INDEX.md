@@ -86,4 +86,10 @@ Jedna linija po dokumentu: putanja, opis i preduslovi (dokumenti koje čitalac t
 
 ## Testovi
 
-- `testovi/xunit.md` — Normativan dokument. Automatsko testiranje sa xUnit i pomoćni kod za integracione testove. Preduslovi: nema.
+- `testovi/README.md` — Šta ostaje čoveku pri testiranju: odluka šta se testira, pregled tuđih testova, skup testova koji preživljava rast. Uvod u segment. Preduslovi: `server/2-arhitektura-modula/README.md`.
+- `testovi/1-anatomija-jedinicnog-testa.md` — Test okvir, tri dela testa, nezavisnost testova, ime kao rečenica o domenu, parametrizovani test i provere. Preduslovi: `server/2-arhitektura-modula/1-domenski-sloj/4-agregat.md`.
+- `testovi/2-sta-cini-dobar-test.md` — Cilj testiranja, zaštita od regresija, otpornost na refaktorisanje i lažni pozitivi, brzina i održivost, vrednost testa kao proizvod. Preduslovi: `1-anatomija-jedinicnog-testa.md`.
+- `testovi/3-koji-kod-zasluzuje-koji-test.md` — Dve dimenzije koda, četiri tipa koda preslikana na slojeve modula, preduslovi, repozitorijumi i upiti, piramida testova. Preduslovi: `2-sta-cini-dobar-test.md`, `server/2-arhitektura-modula/5-čista-arhitektura.md`.
+- `testovi/4-integracioni-testovi.md` — Šta integracioni test izvršava, upravljane i neupravljane zavisnosti, koje scenarije pokriva, pokretanje aplikacije i prijavljeni korisnik u testu, organizacija test projekta. Preduslovi: `3-koji-kod-zasluzuje-koji-test.md`, `server/1-aspnet/2-kontroleri.md`.
+- `testovi/5-podaci-integracionih-testova.md` — Poznato stanje pre svakog testa, početni podaci koji preživljavaju rast, tri kanala, provere koje novi red ne obara. Preduslovi: `4-integracioni-testovi.md`, `server/2-arhitektura-modula/3-infrastrukturni-sloj/5-jedinica-posla.md`.
+- `testovi/xunit.md` — Raniji dokument o mehanici testiranja; sadržaj se seli u lekcije 1, 4 i 5 i dokument se uklanja kada lekcije budu napisane. Preduslovi: nema.
