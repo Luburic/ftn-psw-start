@@ -1,8 +1,13 @@
-Klijentski deo našeg projekta je napisan u jeziku TypeScript. Razmotrimo klasu koja drži spisak tura i izabranu turu:
+# TypeScript
+
+Klijentski deo našeg projekta napravljen je u radnom okviru **Angular**, koji kao zvanični jezik koristi **TypeScript (TS)**. U nastavku ćete upoznati osnove TS-a koje su neophodne da biste mogli da čitate Angular projekat.
+
+Za početak razmotrimo jednu TS klasu koja čuva spisak tura i identifikator izabrane ture:
 
 ```ts
 export class TourList {
-  private readonly tours: TourDto[] = [];
+  private readonly apiUrl = '/api/exploration/tours';
+  protected readonly tours: TourDto[] = [];
   protected selectedTourId: string | null = null;
 
   protected select(tourId: string): void {
@@ -10,18 +15,20 @@ export class TourList {
   }
 
   protected async publish(tourId: string): Promise<void> {
-    await fetch(`/api/exploration/tours/${tourId}/publish`, { method: 'POST' });
+    await fetch(`${this.apiUrl}/${tourId}/publish`, { method: 'POST' });
   }
 }
 ```
 
-Čitalac koji poznaje JavaScript prepoznaje klasu, polja, metode, `async` i `await`, kao i poziv `fetch`. Ostaju delovi koje JavaScript nema: reči `private`, `protected` i `readonly` ispred polja, `: string` iza parametra, `: Promise<void>` iza liste parametara i `: TourDto[]` iza naziva polja. Sve to su oznake tipova. **TypeScript** je jezik koji proširuje JavaScript oznakama tipova, koje prevodilac (engl. *compiler*) proverava pre nego što kod stigne do pregledača. Pregledač izvršava običan JavaScript, jer prevodilac uklanja sve oznake tipova pri prevođenju. Ako je neka oznaka prekršena, prevođenje ne uspeva i aplikacija se ne pokreće.
+Čitalac koji poznaje JavaScript (JS) prepoznaje klasu, polja, metode, ključne reči `async` i `await`, kao i poziv funkcije `fetch`. Ipak, u klasi vidimo i novine: reči `private`, `protected` i `readonly` ispred polja i metoda, `: string` iza parametra, `: Promise<void>` iza liste parametara i `: TourDto[]` iza naziva polja. Tip `TourDto` definisaćemo u odeljku o interfejsima.
 
-Ovde upoznajemo samo one delove jezika koji se pojavljuju u svakoj klasi projekta.
+> **Napomena:** U ovom primeru za slanje zahteva serveru koristimo funkciju `fetch`, jer je poznata iz JS-a. U Angular aplikacijama se za to koristi servis `HttpClient`, koji ćemo upoznati kasnije.
+
+TS je jezik koji proširuje JS, prvenstveno tipovima. Svaki ispravno napisan JS kod sintaksno je ispravan i u TS-u, ali TS dodatno proverava da li se tipovi vrednosti poklapaju. Internet čitač (engl. *browser*) razume samo JS, pa se TS kod pre izvršavanja prevodi u JS (ovaj proces se naziva i transpajliranje). Alat koji to radi zovemo **prevodilac** (engl. *compiler*). Prevodilac najpre proverava tipove i prijavljuje greške, a zatim iz koda uklanja sve što je specifično za TS, kao što su anotacije, interfejsi i modifikatori. Pregledač na kraju dobija običan JS.
 
 ## Anotacija tipa
 
-**Anotacija tipa** (engl. *type annotation*) je oznaka oblika `: tip` iza naziva polja, iza naziva parametra ili iza liste parametara metode, koja prevodiocu saopštava kog tipa je vrednost. Osnovni tipovi su `string`, `number` i `boolean`. Metoda koja ne vraća vrednost ima tip `void`.
+**Anotacija tipa** (engl. *type annotation*) je oznaka oblika `: tip` koja se piše iza naziva promenljive, polja ili parametra, kao i iza liste parametara metode. Anotacijom tipa prevodiocu saopštavamo kog tipa je vrednost. Osnovni tipovi su `string`, `number` i `boolean`. Povratni tip metode koja ne vraća vrednost je `void`.
 
 Sledeći kod prikazuje metodu sa anotiranim parametrom i povratnom vrednošću:
 
@@ -32,50 +39,78 @@ protected select(tourId: string): void {
 ```
 
 U datom kodu treba uočiti sledeće:
-- Anotacija `tourId: string` znači da poziv `select(5)` ne prolazi prevođenje, jer je `5` broj, a ne tekst. Greška se javlja u uređivaču i pri prevođenju, pre pokretanja aplikacije.
-- Anotacija `: void` znači da metoda ništa ne vraća. Prevodilac prijavljuje grešku ako u telu metode napišemo `return` sa vrednošću.
-- Lokalne promenljive najčešće nemaju anotaciju, jer prevodilac tip zaključuje iz dodeljene vrednosti. Promenljiva `const name = ''` je tipa `string` bez ikakve oznake.
+- Anotacija `tourId: string` znači da poziv `select(5)` ne prolazi prevođenje, jer je `5` broj, a ne tekst.
+- Anotacija `: void` iza liste parametara znači da metoda ništa ne vraća. Ako u telu metode napišemo `return` sa vrednošću, prevodilac prijavljuje grešku.
+
+### Automatsko određivanje tipa
+
+Anotaciju nije uvek potrebno pisati. Kada promenljiva ili polje dobije vrednost odmah pri deklaraciji, prevodilac sam zaključuje tip iz te vrednosti. Ovaj mehanizam zovemo **zaključivanje tipa** (engl. *type inference*).
+
+```ts
+let count = 0;   // prevodilac zaključuje tip number
+count = 'pet';   // greška: tekst nije broj
+```
+
+Zato polje `apiUrl` iz uvodnog primera nema anotaciju, jer prevodilac iz vrednosti vidi da je u pitanju tekst. Sa druge strane, polje `tours` mora da ima anotaciju, jer iz praznog niza `[]` prevodilac ne može da zna kakvi će elementi biti u nizu. Anotaciju pišemo i kod parametara metode, jer njihov tip prevodilac ne može da zaključi.
 
 ## Interfejs
 
-**Interfejs** (engl. *interface*) je imenovani oblik objekta, odnosno spisak svojstava i njihovih tipova. Kada podatak stiže sa servera u JSON zapisu, interfejs opisuje koja svojstva taj podatak ima. Sledeći kod prikazuje interfejs za podatak o turi:
+TS **interfejs** (engl. *interface*) opisuje oblik objekta, tj. koja polja objekat mora da sadrži i kog su tipa. Interfejse najčešće koristimo za model podataka na klijentskom delu veb aplikacije, koji odgovara podacima koji stižu sa servera. Takav model obično nazivamo **DTO** (engl. *Data Transfer Object*), otuda i naziv `TourDto`.
+
+Sledi interfejs koji opisuje turu i jedan objekat koji mu odgovara:
 
 ```ts
 export interface TourDto {
   id: string;
   name: string;
-  description: string;
-  difficulty: string;
+  description?: string;
+  price: number;
+  tags: string[];
 }
+
+const tour: TourDto = {
+  id: 't-1',
+  name: 'Planinarska tura',
+  price: 1500,
+  tags: ['priroda', 'šetnja'],
+};
 ```
 
 U datom kodu treba uočiti sledeće:
-- Interfejs ne postoji u pregledaču. Prevodilac ga koristi samo da proveri kod, a zatim ga uklanja.
-- Objekat je tipa `TourDto` ako ima sva navedena svojstva odgovarajućih tipova. Pristup svojstvu koje interfejs nema, na primer `tour.author`, prevodilac prijavljuje kao grešku.
-- Tip `TourDto[]` označava niz vrednosti tipa `TourDto`. Na isti način `string[]` označava niz tekstualnih vrednosti.
+- Znak `?` iza naziva polja označava **opciono polje**, koje objekat ne mora da sadrži. Objekat `tour` nema polje `description` i to je dozvoljeno. Ako izostavimo polje koje nije opciono, npr. `price`, prevodilac prijavljuje grešku. Isto važi i ako navedemo polje koje interfejs ne poznaje.
+- Ključna reč `export` omogućava da se interfejs koristi i u drugim datotekama.
 
-## Generički tip
-
-**Generički tip** (engl. *generic type*) je tip koji u uglastim zagradama prima drugi tip kao parametar. Zapis `Promise<TourDto>` čitamo kao obećanje tipa `TourDto`. Asinhrona metoda uvek vraća obećanje, pa je njena povratna vrednost uvek generičkog tipa `Promise`. Sledeći kod prikazuje dve asinhrone metode:
+Interfejs može da opiše i metodu. Sledeći interfejs zahteva da objekat ima metodu `greet`, koja prima tekst i vraća tekst:
 
 ```ts
-protected async load(): Promise<TourDto[]> {
-  const response = await fetch('/api/exploration/tours');
-  return await response.json();
+interface Person {
+  name: string;
+  surname: string;
+  greet: (prefix: string) => string;
 }
 
-protected async publish(tourId: string): Promise<void> {
-  await fetch(`/api/exploration/tours/${tourId}/publish`, { method: 'POST' });
-}
+const pera: Person = {
+  name: 'Pera',
+  surname: 'Perić',
+  greet(prefix) {
+    return `${prefix} ${this.name} ${this.surname}`;
+  },
+};
 ```
 
-U datom kodu treba uočiti sledeće:
-- Anotacija `: Promise<TourDto[]>` kaže da poziv `await this.load()` daje niz tipa `TourDto`. Sve što iz tog niza pročitamo prevodilac proverava prema interfejsu `TourDto`.
-- Anotacija `: Promise<void>` je isti oblik, sa tipom `void` kao parametrom. Metoda je asinhrona, pa vraća obećanje, ali obećanje ne nosi vrednost.
+Zapis `(prefix: string) => string` je tip funkcije: levo od strelice su parametri, a desno povratni tip. Parametar `prefix` u objektu `pera` nema anotaciju, jer prevodilac njegov tip zaključuje iz interfejsa.
+
+> **Važno:** Interfejs postoji samo za prevodioca i pri prevođenju u JS potpuno nestaje. Zato TS ne može da proveri da li server zaista šalje podatke koji odgovaraju interfejsu `TourDto`. Kada odgovor servera označimo kao `TourDto`, prevodilac tu tvrdnju prihvata kao tačnu. Ako se model na klijentu razlikuje od onoga što server šalje, greška se ne vidi pri prevođenju, već tek kada se aplikacija izvršava. Zato interfejse treba održavati usklađenim sa podacima koje server zaista vraća.
 
 ## Nepostojeća vrednost
 
-U JavaScript-u svaka promenljiva može da bude `null`. U TypeScript-u promenljiva tipa `string` ne sme da bude `null`. Kada vrednost može da nedostaje, to zapisujemo kao **uniju tipova** (engl. *union type*), oblika `string | null`, koju čitamo kao tekst ili ništa. Sledeći kod prikazuje polje koje čuva identifikator izabrane ture i metodu koja ga čita:
+JS ima dve vrednosti koje označavaju odsustvo vrednosti:
+- `undefined` označava da vrednost nije dodeljena. Tu vrednost ima promenljiva kojoj nismo dodelili vrednost, opciono polje koje objekat ne sadrži, kao i element niza koji ne postoji.
+- `null` označava da vrednost namerno ne postoji. Ovu vrednost uvek dodeljujemo sami.
+
+U JS-u bilo koja promenljiva može da sadrži `null` ili `undefined`. U TS-u (uz strogi režim) to nije slučaj: promenljiva tipa `string` može da sadrži samo tekst. Kada vrednost može da nedostaje, to moramo eksplicitno da navedemo pomoću **unije tipova** (engl. *union type*). Unija se piše uspravnom crtom `|` i znači da vrednost može biti bilo kog od navedenih tipova. Tip `string | null` čitamo kao „tekst ili `null`“. Opciono polje `description?: string` iz prethodnog odeljka zapravo je tipa `string | undefined`.
+
+Sledeći kod prikazuje polje klase `TourList` koje čuva identifikator izabrane ture i metodu koja ga koristi:
 
 ```ts
 protected selectedTourId: string | null = null;
@@ -90,70 +125,53 @@ protected async publishSelected(): Promise<void> {
 ```
 
 U datom kodu treba uočiti sledeće:
-- Anotacija `: string | null` kaže da polje čuva tekst ili `null`. Početna vrednost je `null`, jer nijedna tura još nije izabrana.
-- Vrednost `tourId` je tipa `string | null`, a metoda `publish` prima `string`. Prevodilac odbija poziv sve dok se `null` ne isključi proverom. Nakon naredbe `if (tourId === null) return;` prevodilac zna da je preostali tip `string`.
+- Polje `selectedTourId` čuva identifikator izabrane ture ili `null`. Početna vrednost je `null`, jer nijedna tura još nije izabrana.
+- Konstanta `tourId` je tipa `string | null`, a metoda `publish` prima `string`. Zato prevodilac ne dozvoljava poziv `this.publish(tourId)` sve dok proverom ne isključimo `null`. Nakon provere `if (tourId === null)` sa naredbom `return`, prevodilac zna da je preostali tip `string`. Ovaj mehanizam zovemo **sužavanje tipa** (engl. *type narrowing*).
+- Vrednost polja najpre prepisujemo u lokalnu konstantu. Tako smo sigurni da proveravamo i koristimo istu vrednost, jer polje može da promeni drugi deo koda, a konstantu ne može.
+
+## Generički tip
+
+Oznaku sa izlomljenim zagradama `<...>` već smo sreli u povratnom tipu `Promise<void>`. U pitanju je **generički tip** (engl. *generic type*), gde vrednost u zagradama određuje tip sa kojim se radi. Na primer, `Promise<void>` je obećanje koje ne donosi vrednost, a `Promise<TourDto>` obećanje koje donosi turu. Slično tome, zapis `TourDto[]` je skraćeni oblik generičkog tipa `Array<TourDto>`, tj. niza tura.
+
+Generici omogućavaju da napišemo funkcije, klase ili interfejse koji rade sa različitim tipovima podataka, a da prevodilac i dalje proverava tipove. Umesto da unapred „zakucamo“ jedan tip (npr. `string` ili `number`), koristimo **tipski parametar** (najčešće se zove `T`), koji prevodilac popunjava konkretnim tipom tek kada se funkcija pozove ili klasa upotrebi.
+
+Sledeći kod prikazuje funkciju koja vraća prvi element niza:
+
+```ts
+function first<T>(items: T[]): T | undefined {
+  return items[0];
+}
+
+const tours: TourDto[] = [];
+const firstTour = first(tours);       // T je TourDto -> TourDto | undefined
+const firstTag = first(['a', 'b']);   // T je string  -> string | undefined
+```
+
+U datom kodu treba uočiti sledeće:
+- `<T>` iza naziva funkcije uvodi tipski parametar, koji povezuje tip ulaza (`items: T[]`) sa tipom izlaza (`T | undefined`). Kog god tipa da su elementi niza, funkcija vraća vrednost istog tog tipa.
+- Povratni tip je unija `T | undefined`, jer niz može biti prazan, a tada `items[0]` ima vrednost `undefined`.
+- Tip `T` ne navodimo pri pozivu, već ga prevodilac zaključuje iz argumenta. Za niz `tours` to je `TourDto`, a za `['a', 'b']` je `string`. Tip je moguće navesti i eksplicitno, npr. `first<string>(['a', 'b'])`, ali to je retko potrebno.
 
 ## Modifikatori članova klase
 
-JavaScript klasa ima polja i metode koji su svima dostupni. TypeScript dodaje modifikatore koji ograničavaju pristup i izmenu:
-1. `private` znači da je član vidljiv samo kodu unutar klase.
-2. `protected` znači da je član vidljiv kodu unutar klase i kodu klasa koje je nasleđuju.
-3. `readonly` znači da se polje dodeljuje jednom i više ne menja.
+U JS-u su polja i metode klase podrazumevano dostupni svakom kodu koji ima pristup objektu. TS dodaje **modifikatore pristupa** (engl. *access modifiers*), kojima ograničavamo ko sme da koristi član klase:
+1. `public` – član je dostupan svuda. Ovo je podrazumevano ponašanje, pa se `public` retko piše.
+2. `protected` – član je dostupan kodu unutar klase i kodu klasa koje je nasleđuju.
+3. `private` – član je dostupan samo kodu unutar klase.
 
-Sledeći kod prikazuje uobičajen početak klase:
+Pored njih postoji i modifikator `readonly`, koji ne ograničava pristup, već izmenu. Polju označenom sa `readonly` vrednost se dodeljuje jednom, pri deklaraciji ili u konstruktoru, i posle se ne može promeniti.
+
+Sledeći kod prikazuje polja klase `TourList` sa modifikatorima:
 
 ```ts
 export class TourList {
-  private readonly tours: TourDto[] = [];
+  private readonly apiUrl = '/api/exploration/tours';
+  protected readonly tours: TourDto[] = [];
   protected selectedTourId: string | null = null;
 }
 ```
 
 U datom kodu treba uočiti sledeće:
-- Polja dobijaju vrednost odmah pri deklaraciji, pa klasa nema konstruktor.
-- Polje `tours` je `readonly`, jer se niz koji čuva ne zamenjuje drugim nizom. Dodavanje elementa u taj niz `readonly` ne sprečava, jer se time menja sadržaj niza, a ne polje.
-- Polje `selectedTourId` nije `readonly`, jer mu metoda `select` dodeljuje novu vrednost.
-
-## Od JavaScript-a do TypeScript-a
-
-Povežimo pojmove tako što jednu JavaScript klasu korak po korak pretvorimo u TypeScript klasu. Polazimo od klase koja čuva izabranu turu i objavljuje je:
-
-```js
-export class TourList {
-  tours = [];
-  selectedTourId = null;
-
-  select(tourId) {
-    this.selectedTourId = tourId;
-  }
-
-  async publish(tourId) {
-    await fetch(`/api/exploration/tours/${tourId}/publish`, { method: 'POST' });
-  }
-}
-```
-
-Anotiramo parametre i povratne vrednosti:
-
-```ts
-select(tourId: string): void { ... }
-async publish(tourId: string): Promise<void> { ... }
-```
-
-Anotiramo polja. Polje `tours` je niz tura, a `selectedTourId` čuva tekst ili ništa:
-
-```ts
-tours: TourDto[] = [];
-selectedTourId: string | null = null;
-```
-
-Dodajemo modifikatore članova. Polje `tours` koristi samo klasa i nikada ga ne zamenjuje, a ostali članovi su dostupni i klasama koje je nasleđuju:
-
-```ts
-private readonly tours: TourDto[] = [];
-protected selectedTourId: string | null = null;
-protected select(tourId: string): void { ... }
-protected async publish(tourId: string): Promise<void> { ... }
-```
-
-Rezultat je klasa sa početka lekcije. Kod u pregledaču je ostao isti kao na početku, a prevodilac sada proverava svaki poziv metode i svako čitanje polja pre pokretanja.
+- Sva polja dobijaju vrednost odmah pri deklaraciji, pa klasi nije potreban konstruktor.
+- Polje `apiUrl` je `private`, jer ga koristi samo kod unutar klase.
+- Modifikator `readonly` sprečava da se polju `tours` dodeli novi niz (npr. `this.tours = []`), ali ne sprečava izmenu postojećeg niza (npr. `this.tours.push(tour)`).
