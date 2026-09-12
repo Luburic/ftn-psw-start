@@ -6,7 +6,7 @@ Stranica za pravljenje ture prikuplja naziv, opis, težinu i oznake, a komandu z
 
 ```ts
 protected readonly form = form(
-  signal({ name: '', description: '', difficulty: 'Easy' as Difficulty, tags: '' }),
+  signal({ name: '', description: '', difficulty: 'Easy' as TourDifficulty, tags: '' }),
   (path) => {
     required(path.name, { message: 'Name is required.' });
     required(path.description, { message: 'Description is required.' });
@@ -16,7 +16,7 @@ protected readonly form = form(
 
 U datom kodu treba uočiti sledeće:
 - Funkcije `form` i `required` su deo radnog okvira. Forma nema sopstvenu kopiju vrednosti, već svaki unos korisnika upisuje u model.
-- Model ima po jedno svojstvo za svaki element za unos, sa početnom vrednošću. Tip `Difficulty` iz modula Exploration je unija čije su vrednosti tačno tri teksta, `'Easy' | 'Moderate' | 'Hard'`. Zapis `'Easy' as Difficulty` prevodiocu tvrdi da je početna vrednost tog tipa, a ne bilo koji tekst, pa i svojstvo modela dobija tip `Difficulty`.
+- Model ima po jedno svojstvo za svaki element za unos, sa početnom vrednošću. Tip `TourDifficulty` iz modula Exploration je unija čije su vrednosti tačno tri teksta, `'Easy' | 'Moderate' | 'Hard'`. Zapis `'Easy' as TourDifficulty` prevodiocu tvrdi da je početna vrednost tog tipa, a ne bilo koji tekst, pa i svojstvo modela dobija tip `TourDifficulty`.
 - Šema prima `path`, objekat sa istim svojstvima kao model, kroz koji se pravilo vezuje za jedno polje forme. Poziv `required(path.name, ...)` polju `name` dodaje pravilo da vrednost ne sme da bude prazna. Pravila se proveravaju pri svakoj promeni modela. Polja bez pravila, `difficulty` i `tags`, uvek su ispravna.
 - Drugi argument pravila je poruka koju forma čuva uz grešku.
 
@@ -113,7 +113,7 @@ Povežimo pojmove u stranicu za pravljenje ture iz projekta, skraćenu na formu 
 })
 export class CreateTour {
   protected readonly form = form(
-    signal({ name: '', description: '', difficulty: 'Easy' as Difficulty, tags: '' }),
+    signal({ name: '', description: '', difficulty: 'Easy' as TourDifficulty, tags: '' }),
     (path) => {
       required(path.name, { message: 'Name is required.' });
       required(path.description, { message: 'Description is required.' });

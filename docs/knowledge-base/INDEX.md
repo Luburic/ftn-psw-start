@@ -77,7 +77,7 @@ Lekcije direktorijuma `klijent/1-angular/` su napisane; ostali direktorijumi seg
 - `klijent/2-arhitektura-modula/README.md` — Zašto je klijentska arhitektura tanja od serverske i koja tri pravila je čine. Uvod u segment. Preduslovi: `klijent/1-angular/README.md`.
 - `klijent/2-arhitektura-modula/1-stranice-i-prikazne-komponente.md` — Stranica vodi interakciju, prikazna komponenta prima vrednosti i prijavljuje događaje; grupe slučajeva korišćenja kao raspored modula; izbor strane i grupe za novu komponentu. Preduslovi: `klijent/1-angular/7-sastavljanje-komponenti.md`, `klijent/1-angular/8-rutiranje.md`.
 - `klijent/2-arhitektura-modula/2-upiti-i-komande.md` — Resurs u stranici, komande u servisu grupe, stranica osvežava svoj resurs; pravilo gde stanje živi. Preduslovi: `1-stranice-i-prikazne-komponente.md`, `klijent/1-angular/11-komande.md`.
-- `klijent/2-arhitektura-modula/3-generisani-tipovi.md` — DTO struktura servera kao ugovor, generisanje tipova po modulu, generisana datoteka se ne menja rukom. Preduslovi: `2-upiti-i-komande.md`, `server/2-arhitektura-modula/2-aplikacioni-sloj/3-dto-i-mapiranje.md`.
+- `klijent/2-arhitektura-modula/3-preslikani-tipovi.md` — DTO struktura servera kao ugovor, tipovi modula preslikani sa servera po utvrđenim pravilima, datoteka se menja samo kada se promeni server. Preduslovi: `2-upiti-i-komande.md`, `server/2-arhitektura-modula/2-aplikacioni-sloj/3-dto-i-mapiranje.md`.
 
 ## Modularni monolit na klijentu
 

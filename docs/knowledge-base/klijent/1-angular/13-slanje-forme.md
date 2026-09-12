@@ -113,7 +113,7 @@ export class CreateTour {
   private readonly router = inject(Router);
 
   protected readonly form = form(
-    signal({ name: '', description: '', difficulty: 'Easy' as Difficulty, tags: '' }),
+    signal({ name: '', description: '', difficulty: 'Easy' as TourDifficulty, tags: '' }),
     (path) => {
       required(path.name, { message: 'Name is required.' });
       required(path.description, { message: 'Description is required.' });
