@@ -1,8 +1,49 @@
-Forma iz prethodne lekcije prikuplja podatke o turi i proverava ih, ali ih ne šalje. Stranica za pravljenje ture mora da pošalje komandu za pravljenje, a nakon uspeha da otvori spisak tura korisnika. Ovde upoznajemo kako se forma šalje, kako se nakon uspeha menja adresa iz klase i kako se forma koja ostaje na ekranu vraća u početno stanje.
+Forma iz prethodne lekcije prikuplja podatke o turi i proverava ih, ali ih ne šalje. Stranica za pravljenje ture mora da pošalje komandu za pravljenje, a nakon uspeha da otvori spisak tura korisnika. Ovde upoznajemo kako se forma šalje, kako klasa nakon uspeha menja adresu i kako se forma koja ostaje na ekranu vraća u početno stanje.
+
+## Komanda za pravljenje ture
+
+Stranica šalje komandu kroz servis `TourAuthoring`, koji ima isti oblik kao servis `BlogAuthoring` iz lekcije o komandama. Metoda `create` prima DTO strukturu sa podacima nove ture:
+
+```ts
+export interface CreateTourDto {
+  name: string;
+  description: string;
+  difficulty: TourDifficulty;
+  tags: string[];
+}
+```
+
+```ts
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+const BASE_URL = '/api/exploration/tours';
+
+@Injectable({ providedIn: 'root' })
+export class TourAuthoring {
+  private readonly http = inject(HttpClient);
+
+  create(dto: CreateTourDto): Observable<TourDto> {
+    return this.http.post<TourDto>(BASE_URL, dto);
+  }
+
+  publish(id: string): Observable<void> {
+    return this.http.post<void>(`${BASE_URL}/${id}/publish`, {});
+  }
+}
+```
+
+U datom kodu treba uočiti sledeće:
+- Metoda `create` šalje DTO strukturu na adresu `/api/exploration/tours` i vraća `Observable` sa napravljenom turom. Kao i svaka komanda iz lekcije o komandama, zahtev se šalje tek kada stranica pozove `subscribe`.
+- Metoda `publish` je ista ona koju stranica `MyTours` koristi u lekciji o komandama. Obe komande za ture stoje u istom servisu, a čitanje tura u servisu `TourQueries`.
+- Interfejs `CreateTourDto` ima ista svojstva kao model forme iz prethodne lekcije, osim svojstva `tags`. U modelu su oznake jedan tekst, onako kako ih korisnik kuca u element za unos, npr. „priroda, šetnja“. Server ih očekuje kao niz tekstova. Zato stranica pre slanja mora da pretvori model u DTO strukturu.
 
 ## Slanje forme
 
-Čitalac zna da se na elementu `form` pri kliku na dugme tipa `submit` desi događaj `submit` i da internet čitač tada učitava nov dokument, osim ako kod koji događaj obrađuje to ne spreči pozivom `preventDefault`. Isto važi i ovde, jer radni okvir nema sopstveni događaj za slanje forme. Sledeći kod prikazuje, iz projekta, metodu za slanje, za sada bez navigacije, i deo šablona koji je poziva:
+Kada korisnik klikne na dugme tipa `submit` unutar elementa `form`, ili pritisne taster Enter u elementu za unos, na elementu `form` se desi događaj `submit`. Internet čitač tada podrazumevano šalje formu i učitava nov dokument. To bi ponovo učitalo celu aplikaciju i izbrisalo sve što je korisnik uneo. Zato kod koji obrađuje događaj mora da pozove `preventDefault`, kao i u običnom JavaScript-u.
+
+Sledeći kod prikazuje, iz projekta, metodu za slanje, za sada bez prelaska na drugu stranicu, i deo šablona koji je poziva:
 
 ```ts
 private readonly tourAuthoring = inject(TourAuthoring);
@@ -10,22 +51,27 @@ private readonly tourAuthoring = inject(TourAuthoring);
 protected readonly pending = signal(false);
 protected readonly error = signal<string | null>(null);
 
-protected async submit(event: Event): Promise<void> {
+protected submit(event: Event): void {
   event.preventDefault();
   this.pending.set(true);
   this.error.set(null);
-  try {
-    await this.tourAuthoring.create({
-      name: this.form.name().value(),
-      description: this.form.description().value(),
-      difficulty: this.form.difficulty().value(),
-      tags: this.form.tags().value().split(',').map((tag) => tag.trim()).filter((tag) => tag !== ''),
+  const value = this.model();
+  this.tourAuthoring
+    .create({
+      name: value.name,
+      description: value.description,
+      difficulty: value.difficulty,
+      tags: value.tags.split(',').map((tag) => tag.trim()).filter((tag) => tag !== ''),
+    })
+    .subscribe({
+      next: () => {
+        this.pending.set(false);
+      },
+      error: (failure) => {
+        this.pending.set(false);
+        this.error.set(serverMessage(failure, 'Could not create the tour.'));
+      },
     });
-  } catch (failure) {
-    this.error.set(serverMessage(failure, 'Could not create the tour.'));
-  } finally {
-    this.pending.set(false);
-  }
 }
 ```
 
@@ -40,111 +86,145 @@ protected async submit(event: Event): Promise<void> {
 ```
 
 U datom kodu treba uočiti sledeće:
-- Vezivanje događaja `(submit)` stoji na elementu `form`, a ne na dugmetu. Metoda prima objekat događaja i prvo poziva `preventDefault`, da internet čitač ne bi učitao nov dokument i time pokrenuo radni okvir ispočetka. Naziv metode ne mora da bude isti kao naziv događaja.
-- Ostatak metode je obrazac stranice sa komandom iz lekcije o komandama, bez izmene. Komanda `create` servisa `TourAuthoring` prima DTO strukturu `CreateTourDto`, sa istim svojstvima kao model, osim što je `tags` niz, i vraća napravljenu turu.
-- Vrednosti za DTO strukturu se čitaju iz stanja polja, pozivom `value()`. Tekst sa oznakama se deli na zarezu, a prazni delovi odbacuju.
-- Dugme je onemogućeno dok forma nije ispravna i dok komanda traje. Server podatke proverava ponovo i grešku prijavljuje kao i za svaku komandu.
+- Vezivanje događaja `(submit)` stoji na elementu `form`, a ne na dugmetu. Tako se metoda poziva i na klik i na taster Enter. Metoda prima objekat događaja i prvo poziva `preventDefault`. Naziv metode ne mora da bude isti kao naziv događaja.
+- Sve unete vrednosti čitamo odjednom, pozivom `this.model()`, kao što je najavila tabela iz prethodne lekcije. Konstanta `value` drži vrednost modela u trenutku slanja.
+- Naziv, opis i težina prelaze iz modela u DTO strukturu bez izmene. Tekst sa oznakama delimo na zarezima (`split`), sa svakog dela uklanjamo razmake sa krajeva (`trim`) i odbacujemo prazne delove (`filter`). Unos „priroda, šetnja,“ tako postaje niz `['priroda', 'šetnja']`.
+- Ostatak metode je obrazac stranice sa komandom iz lekcije o komandama: `pending` postaje tačan pre slanja, `subscribe` šalje zahtev, a funkcije `next` i `error` vraćaju `pending` na netačno.
+- Dugme je onemogućeno dok forma nije ispravna i dok komanda traje. Server podatke proverava ponovo, jer se klijentu ne sme verovati, i grešku prijavljuje kao i za svaku komandu.
+
+Forme sa signalima imaju i sopstvene pomoćne alate za slanje, koje ćete sretati u dokumentaciji. U projektu formu šaljemo ručno, na način koji već poznajemo iz lekcije o komandama.
 
 ## Navigacija nakon uspeha
 
-Nakon što server napravi turu, korisnik očekuje da vidi spisak svojih tura. Do sada je adresu menjala samo veza, na klik korisnika. Klasa adresu menja kroz klasu radnog okvira `Router`, koju poziv `provideRouter` iz konfiguracije aplikacije prijavljuje kontejneru, pa je klasa preuzima kao i servis. Sledeći kod prikazuje deo metode za slanje sa navigacijom:
+Nakon što server napravi turu, korisnik očekuje da vidi spisak svojih tura. Do sada je adresu menjala samo veza, na klik korisnika. Iz klase adresu menjamo kroz klasu `Router` iz paketa `@angular/router`. Poziv `provideRouter` iz konfiguracije aplikacije prijavljuje je kontejneru zavisnosti, pa je klasa preuzima pozivom `inject`, kao i svaki servis. Sledeći kod prikazuje metodu za slanje sa navigacijom:
 
 ```ts
 private readonly router = inject(Router);
 
-try {
-  await this.tourAuthoring.create({ ... });
-  await this.router.navigate(['/exploration/mine']);
-} catch (failure) {
-  this.error.set(serverMessage(failure, 'Could not create the tour.'));
-} finally {
-  this.pending.set(false);
+protected submit(event: Event): void {
+  // ...
+  this.tourAuthoring
+    .create({ ... })
+    .subscribe({
+      next: () => {
+        this.pending.set(false);
+        this.router.navigate(['/exploration/mine']);
+      },
+      error: (failure) => {
+        this.pending.set(false);
+        this.error.set(serverMessage(failure, 'Could not create the tour.'));
+      },
+    });
 }
 ```
 
 U datom kodu treba uočiti sledeće:
-- Metoda `navigate` prima niz istog oblika kao veza sa parametrom. Radni okvir od niza sastavlja adresu i dalje radi isto kao pri kliku na vezu.
-- Poziv stoji iza `await` komande, pa se izvršava samo kada komanda uspe. Kada komanda ne uspe, korisnik ostaje na formi sa porukom o grešci.
-- Metoda `navigate` vraća obećanje, jer navigacija uključuje pravljenje komponente nove rute, pa je čekamo sa `await`.
-- Radni okvir pri navigaciji uništava komponentu stranice za pravljenje, a sa njom i formu. Formu zato ne treba vraćati u početno stanje.
+- Metoda `navigate` prima niz istog oblika kao veza sa parametrom iz lekcije o ruteru. Angular od niza sastavlja adresu i dalje radi isto kao pri kliku na vezu.
+- Poziv stoji u funkciji `next`, pa se izvršava samo kada server potvrdi komandu. Kada komanda ne uspe, izvršava se funkcija `error` i korisnik ostaje na formi sa porukom o grešci.
+- Pri navigaciji Angular uništava komponentu stranice za pravljenje, a sa njom i formu. Formu zato ne treba vraćati u početno stanje.
 
 ## Vraćanje forme u početno stanje
 
-Forma koja nakon slanja ostaje na ekranu mora da se vrati u početno stanje, da bi korisnik uneo sledeću vrednost. Sledeći kod prikazuje, iz projekta, formu za nov komentar iz komponente `BlogComments`, deteta stranice bloga `BlogDetail`, koja komentar javlja roditelju kroz izlaz:
+Forma koja nakon slanja ostaje na ekranu mora da se vrati u početno stanje, da bi korisnik mogao da unese sledeću vrednost. Sledeći kod prikazuje, iz projekta, formu za nov komentar iz komponente `BlogComments`. Komponenta je dete stranice bloga `BlogDetail` i novi komentar javlja roditelju kroz izlaz:
 
 ```ts
 readonly addComment = output<string>();
 
-protected readonly form = form(signal({ text: '' }), (path) => {
+protected readonly model = signal({ text: '' });
+
+protected readonly form = form(this.model, (path) => {
   required(path.text, { message: 'A comment cannot be empty.' });
 });
 
 protected submitComment(event: Event): void {
   event.preventDefault();
-  this.addComment.emit(this.form.text().value());
-  this.form().reset({ text: '' });
+  this.addComment.emit(this.model().text);
+  this.model.set({ text: '' });
+  this.form().reset();
 }
 ```
 
 ```html
 <form (submit)="submitComment($event)">
   <input type="text" [formField]="form.text" />
+  @if (form.text().touched()) {
+    @for (error of form.text().errors(); track $index) {
+      <p class="error">{{ error.message }}</p>
+    }
+  }
   <button type="submit" [disabled]="!form().valid()">Comment</button>
 </form>
 ```
 
 U datom kodu treba uočiti sledeće:
-- Metoda `reset` iz stanja cele forme upisuje primljenu vrednost u model i svako polje označava kao nedodirnuto. Element za unos postaje prazan, polje ponovo ima grešku iz pravila `required`, ali se poruka ne prikazuje, a dugme je onemogućeno do sledećeg unosa.
-- Komponenta `BlogComments` ne šalje komandu, već kroz izlaz javlja roditelju, koji komandu šalje i ponovo učitava svoj resurs. Metoda zato nije asinhrona i nema `pending`.
+- Poziv `this.model.set({ text: '' })` upisuje praznu vrednost u model. Forma nema sopstvenu kopiju vrednosti, pa element za unos odmah postaje prazan.
+- Metoda `reset` iz stanja cele forme ne menja vrednost, već svako polje označava kao nedodirnuto. Bez nje bi polje ostalo dodirnuto, pa bi se odmah prikazala poruka „A comment cannot be empty.“, iako korisnik još nije ni počeo da piše sledeći komentar.
+- Nakon oba poziva polje ponovo ima grešku iz pravila `required`, ali se poruka ne prikazuje, a dugme je onemogućeno do sledećeg unosa. Forma je u istom stanju kao kada se stranica prvi put otvori.
+- Komponenta `BlogComments` ne šalje komandu, već kroz izlaz javlja roditelju, koji komandu šalje i ponovo učitava svoj resurs, po pravilu „podaci naniže, događaji naviše“. Metoda zato nema `pending` ni `subscribe`.
 
 ## Pravljenje ture
 
 Povežimo pojmove u celu stranicu za pravljenje ture iz projekta:
 
 ```ts
+import { Component, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { FormField, form, required } from '@angular/forms/signals';
+
+interface CreateTourModel {
+  name: string;
+  description: string;
+  difficulty: TourDifficulty;
+  tags: string;
+}
+
 @Component({
-  imports: [FormField],
   selector: 'app-create-tour',
-  styleUrl: './create-tour.scss',
+  imports: [FormField],
   templateUrl: './create-tour.html',
+  styleUrl: './create-tour.scss',
 })
 export class CreateTour {
   private readonly tourAuthoring = inject(TourAuthoring);
   private readonly router = inject(Router);
 
-  protected readonly form = form(
-    signal({ name: '', description: '', difficulty: 'Easy' as TourDifficulty, tags: '' }),
-    (path) => {
-      required(path.name, { message: 'Name is required.' });
-      required(path.description, { message: 'Description is required.' });
-    },
-  );
+  protected readonly model = signal<CreateTourModel>({
+    name: '',
+    description: '',
+    difficulty: 'Easy',
+    tags: '',
+  });
+
+  protected readonly form = form(this.model, (path) => {
+    required(path.name, { message: 'Name is required.' });
+    required(path.description, { message: 'Description is required.' });
+  });
 
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
-  protected async submit(event: Event): Promise<void> {
+  protected submit(event: Event): void {
     event.preventDefault();
     this.pending.set(true);
     this.error.set(null);
-    try {
-      await this.tourAuthoring.create({
-        name: this.form.name().value(),
-        description: this.form.description().value(),
-        difficulty: this.form.difficulty().value(),
-        tags: this.form
-          .tags()
-          .value()
-          .split(',')
-          .map((tag) => tag.trim())
-          .filter((tag) => tag !== ''),
+    const value = this.model();
+    this.tourAuthoring
+      .create({
+        name: value.name,
+        description: value.description,
+        difficulty: value.difficulty,
+        tags: value.tags.split(',').map((tag) => tag.trim()).filter((tag) => tag !== ''),
+      })
+      .subscribe({
+        next: () => {
+          this.pending.set(false);
+          this.router.navigate(['/exploration/mine']);
+        },
+        error: (failure) => {
+          this.pending.set(false);
+          this.error.set(serverMessage(failure, 'Could not create the tour.'));
+        },
       });
-      await this.router.navigate(['/exploration/mine']);
-    } catch (failure) {
-      this.error.set(serverMessage(failure, 'Could not create the tour.'));
-    } finally {
-      this.pending.set(false);
-    }
   }
 }
 ```
@@ -157,8 +237,8 @@ export class CreateTour {
     <label for="name">Name</label>
     <input id="name" type="text" [formField]="form.name" />
     @if (form.name().touched()) {
-      @for (message of form.name().errors(); track $index) {
-        <p class="error">{{ message.message }}</p>
+      @for (error of form.name().errors(); track $index) {
+        <p class="error">{{ error.message }}</p>
       }
     }
   </div>
@@ -167,8 +247,8 @@ export class CreateTour {
     <label for="description">Description</label>
     <textarea id="description" rows="4" [formField]="form.description"></textarea>
     @if (form.description().touched()) {
-      @for (message of form.description().errors(); track $index) {
-        <p class="error">{{ message.message }}</p>
+      @for (error of form.description().errors(); track $index) {
+        <p class="error">{{ error.message }}</p>
       }
     }
   </div>
@@ -196,8 +276,10 @@ export class CreateTour {
 ```
 
 Kada korisnik unese naziv i opis i klikne na dugme za pravljenje, dešava se sledeće:
-1. Na elementu `form` se desi događaj `submit`, a vezivanje događaja poziva metodu `submit` sa objektom događaja. Metoda poziva `preventDefault` i upisuje tačno u `pending`.
-2. Metoda iz stanja polja čita vrednosti, sastavlja DTO strukturu i poziva komandu `create`. Servis šalje zahtev na `/api/exploration/tours`, a `await` čeka odgovor.
-3. Server pravi turu i vraća je u odgovoru. Metoda odgovor ne koristi, već poziva `navigate` sa adresom spiska tura korisnika.
-4. Radni okvir upisuje adresu `/exploration/mine` u internet čitač, bira rutu, uništava komponentu `CreateTour` i na mestu iscrtavanja pravi komponentu `MyTours`.
-5. Resurs stranice `MyTours` šalje zahtev pri prvom iscrtavanju i u odgovoru dobija i novu turu, pa tabela prikazuje i nju.
+1. Na elementu `form` se desi događaj `submit`, a vezivanje događaja poziva metodu `submit` sa objektom događaja. Metoda poziva `preventDefault`, pa internet čitač ne učitava nov dokument, i upisuje tačno u `pending`, pa se dugme onemogućava.
+2. Metoda pozivom `this.model()` čita sve unete vrednosti, pretvara ih u DTO strukturu i poziva komandu `create`. Servis vraća opisan zahtev, a poziv `subscribe` ga šalje na `/api/exploration/tours`.
+3. Server pravi turu i vraća je u odgovoru. Izvršava se funkcija `next`, koja vraća `pending` na netačno i poziva `navigate` sa adresom spiska tura korisnika. Odgovor servera ovde ne koristimo.
+4. Angular upisuje adresu `/exploration/mine` u internet čitač, bira rutu, uništava komponentu `CreateTour`, a sa njom i formu, i na mestu iscrtavanja pravi komponentu `MyTours`.
+5. Stranica `MyTours` od servisa `TourQueries` dobija resurs, koji šalje nov zahtev za spisak tura korisnika. Odgovor sada sadrži i novu turu, pa je tabela prikazuje.
+
+Kada server odbije komandu, npr. zato što tura sa istim nazivom već postoji, u trećem koraku izvršava se funkcija `error` umesto `next`. Ona upisuje poruku servera u signal `error`, a korisnik ostaje na stranici za pravljenje sa svim unetim vrednostima i može da ih ispravi i pošalje ponovo.
