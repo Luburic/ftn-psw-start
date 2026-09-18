@@ -50,7 +50,7 @@ Sledeći kod prikazuje test iz klase `TourTests`, gde su tri segmenta razdvojena
 [Fact]
 public void Publishes()
 {
-    var tour = new Tour(WellKnownUsers.Explorer, "Šetnja tvrđavom", new string('o', 100), TourDifficulty.Easy, ["istorija"]);
+    var tour = CreateTour(LongDescription);
     tour.AddTransportTime(TransportMode.Bicycle, 45);
 
     tour.Publish();
@@ -66,6 +66,13 @@ U datom kodu treba uočiti sledeće:
 - Akcija je jedan red, poziv metode `Publish`. Čitalac testa nalazi akciju bez čitanja pripreme, jer je to jedini red između dva prazna reda.
 - Provera ima dva reda, jer ponašanje "objava ture" ima dva ishoda, promenu statusa i beleženje vremena objave.
 
+Priprema je najčešće najduži deo testa i ima do tri koraka:
+1. Instancira objekte čije ponašanje testiramo i dovodi ih u željeno početno stanje,
+2. Ako metoda koja će se testirati prihvata složene objekte, priprema objekte koji se prosleđuju kao argumenti metodi i
+3. Ako se očekuje složeniji ishod testiranog ponašanja, priprema objekte koji se koriste u proveri ishoda testa.
+
+Prvi korak se ponavlja u većini testova jedne klase, pa se izdvaja u zasebnu metodu, kako bi se čitava priprema svela na poziv te metode. Klasa `TourTests` za to ima metodu `CreateTour`, koja gradi turu sa zadatim opisom. Provera zavisi od vrste metode koju akcija poziva. Ako metoda vraća vrednost, provera utvrđuje da li je stvarna povratna vrednost jednaka očekivanoj. Ako metoda menja stanje, provera utvrđuje da li je stvarno stanje objekta nakon poziva jednako očekivanom.
+
 Jasna greška u kodu testa je kada izvršavamo više od jedne akcije u centralnom delu. Postoje dva moguća uzroka ovog problema:
 1. Ako bi test morao da pozove dve metode da bi tura bila objavljena, i aplikacioni servis bi morao, a zaboravljen drugi poziv bi ostavio turu u nevalidnom stanju. Tada agregatu nedostaje metoda koja oba koraka drži zajedno.
 2. Ako je agregat ispravno definisan, test izvršava dve promene i proverava dva ponašanja. Takav test delimo na dva.
@@ -76,12 +83,14 @@ Najprostija vrsta automatskog testa je jedinični test. **Jedinični test** (eng
 
 Segment logike definišemo kao jedinicu ponašanja koju testira jedinični test kada:
 1. Predstavlja semantički uokvirenu sposobnost sistema koju koriste drugi delovi sistema
-2. Može brzo da se izvrši u okviru testa (merimo u milisekundama)
+2. Može da se izvrši u procesu testa, bez obraćanja bazi podataka ili drugom sistemu
 3. Može da se izoluje kako bi jedan test mogao da proveri ponašanje, nezavisno od rada drugih testova
 
 Prvi zahtev je najizazovniji za razumevanje jer traži analizu semantike. Primer "uokvirene sposobnosti sistema" pronalazimo u javnim metodama domenskih objekata. Na primer, "Objava ture je moguća za neobjavljene ture sa adekvatnim opisom i dužinom trajanja i tada se evidentira vreme objave" je jedno ponašanje. Test to ponašanje proverava kroz javnu metodu agregata `Publish`. Privatna metoda `CanPublish`, koja samo proverava ispunjenost pravila i koju `Publish` poziva, nije dostupna sposobnost ostatku sistema i krši prvi zahtev.
 
-Primer kršenja drugog zahteva vidimo kod infrastrukturnog servisa čiji zadatak je da dobavi podatke od drugog sistema putem HTTP zahteva (konektorska klasa). Samo čekanje HTTP odgovora može da potraje, a na to se dodaje čekanje za formiranje HTTP zahteva i parsiranje odgovora.
+Jedinice ponašanja se ugnježdavaju. Objava ture je sposobnost koju nudi metoda agregata. Međutim, objava ture je i metoda kontrolera, koja zatim poziva servis, koji radi sa agregatom i repozitorijumom. Ova šira objava ugnježdava sitniju objavu. Jedinični test bira najmanje uokvirene jedinice ponašanja koje ispunjavaju drugi i treći zahtev.
+
+Primer kršenja drugog zahteva vidimo kod infrastrukturnog servisa čiji zadatak je da dobavi podatke od drugog sistema putem HTTP zahteva (konektorska klasa). Test ne kontroliše ni dostupnost tog sistema ni sadržaj njegovog odgovora.
 
 Za kršenje trećeg zahteva možemo analizirati aplikacioni servis koji izvršava komande. Servis nudi metodu za ažuriranje agregata i za njegovo brisanje, gde svaka metoda ima povezani test. Ako bi oba testa radila sa istim agregatom, izvršavanje drugog testa pre prvog bi narušilo rad prvog testa, jer servis ne bi mogao da učita ciljani agregat. Prvi test bi pao (crveneo bi se), što treba da bude znak da je logika poremećena. Međutim, u ovom slučaju je to problem koji je nastao zbog međuzavisnosti između testova.
 
@@ -117,4 +126,4 @@ public void New_tour_requires_a_description(string description)
 }
 ```
 
-Za primer će test okvir izvršiti metodu jednom za svaki `[InlineData]`, gde prvo prosleđuje prazan string, pa string sa puno razmaka i na kraju string sa tri karaktera za nov red. Kada bi test imao više parametara, `[InlineData]` bi sadržalo više vrednosti, po jednu za svaki parametar.
+Za primer će test okvir izvršiti metodu jednom za svaki `[InlineData]`, gde prvo prosleđuje prazan string, pa string sa puno razmaka i na kraju string sa tri karaktera za nov red. Kada bi test imao više parametara, `[InlineData]` bi sadržalo više vrednosti, po jednu za svaki parametar. Parametri testa tako zamenjuju drugi i treći korak pripreme, kada su argumenti i očekivani ishodi proste vrednosti.

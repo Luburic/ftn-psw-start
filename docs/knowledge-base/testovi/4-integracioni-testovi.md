@@ -1,10 +1,8 @@
-# Integracioni testovi
-
 Prethodna lekcija je zaključila da aplikacioni servis, repozitorijum i API kontroler dobijaju mali broj integracionih testova koji prolaze kroz sve tri klase odjednom. Ostaje pitanje kako takav test izgleda, šta u njemu zaista radi, a šta je zamenjeno, i koje scenarije pokriva. Ova lekcija odgovara na ta tri pitanja i opisuje pomoćni kod koji platformski tim održava da bi integracioni test modula bio kratak.
 
 ## Šta je integracioni test
 
-**Integracioni test** (engl. *integration test*) je automatski test koji ne ispunjava bar jedan uslov jediničnog testa: proverava više jedinica ponašanja odjednom, nije brz ili nije nezavisan od drugih testova. U projektu integracioni test šalje HTTP zahtev pokrenutoj aplikaciji i proverava odgovor i stanje baze podataka.
+**Integracioni test** (engl. *integration test*) je automatski test koji ne ispunjava bar jedan uslov jediničnog testa: proverava ponašanje kroz više jedinica umesto kroz najmanju jedinicu koja ga nudi, obraća se bazi podataka ili drugom sistemu, ili nije nezavisan od drugih testova. U projektu integracioni test šalje HTTP zahtev pokrenutoj aplikaciji i proverava odgovor i stanje baze podataka.
 
 Jedinični test dokazuje pravilo agregata u izolaciji. Ništa ne dokazuje da je agregat učitan iz baze, da je izmena sačuvana i da je krajnja tačka izložila ispravan odgovor. Integracioni test prolazi kroz API kontroler, aplikacioni servis, agregat, EF Core i bazu, pa hvata greške na svakom spoju. Istovremeno je udaljen od koda, jer vidi samo HTTP zahtev i red u bazi, pa preživljava refaktorisanje bilo koje od tih klasa. Sledeći kod prikazuje test iz klase `TourAuthoringCommandTests` istog imena kao test iz prve lekcije:
 

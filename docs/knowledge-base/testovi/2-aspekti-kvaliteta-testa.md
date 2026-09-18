@@ -54,7 +54,7 @@ public async Task AddTransportTime_stores_the_time_on_the_tour()
 }
 ```
 
-Dati kod predstavlja integracioni test koji ćemo kasnije bolje upoznati. Za sada treba uočiti sledeće:
+Dati kod predstavlja integracioni test. **Integracioni test** (engl. *integration test*) je automatski test koji ne ispunjava bar jedan uslov jediničnog testa: proverava ponašanje kroz više jedinica umesto kroz najmanju jedinicu koja ga nudi, obraća se bazi podataka ili drugom sistemu, ili nije nezavisan od drugih testova. Ovaj test krši prvi i drugi uslov, jer prolazi kroz ceo modul i traži pokrenutu aplikaciju sa bazom. Za sada treba uočiti sledeće:
 - Poziv `PostAsJsonAsync` pravi HTTP POST zahtev koji će aktivirati serversku aplikaciju, sve middleware komponente, odgovarajući kontroler, a onda kroz njega servis, repozitorijum, `Tour` agregat i jedinicu posla (`UnitOfWork`), pre nego što se vrati odgovor u vidu HTTP odgovora.
 - Provera statusnog koda utvrđuje da li je stigao odgovarajući HTTP odgovor, a zatim gleda da li se sadržaj baze podataka izmenio na očekivan način. Sa prvom proverom osiguravamo da bi klijentska aplikacija dobila ono što očekuje, a sa drugom da se desila transformacija sistema koju smo očekivali.
 - Ako bilo koja karika u lancu ima grešku, ovaj test će je uhvatiti.
@@ -99,7 +99,7 @@ U datom kodu treba uočiti sledeće:
 
 Kvalitet testa se ocenjuje kroz četiri ocene: zaštitu od regresija, otpornost na refaktorisanje, brzinu i lakoću održavanja. Nula na bilo kojoj oceni čini test bezvrednim.
 
-Nijedan test nema najviše ocene na svemu. Zaštita od regresija i brzina se često sukobe, jer test koji prolazi kroz više koda otkriva više grešaka, ali i traje duže. Lakoću održavanja težimo da održimo na najvišem nivou u svakom testu, jer se dobija načinom pisanja, a ne izborom šta se testira.
+Nijedan test nema najviše ocene na svemu. Zaštita od regresija i brzina se često sukobe, jer test koji prolazi kroz više koda otkriva više grešaka, ali i traje duže. Lakoću održavanja koda testa težimo da održimo na najvišem nivou u svakom testu, jer se dobija načinom pisanja, a ne izborom šta se testira. Test koji zavisi od pokrenute aplikacije i podataka u bazi nosi i trošak održavanja tog okruženja.
 
 Sledeća tabela ocenjuje dva testa iz ove lekcije i test iz prethodne:
 
@@ -107,10 +107,10 @@ Sledeća tabela ocenjuje dva testa iz ove lekcije i test iz prethodne:
 |---|---|---|---|---|
 | `New_tour_has_appropriate_name` | nikakva | umerena | visoka | visoka |
 | `Publish_rejects_an_already_published_tour` sa proverom poruke | niska | niska | visoka | visoka |
-| `AddTransportTime_stores_the_time_on_the_tour` | visoka | visoka | umerena | umerena (kada naučimo šta kod radi) |
+| `AddTransportTime_stores_the_time_on_the_tour` | visoka | visoka | umerena | umerena |
 
 U datoj tabeli treba uočiti sledeće:
 
 - Prvi test je beskoristan jer proverava trivijalan ishod
 - Drugi test proverava korektan ishod, a niska je zaštita od regresije samo zato što proverava usko ponašanje. Zaštita od regresija za Publish metodu agregata je relativno visoka, ali je relativno niska za Publish funkcionalnost sistema (što uključuje i kontroler, servis, repozitorijum...). Ovo nije mana, posebno ne kod jediničnih testova koji se fokusiraju na male jedinice ponašanja. Otpornost na refaktorisanje je niska, delom jer je testirana funkcija sitna, ali najviše jer se nepotrebno proverava poruka izuzetka.
-- Glavna mana integracionog testa je brzina izvršavanja, kao i lakoća održavanja. Pri tom, sam kod testa je relativno lako održavati (kada ga naučimo), već je teže održavati podatke u testnoj bazi podataka, što ćemo videti kasnije.
+- Glavna mana integracionog testa je brzina izvršavanja, kao i lakoća održavanja. Sam kod testa je kratak koliko i kod jediničnog testa. Ocena je umerena zbog okruženja koje test traži: pokrenute aplikacije i podataka u bazi koje svaki test zatiče u poznatom stanju.
