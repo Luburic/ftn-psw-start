@@ -73,7 +73,7 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Publish_publishes_a_draft_blog()
+    public async Task Publishes()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 

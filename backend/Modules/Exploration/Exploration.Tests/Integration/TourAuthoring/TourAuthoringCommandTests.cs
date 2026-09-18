@@ -87,7 +87,7 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Publish_publishes_a_complete_tour()
+    public async Task Publishes()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 

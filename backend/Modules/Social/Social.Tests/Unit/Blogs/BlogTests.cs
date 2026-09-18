@@ -19,7 +19,7 @@ public class BlogTests
     }
 
     [Fact]
-    public void Creation_produces_a_draft_blog()
+    public void New_blog_starts_as_a_draft()
     {
         var blog = CreateBlog();
 
@@ -30,7 +30,7 @@ public class BlogTests
     }
 
     [Fact]
-    public void Creation_without_images_produces_an_empty_list()
+    public void New_blog_without_images_has_no_images()
     {
         var blog = new Blog(WellKnownUsers.Explorer, "Utisci sa tvrđave", "Opis obilaska tvrđave.", null);
 
@@ -40,7 +40,7 @@ public class BlogTests
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public void Constructor_rejects_a_blank_title(string title)
+    public void New_blog_requires_a_title(string title)
     {
         var creation = () => new Blog(WellKnownUsers.Explorer, title, "Opis obilaska tvrđave.", []);
 
@@ -50,7 +50,7 @@ public class BlogTests
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public void Constructor_rejects_a_blank_description(string description)
+    public void New_blog_requires_a_description(string description)
     {
         var creation = () => new Blog(WellKnownUsers.Explorer, "Utisci sa tvrđave", description, []);
 
@@ -58,7 +58,7 @@ public class BlogTests
     }
 
     [Fact]
-    public void Publish_publishes_a_draft_blog()
+    public void Publishes()
     {
         var blog = CreateBlog();
 

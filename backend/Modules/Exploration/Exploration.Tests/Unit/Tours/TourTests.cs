@@ -14,7 +14,7 @@ public class TourTests
         new(WellKnownUsers.Explorer, "Šetnja tvrđavom", description, TourDifficulty.Easy, ["istorija"]);
 
     [Fact]
-    public void Creation_produces_a_draft()
+    public void New_tour_starts_as_a_draft()
     {
         var tour = CreateTour(LongDescription);
 
@@ -26,7 +26,7 @@ public class TourTests
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public void Constructor_rejects_a_blank_name(string name)
+    public void New_tour_requires_a_name(string name)
     {
         var creation = () => new Tour(WellKnownUsers.Explorer, name, "Opis ture.", TourDifficulty.Easy, ["istorija"]);
 
@@ -36,7 +36,7 @@ public class TourTests
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public void Constructor_rejects_a_blank_description(string description)
+    public void New_tour_requires_a_description(string description)
     {
         var creation = () => CreateTour(description);
 
@@ -44,7 +44,7 @@ public class TourTests
     }
 
     [Fact]
-    public void Constructor_rejects_empty_tags()
+    public void New_tour_requires_tags()
     {
         var creation = () => new Tour(WellKnownUsers.Explorer, "Šetnja tvrđavom", "Opis ture.", TourDifficulty.Easy, []);
 
@@ -75,7 +75,7 @@ public class TourTests
     }
 
     [Fact]
-    public void Publish_publishes_a_complete_tour()
+    public void Publishes()
     {
         var tour = CreateTour(LongDescription);
         tour.AddTransportTime(TransportMode.Bicycle, 45);
@@ -87,7 +87,7 @@ public class TourTests
     }
 
     [Fact]
-    public void Publish_rejects_a_short_description()
+    public void Publish_requires_an_appropriate_description()
     {
         var tour = CreateTour("Kratak opis.");
         tour.AddTransportTime(TransportMode.Walking, 120);
