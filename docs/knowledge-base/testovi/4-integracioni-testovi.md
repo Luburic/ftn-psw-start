@@ -10,7 +10,7 @@ Jedinični test dokazuje pravilo agregata u izolaciji. Ništa ne dokazuje da je 
 
 ```cs
 [Fact]
-public async Task Publish_publishes_a_complete_tour()
+public async Task Publishes()
 {
     var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 

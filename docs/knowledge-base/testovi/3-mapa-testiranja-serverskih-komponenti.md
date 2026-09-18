@@ -94,7 +94,7 @@ public async Task PublishAsync(Guid tourId, Guid authorId)
 
 U datom kodu treba uočiti sledeće:
 
-- Pravilo o dužini opisa sada živi u servisu, pored dva saradnika. Jedinični test pravila mora da zameni repozitorijum, a integracioni test mora da poseje turu sa kratkim opisom u bazu. Oba testa su skuplja od testa `Publish_rejects_a_short_description` iz prve lekcije.
+- Pravilo o dužini opisa sada živi u servisu, pored dva saradnika. Jedinični test pravila mora da zameni repozitorijum, a integracioni test mora da poseje turu sa kratkim opisom u bazu. Oba testa su skuplja od testa `Publish_requires_an_appropriate_description` iz prve lekcije.
 - Ispravka nije bolji test, nego premeštanje pravila u metodu `Tour.Publish`, gde ono i jeste u projektu. Servis ostaje bez pravila i vraća se u polje kontrolera.
 - Kod može da bude dubok, sa mnogo pravila, ili širok, sa mnogo saradnika, ali ne oboje. Podela na domenski i aplikacioni sloj iz čiste arhitekture je upravo ta podela, pa u modulu koji je poštuje ovo polje ostaje prazno.
 
@@ -102,7 +102,7 @@ U datom kodu treba uočiti sledeće:
 
 **Preduslov** (engl. *precondition*) je uslov koji ulaz metode mora da ispuni, a čije kršenje metoda odbija izuzetkom. Konstruktor klase `Tour` ima tri preduslova, a metoda `Publish` još tri. Nije svaki preduslov vredan testa.
 
-Preduslov koji iskazuje pravilo domena je invarijanta agregata i dobija test. Uslov da tura ima bar jednu oznaku je pravilo domena, pa test `Constructor_rejects_empty_tags` postoji. Preduslov koji štiti od greške u kodu, na primer uslov da niz sa podacima za rehidraciju ima očekivan broj elemenata, nema domensko značenje. Takav preduslov postoji da bi greška u kodu bila otkrivena rano, i test za njega se ne piše.
+Preduslov koji iskazuje pravilo domena je invarijanta agregata i dobija test. Uslov da tura ima bar jednu oznaku je pravilo domena, pa test `New_tour_requires_tags` postoji. Preduslov koji štiti od greške u kodu, na primer uslov da niz sa podacima za rehidraciju ima očekivan broj elemenata, nema domensko značenje. Takav preduslov postoji da bi greška u kodu bila otkrivena rano, i test za njega se ne piše.
 
 ## Repozitorijumi i upiti
 

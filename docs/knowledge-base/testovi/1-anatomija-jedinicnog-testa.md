@@ -1,20 +1,27 @@
-# Anatomija jediničnog testa
+U lekciji o agregatu smo videli klasu `Tour` čija metoda `Publish` sprovodi tri pravila:
+1. Tura ne sme već biti objavljena,
+2. Opis mora imati bar sto znakova i
+3. Mora postojati bar jedno vreme transporta.
 
-U lekciji o agregatu smo videli klasu `Tour` čija metoda `Publish` sprovodi tri pravila: tura ne sme već biti objavljena, opis mora imati bar sto znakova i mora postojati bar jedno vreme transporta. Ostaje pitanje kako proveriti da ta pravila zaista važe. Ručna provera traži da se pokrene aplikacija, prijavi korisnik, unese tura i pošalje zahtev za objavu, a zatim da se sve to ponovi za svako pravilo i posle svake izmene koda. Posle nekoliko izmena provera se preskače, a pravilo koje je nekada važilo tiho prestaje da važi.
+Ova pravila definiše domen problema, odnosno poslovni kontekst u kom se koristi naša aplikacija. Ako pravila nisu ispoštovana, tura nije validna i ne treba da bude dostupna turistima. Zbog toga fiksiramo pravila u kodu i danas imamo tu garanciju. Pitanje je kako da osiguramo da će ova pravila ostati u kodu i nastaviti da se primenjuju sutra, nakon mnogih izmena koje čine (nespretni) programeri i agenti.
 
-**Automatski test** je kod koji izvršava deo sistema i proverava da li je ishod očekivan, bez učešća čoveka. **Jedinični test** (engl. *unit test*) je automatski test koji proverava jedno ponašanje domenskog objekta, izvršava se brzo i ne zavisi od drugih testova. Ova lekcija razlaže jedan jedinični test iz projekta na delove i objašnjava oblik svakog dela.
+Jedna opcija je da sa svakom izmenom koda izvršimo ručnu proveru svih starih funkcionalnosti. Ovo traži da se pokrene aplikacija, prijavi korisnik, unese tura i pošalje zahtev za objavu, a zatim da se sve to ponovi za svako pravilo. Ovo je **manualno testiranje** i u praksi zahteva mnogo strpljivog ljudstva da se sprovodi konzistentno.
+
+**Automatski test** je kod koji izvršava deo sistema i proverava da li je ishod očekivan, bez učešća čoveka. Tako možemo definisati automatski test za svaku funkcionalnost sistema i pokretati sve testove koje imamo nakon svake izmene. Rezultate dobijamo brzo (mereno u sekundima ili minutima) i sa njima određenu garanciju da nismo poremetili stari kod. Jedan automatski test se preslikava na jednu funkciju koju mi definišemo, a koju pokreće test okvir.
+
+U praksi se definišu automatski testovi za razne vrste aplikacija, uključujući one koji proveravaju rad serverske aplikacije, klijentske aplikacije i oba. Za početak ćemo se fokusirati na testove serverske aplikacije.
 
 ## Test okvir i test metoda
 
-**Test okvir** (engl. *test framework*) je biblioteka koja pronalazi testove u kodu, izvršava ih i prijavljuje rezultat svakog testa. Test je obična metoda, koju test okvir pokreće bez `Main` metode i bez pokretanja aplikacije. U projektu se koristi test okvir xUnit.
+**Test okvir** (engl. *test framework*) je biblioteka koja pronalazi testove u kodu, izvršava ih i prijavljuje rezultat svakog testa. U našem projektu koristimo test okvir xUnit za proveru rada serverske aplikacije. Testovi se pokreću komandom `dotnet test` iz direktorijuma `backend`, a mogu se pokrenuti i iz razvojnog okruženja. Izveštaj sadrži ime svakog testa i njegov ishod.
 
-**Test metoda** je metoda koju test okvir prepoznaje po atributu i izvršava kao test. Najjednostavniji takav atribut je `[Fact]`. **Test klasa** je klasa koja okuplja srodne test metode. Sledeći kod prikazuje jednu test metodu iz klase `TourTests` u projektu:
+Test je obična metoda koju test okvir prepoznaje po atributu i izvršava kao test. Najjednostavniji takav atribut je `[Fact]`. Pošto u OOP metode žive u klasama, test metode se definišu u okviru **test klase**, koja okuplja srodne test metode. Sledeći kod prikazuje jednu test metodu iz klase `TourTests`:
 
 ```cs
 public class TourTests
 {
     [Fact]
-    public void Constructor_rejects_empty_tags()
+    public void New_tour_requires_tags()
     {
         var creation = () => new Tour(WellKnownUsers.Explorer, "Šetnja tvrđavom", "Opis ture.", TourDifficulty.Easy, []);
 
@@ -26,25 +33,24 @@ public class TourTests
 U datom kodu treba uočiti sledeće:
 
 - Atribut `[Fact]` je jedini znak da je metoda test. Test okvir pronalazi sve javne metode sa tim atributom i svaku izvršava kao zaseban test. Metoda bez atributa se ne izvršava.
+- Konvencija za pisanje test metoda je Snake_case, gde naziv testa prenosi poslovnu nameru (u primeru "Nove ture zahtevaju definisan spisak tagova"). Ovo je apstraktnije od opisa tehničkog konstrukta koji se proverava (npr. "Constructor_rejects_empty_tags") i otpornije je na refaktorisanje (ako sutra zamenimo poziv konstruktora sa fabričkom metodom koja pravi objekat, naziv testa se ne menja), a uz to je čitljivije klijentu koji razume poslovnu nameru.
 - Test metoda ne vraća vrednost. Test uspeva ako se metoda izvrši do kraja, a pada ako neka provera ne uspe ili ako kod izbaci neočekivan izuzetak.
 - Test klasa `TourTests` je ulazna tačka za testove agregata `Tour`. Ime klase ne ograničava šta test proverava, jer test proverava ponašanje, a ponašanje može da obuhvati više klasa.
-- Testovi se pokreću komandom `dotnet test` iz direktorijuma `backend`, a mogu se pokrenuti i iz razvojnog okruženja. Izveštaj sadrži ime svakog testa i njegov ishod.
 
-## Jedinica ponašanja
+## Struktura koda test metode
 
-Jedinični test proverava jednu **jedinicu ponašanja**, odnosno jedan zahtev domena koji ima smisla domenskom stručnjaku. Jedinica nije klasa ni metoda. Kada bi jedinica bila metoda, testovi bi pratili strukturu koda i morali bi da se menjaju pri svakom preimenovanju ili podeli metode. Kada je jedinica ponašanje, test preživljava sve izmene koda koje ponašanje ne menjaju.
+Izvorni kod svakog testa tipično ima tri segmenta:
+1. **Priprema** (engl. *Arrange*) gradi objekte čije ponašanje testiramo i dovodi ih u stanje potrebno za test,
+2. **Akcija** (engl. *Act*) izvršava ponašanje koje se proverava i
+3. **Provera** (engl. *Assert*) upoređuje ishod ponašanja sa očekivanim.
 
-Na primer, "objavljena tura mora imati bar jedno vreme transporta" je jedno ponašanje. Nije bitno da li ga sprovodi metoda `Publish`, konstruktor ili pomoćna metoda koju `Publish` poziva. Test to ponašanje proverava kroz javne metode agregata, isto kao što agregat koristi i aplikacioni servis. Ovo pravilo određuje sve ostale delove testa, od broja akcija u testu do njegovog imena.
-
-## Tri dela testa
-
-Svaki test se sastoji od tri dela, tim redom: **priprema** (engl. *arrange*) gradi objekte i dovodi ih u stanje potrebno za test, **akcija** (engl. *act*) izvršava ponašanje koje se proverava, a **provera** (engl. *assert*) upoređuje ishod sa očekivanim. Delovi se razdvajaju praznim redom. Sledeći kod prikazuje test iz klase `TourTests` sa sva tri dela:
+Sledeći kod prikazuje test iz klase `TourTests`, gde su tri segmenta razdvojena praznim redom:
 
 ```cs
 [Fact]
-public void Publish_publishes_a_complete_tour()
+public void Publishes()
 {
-    var tour = CreateTour(LongDescription);
+    var tour = new Tour(WellKnownUsers.Explorer, "Šetnja tvrđavom", new string('o', 100), TourDifficulty.Easy, ["istorija"]);
     tour.AddTransportTime(TransportMode.Bicycle, 45);
 
     tour.Publish();
@@ -58,98 +64,30 @@ U datom kodu treba uočiti sledeće:
 
 - Priprema gradi turu sa dovoljno dugim opisom i dodaje joj vreme transporta. To je najmanje stanje u kome objava može da uspe.
 - Akcija je jedan red, poziv metode `Publish`. Čitalac testa nalazi akciju bez čitanja pripreme, jer je to jedini red između dva prazna reda.
-- Provera ima dva reda, jer ponašanje "objava ture" ima dva ishoda, promenu statusa i beleženje vremena objave. Više provera za jedno ponašanje nije greška. Greška je provera koja pripada drugom ponašanju.
-- Akcija duža od jednog reda ukazuje na nedostatak u agregatu. Ako bi test morao da pozove dve metode da bi tura bila objavljena, i aplikacioni servis bi morao, a zaboravljen drugi poziv bi ostavio turu u nevalidnom stanju. Tada agregatu nedostaje metoda koja oba koraka drži zajedno.
-- Dve akcije u jednom testu znače dva ponašanja. Takav test se deli na dva.
+- Provera ima dva reda, jer ponašanje "objava ture" ima dva ishoda, promenu statusa i beleženje vremena objave.
 
-## Nezavisnost testova
+Jasna greška u kodu testa je kada izvršavamo više od jedne akcije u centralnom delu. Postoje dva moguća uzroka ovog problema:
+1. Ako bi test morao da pozove dve metode da bi tura bila objavljena, i aplikacioni servis bi morao, a zaboravljen drugi poziv bi ostavio turu u nevalidnom stanju. Tada agregatu nedostaje metoda koja oba koraka drži zajedno.
+2. Ako je agregat ispravno definisan, test izvršava dve promene i proverava dva ponašanja. Takav test delimo na dva.
 
-Test okvir pravi novu instancu test klase za svaku test metodu. Konstruktor test klase se izvršava pre svakog testa, a instanca se odbacuje posle njega. Polja test klase zato ne prenose stanje između testova, pa svaki test kreće od nule.
+## Meta testa - Jedinica ponašanja
 
-Ovo pravilo dopušta da se zajednička priprema smesti u konstruktor i polja klase, što je prirodna prva ideja kada više testova gradi isti objekat. Takva priprema ima dve posledice. Prvo, izmena pripreme za potrebe jednog testa menja pretpostavke svih ostalih testova u klasi, pa promena jednog testa obara druge. Drugo, čitalac testa više ne vidi celu sliku, jer mora da pogleda konstruktor da bi znao sa kakvom turom test radi.
+Najprostija vrsta automatskog testa je jedinični test. **Jedinični test** (engl. *unit test*) je automatski test koji proverava jednu *jedinicu ponašanja*. Teško je precizno definisati šta je jedinica ponašanja, odnosno šta su njene granice. Svaki automatski test će u *Act* sekciji pozvati konstruktor ili metodu objekta. Ponašanje koje se proverava je ponašanje te metode. Međutim, metode se razlikuju po složenosti koja stoji iza njih. Na primer, jedna metoda može proveriti jedan uslov i, kada je ispunjen, izmeniti stanje objekta, sve u par linija koda. Druga metoda može imati složenu logiku koja podrazumeva pozive metoda mnoštva drugih objekata, kako bi kroz 50 linija koda iskoordinisala ispunjenje nekog zahteva. Oba primera mogu biti jedinica ponašanja.
 
-Umesto konstruktora, zajednička priprema se izdvaja u **fabričku metodu** (engl. *factory method*), privatnu statičku metodu test klase koja gradi objekat sa zadatim svojstvima. Sledeći kod prikazuje fabričku metodu iz klase `TourTests` i dva testa koji je koriste:
+Segment logike definišemo kao jedinicu ponašanja koju testira jedinični test kada:
+1. Predstavlja semantički uokvirenu sposobnost sistema koju koriste drugi delovi sistema
+2. Može brzo da se izvrši u okviru testa (merimo u milisekundama)
+3. Može da se izoluje kako bi jedan test mogao da proveri ponašanje, nezavisno od rada drugih testova
 
-```cs
-private static readonly string LongDescription = new('o', 100);
+Prvi zahtev je najizazovniji za razumevanje jer traži analizu semantike. Primer "uokvirene sposobnosti sistema" pronalazimo u javnim metodama domenskih objekata. Na primer, "Objava ture je moguća za neobjavljene ture sa adekvatnim opisom i dužinom trajanja i tada se evidentira vreme objave" je jedno ponašanje. Test to ponašanje proverava kroz javnu metodu agregata `Publish`. Privatna metoda `CanPublish`, koja samo proverava ispunjenost pravila i koju `Publish` poziva, nije dostupna sposobnost ostatku sistema i krši prvi zahtev.
 
-private static Tour CreateTour(string description) =>
-    new(WellKnownUsers.Explorer, "Šetnja tvrđavom", description, TourDifficulty.Easy, ["istorija"]);
+Primer kršenja drugog zahteva vidimo kod infrastrukturnog servisa čiji zadatak je da dobavi podatke od drugog sistema putem HTTP zahteva (konektorska klasa). Samo čekanje HTTP odgovora može da potraje, a na to se dodaje čekanje za formiranje HTTP zahteva i parsiranje odgovora.
 
-[Fact]
-public void Publish_requires_a_transport_time()
-{
-    var tour = CreateTour(LongDescription);
+Za kršenje trećeg zahteva možemo analizirati aplikacioni servis koji izvršava komande. Servis nudi metodu za ažuriranje agregata i za njegovo brisanje, gde svaka metoda ima povezani test. Ako bi oba testa radila sa istim agregatom, izvršavanje drugog testa pre prvog bi narušilo rad prvog testa, jer servis ne bi mogao da učita ciljani agregat. Prvi test bi pao (crveneo bi se), što treba da bude znak da je logika poremećena. Međutim, u ovom slučaju je to problem koji je nastao zbog međuzavisnosti između testova.
 
-    var publishing = () => tour.Publish();
+## Izraz provere
 
-    publishing.Should().Throw<DomainException>();
-}
-
-[Fact]
-public void Publish_rejects_a_short_description()
-{
-    var tour = CreateTour("Kratak opis.");
-    tour.AddTransportTime(TransportMode.Walking, 120);
-
-    var publishing = () => tour.Publish();
-
-    publishing.Should().Throw<DomainException>();
-}
-```
-
-U datom kodu treba uočiti sledeće:
-
-- Parametar fabričke metode je samo ono što je testovima bitno, opis ture. Autor, ime, težina i oznake su isti u svim testovima i sakriveni su u fabričkoj metodi.
-- Svaki test i dalje sadrži svoju pripremu, samo kraću. Čitalac iz poziva `CreateTour("Kratak opis.")` vidi da test radi sa kratkim opisom, bez gledanja u fabričku metodu.
-- Polje `LongDescription` je konstanta, ne stanje. Nijedan test ga ne menja, pa ne može da utiče na druge testove.
-- Akcija koja treba da izbaci izuzetak zapisuje se kao lambda izraz i dodeljuje promenljivoj. Provera zatim izvršava lambda izraz i proverava da li je izuzetak izbačen. Da je metoda pozvana neposredno, izuzetak bi oborio test pre provere.
-
-Konstruktor ostaje prihvatljiv za pripremu koju traži svaki test u klasi, poput pokretanja aplikacije kod integracionih testova. Tada priprema pripada osnovnoj klasi, što se razmatra u lekciji o integracionim testovima.
-
-## Ime testa
-
-Ime testa je rečenica koja opisuje ponašanje, sa podvlakama između reči. Ime u izveštaju čita neko ko test nije napisao, često nedeljama posle pisanja, kada test padne. Ime `Publish_ShortDescription_Throws` traži da čitalac zna kod da bi ga razumeo. Ime `Publish_rejects_a_short_description` razume svako ko poznaje domen tura.
-
-Imena iz klase `TourTests` pokazuju obrazac:
-
-```cs
-public void Creation_produces_a_draft()
-public void Constructor_rejects_a_blank_name(string name)
-public void AddTransportTime_rejects_a_duplicate_transport()
-public void Publish_rejects_an_already_published_tour()
-```
-
-U datom kodu treba uočiti sledeće:
-
-- Ime opisuje ishod ponašanja, ne mehanizam. Ime ne pominje `DomainException`, jer je vrsta izuzetka detalj koda, a odbijanje je ponašanje.
-- Ime ne sadrži reči poput `Returns`, `Should` ili `Test`. Te reči ne nose informaciju o domenu.
-- Ime počinje operacijom agregata na koju se ponašanje odnosi, a kada je to kreiranje kroz konstruktor, rečju `Creation` ili `Constructor`. Tako se testovi jednog agregata u izveštaju grupišu po operaciji.
-
-## Parametrizovani test
-
-**Parametrizovani test** (engl. *parameterized test*) je test metoda označena atributom `[Theory]` koja se izvršava jednom za svaki skup ulaznih vrednosti naveden atributom `[InlineData]`. Bez njega bi test za praznu nisku i test za nisku sa razmacima bili dve prepisane metode. Sledeći kod prikazuje parametrizovani test iz klase `TourTests`:
-
-```cs
-[Theory]
-[InlineData("")]
-[InlineData("   ")]
-public void Constructor_rejects_a_blank_description(string description)
-{
-    var creation = () => CreateTour(description);
-
-    creation.Should().Throw<DomainException>();
-}
-```
-
-U datom kodu treba uočiti sledeće:
-
-- Test okvir izvršava metodu dva puta, jednom za svaki `[InlineData]`, i svako izvršavanje prijavljuje kao zaseban test sa vrednošću parametra u imenu.
-- Ime testa je opštije nego kod običnog testa, jer mora da važi za sve skupove vrednosti. Zato se srećan put, tura sa ispravnim opisom, piše kao zaseban `[Fact]`, a ne kao još jedan red `[InlineData]`.
-
-## Provere
-
-Provera je naredba koja upoređuje dobijenu vrednost sa očekivanom i obara test ako se ne poklapaju. U projektu se provere pišu bibliotekom FluentAssertions. Provera počinje pozivom metode `Should()` nad vrednošću koja se proverava, a nastavlja se metodom koja iskazuje očekivanje:
+**Izraz provere** (engl. *assertion*) je naredba koja upoređuje dobijenu vrednost sa očekivanom i obara test ako se ne poklapaju. U projektu se provere pišu uz pomoć biblioteke `FluentAssertions`. Provera počinje pozivom metode `Should()` nad vrednošću koja se proverava, a nastavlja se metodom koja iskazuje očekivanje:
 
 ```cs
 tour.Status.Should().Be(TourStatus.Draft);
@@ -159,5 +97,24 @@ creation.Should().Throw<DomainException>();
 
 U datom kodu treba uočiti sledeće:
 
-- Provera se čita istim redom kao rečenica: vrednost, pa očekivanje. Zapis `Assert.Equal(TourStatus.Draft, tour.Status)` iskazuje isto, ali obrnutim redom.
+- Izraz provere se čita gotovo kao normalna rečenica. Za prvi primer to je "Status ture treba da bude draft".
 - Kada provera ne uspe, poruka o grešci navodi i očekivanu i dobijenu vrednost, pa se uzrok pada često vidi iz izveštaja, bez pokretanja testa u debageru.
+
+## Parametrizovani test
+
+**Parametrizovani test** (engl. *parameterized test*) je test metoda označena atributom `[Theory]` koja se izvršava više puta, gde se sa svakim izvršavanjem postavljaju druge vrednosti parametra. Skup ulaznih vrednosti za jedno izvršavanje se navodi atributom `[InlineData]`. Sledeći primer prikazuje test koji će se tri puta izvršiti:
+
+```cs
+[Theory]
+[InlineData("")]
+[InlineData("               ")]
+[InlineData("\n\n\n")]
+public void New_tour_requires_a_description(string description)
+{
+    var creation = () => new Tour(WellKnownUsers.Explorer, "Šetnja tvrđavom", description, TourDifficulty.Easy, ["istorija"]);
+
+    creation.Should().Throw<DomainException>();
+}
+```
+
+Za primer će test okvir izvršiti metodu jednom za svaki `[InlineData]`, gde prvo prosleđuje prazan string, pa string sa puno razmaka i na kraju string sa tri karaktera za nov red. Kada bi test imao više parametara, `[InlineData]` bi sadržalo više vrednosti, po jednu za svaki parametar.

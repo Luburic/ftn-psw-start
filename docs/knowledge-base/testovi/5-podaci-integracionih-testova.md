@@ -1,6 +1,6 @@
 # Podaci integracionih testova
 
-U prethodnoj lekciji test `Publish_publishes_a_complete_tour` šalje zahtev za objavu ture sa identifikatorom `TourSeed.PublishableRiverside.Id`. Ostaje pitanje odakle je ta tura u bazi, šta se sa njom dešava posle testa i zašto naredni test zatiče istu bazu kao prethodni. Baza je jedina zavisnost koju integracioni testovi dele, pa je ona i jedini put kojim jedan test može da pokvari drugi. Ova lekcija opisuje kako testovi modula dele jednu bazu, a ostaju nezavisni, i kako se početni podaci i provere pišu tako da ih rast modula ne obara.
+U prethodnoj lekciji test `Publishes` šalje zahtev za objavu ture sa identifikatorom `TourSeed.PublishableRiverside.Id`. Ostaje pitanje odakle je ta tura u bazi, šta se sa njom dešava posle testa i zašto naredni test zatiče istu bazu kao prethodni. Baza je jedina zavisnost koju integracioni testovi dele, pa je ona i jedini put kojim jedan test može da pokvari drugi. Ova lekcija opisuje kako testovi modula dele jednu bazu, a ostaju nezavisni, i kako se početni podaci i provere pišu tako da ih rast modula ne obara.
 
 ## Poznato stanje pre svakog testa
 
