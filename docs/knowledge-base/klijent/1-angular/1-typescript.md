@@ -18,7 +18,7 @@ export class TourList {
 }
 ```
 
-Čitalac koji poznaje JavaScript (JS) prepoznaje klasu, polja, metode, ključne reči `async` i `await`, kao i poziv funkcije `fetch`. Ipak, u klasi vidimo i novine: reči `private`, `protected` i `readonly` ispred polja i metoda, `: string` iza parametra, `: Promise<void>` iza liste parametara i `: TourDto[]` iza naziva polja. Tip `TourDto` definisaćemo u odeljku o interfejsima.
+Čitalac koji poznaje JavaScript (JS) prepoznaje klasu, polja, metode, ključne reči `async` i `await`, kao i poziv funkcije `fetch`. Ipak, u klasi vidimo i novine: reči `private`, `protected` i `readonly` ispred polja i metoda, `: string` iza parametra, `: Promise<void>` iza liste parametara i `: TourDto[]` iza naziva polja.
 
 TS je jezik koji proširuje JS, prvenstveno tipovima. Svaki ispravno napisan JS kod sintaksno je ispravan i u TS-u, ali TS dodatno proverava da li se tipovi vrednosti poklapaju. Internet čitač (engl. *browser*) razume samo JS, pa se TS kod pre izvršavanja prevodi u JS. Alat koji to radi zovemo **prevodilac** (engl. *compiler*). Prevodilac najpre proverava tipove i prijavljuje greške, a zatim iz koda uklanja sve što je specifično za TS, kao što su anotacije, interfejsi i modifikatori. Internet čitač na kraju dobija običan JS.
 
@@ -51,34 +51,101 @@ Zato polje `apiUrl` iz uvodnog primera nema anotaciju, jer prevodilac iz vrednos
 
 ## Interfejs
 
-TS **interfejs** (engl. *interface*) opisuje oblik objekta, tj. koja polja objekat mora da sadrži i kog su tipa. Interfejse najčešće koristimo za model podataka na klijentskom delu veb aplikacije, koji odgovara podacima koji stižu sa servera. Takav model obično nazivamo **DTO** (engl. *Data Transfer Object*), otuda i naziv `TourDto`.
+TS **interfejs** (engl. *interface*) opisuje oblik objekta, tj. koja polja objekat mora
+da sadrži i kog su tipa. Interfejse najčešće koristimo za model podataka na klijentskom
+delu veb aplikacije, koji odgovara podacima koji stižu sa servera. Takav model obično
+nazivamo **DTO** (engl. *Data Transfer Object*), otuda i naziv `TourDto`.
 
-Sledi interfejs koji opisuje turu i jedan objekat koji mu odgovara:
+Pre samog interfejsa, uvodimo još jedan alat. Kada tip treba da bude „jedna od nekoliko
+tačno određenih tekstualnih vrednosti“, koristimo **imenovanu uniju literala** i dajemo
+joj naziv ključnom rečju `type`. Tako u projektu, umesto običnog `string`, težina ture
+ima svoj tip:
 
 ```ts
-export interface TourDto {
-  id: string;
-  name: string;
-  description: string;
-  difficulty: string;
-  tags: string[];
-  publishedAt?: string;
+export type TourDifficulty = 'Easy' | 'Moderate' | 'Hard';
+export type TourStatus = 'Draft' | 'Published';
+export type TransportMode = 'Walking' | 'Bicycle' | 'Car';
+```
+
+Vrednost tipa `TourDifficulty` može biti samo `'Easy'`, `'Moderate'` ili `'Hard'`,
+svaki drugi tekst prevodilac odbija. Time tip precizno opisuje šta je dozvoljeno, pa
+grešku hvatamo pri prevođenju, a ne u izvršavanju.
+
+Sledi interfejs koji opisuje turu, tačno onako kako je definisan u projektu (datoteka
+`modules/exploration/api/exploration-api-types.ts`):
+
+```ts
+export interface TransportTimeDto {
+  transport: TransportMode;
+  minutes: number;
 }
 
+export interface TourDto {
+  id: string;
+  authorId: string;
+  name: string;
+  description: string;
+  difficulty: TourDifficulty;
+  tags: string[];
+  status: TourStatus;
+  publishedAt: string | null;
+  transportTimes: TransportTimeDto[];
+}
+```
+
+Jedan objekat koji odgovara ovom interfejsu:
+
+```ts
 const tour: TourDto = {
   id: 't-1',
+  authorId: 'u-42',
   name: 'Fruška gora',
   description: 'Planinarenje do manastira.',
   difficulty: 'Hard',
   tags: ['priroda', 'šetnja'],
+  status: 'Draft',
+  publishedAt: null,
+  transportTimes: [],
 };
 ```
 
 U datom kodu treba uočiti sledeće:
-- Znak `?` iza naziva polja označava **opciono polje**, koje objekat ne mora da sadrži. Objekat `tour` nema polje `publishedAt` i to je dozvoljeno. Ako izostavimo polje koje nije opciono, npr. `difficulty`, prevodilac prijavljuje grešku. Isto važi i ako navedemo polje koje interfejs ne poznaje.
-- Ključna reč `export` omogućava da se interfejs koristi i u drugim datotekama.
 
-Interfejs može da opiše i metodu. Sledeći interfejs zahteva da objekat ima metodu `greet`, koja prima tekst i vraća tekst:
+- Polje `difficulty` nije običan `string`, već `TourDifficulty`, pa je `'Hard'` ispravna
+  vrednost, dok bi `'Teško'` bila greška. Isto važi za `status`.
+- Polje `transportTimes` je niz ugneždenih objekata tipa `TransportTimeDto`. Interfejs
+  tako može da opiše i objekat sastavljen od drugih objekata.
+- Sva navedena polja su obavezna. Ako izostavimo neko od njih, npr. `difficulty`,
+  prevodilac prijavljuje grešku. Isto važi i ako navedemo polje koje interfejs ne
+  poznaje.
+- Polje `publishedAt` je tipa `string | null` (tekst ili `null`), pa mora biti navedeno,
+  ali sme imati vrednost `null`. Tura koja još nije objavljena ima `publishedAt: null`.
+- Ključna reč `export` omogućava da se interfejs (i tip) koristi i u drugim datotekama.
+
+### Opciono polje
+
+Postoji i način da polje bude potpuno neobavezno. Znak `?` iza naziva polja označava
+**opciono polje**, koje objekat ne mora da sadrži:
+
+```ts
+interface Draft {
+  title: string;
+  note?: string;   // objekat ovo polje ne mora da ima
+}
+
+const d: Draft = { title: 'Bez beleške' };   // ispravno
+```
+
+Opciono polje `note?: string` zapravo je tipa `string | undefined`, o čemu više govorimo
+u narednom odeljku.
+
+> **Napomena o projektu:** U našim DTO-ima odsustvo vrednosti se **ne** modeluje znakom
+> `?`, već unijom sa `null` (npr. `publishedAt: string | null`). Razlog je što DTO
+> preslikava tačno ono što server šalje: server uvek pošalje polje `publishedAt`, samo
+> mu vrednost može biti `null`. Zato u DTO-ima projekta znak `?` gotovo i ne viđamo.
+
+Interfejs može da opiše i metodu. Sledeći interfejs zahteva da objekat ima metodu
+`greet`, koja prima tekst i vraća tekst:
 
 ```ts
 interface Person {
@@ -96,9 +163,18 @@ const pera: Person = {
 };
 ```
 
-Zapis `(prefix: string) => string` je tip funkcije: levo od strelice su parametri, a desno povratni tip. Parametar `prefix` u objektu `pera` nema anotaciju, jer prevodilac njegov tip zaključuje iz interfejsa.
+Zapis `(prefix: string) => string` je tip funkcije: levo od strelice su parametri, a
+desno povratni tip. Parametar `prefix` u objektu `pera` nema anotaciju, jer prevodilac
+njegov tip zaključuje iz interfejsa.
 
-> **Važno:** Interfejs postoji samo za prevodioca i pri prevođenju u JS potpuno nestaje. Zato TS ne može da proveri da li server zaista šalje podatke koji odgovaraju interfejsu `TourDto`. Kada odgovor servera označimo kao `TourDto`, prevodilac tu tvrdnju prihvata kao tačnu. Ako se model na klijentu razlikuje od onoga što server šalje, greška se ne vidi pri prevođenju, već tek kada se aplikacija izvršava. Zato interfejse treba održavati usklađenim sa podacima koje server zaista vraća.
+> **Važno:** Interfejs postoji samo za prevodioca i pri prevođenju u JS potpuno nestaje.
+> Zato TS ne može da proveri da li server zaista šalje podatke koji odgovaraju interfejsu
+> `TourDto`. Kada odgovor servera označimo kao `TourDto`, prevodilac tu tvrdnju prihvata
+> kao tačnu. Ako se model na klijentu razlikuje od onoga što server šalje, greška se ne
+> vidi pri prevođenju, već tek kada se aplikacija izvršava. Zbog toga u projektu važi
+> pravilo da DTO tipovi preslikavaju serverske podatke jedan na jedan i da se moraju
+> menjati istovremeno kada se promeni server.
+
 
 ## Nepostojeća vrednost
 
