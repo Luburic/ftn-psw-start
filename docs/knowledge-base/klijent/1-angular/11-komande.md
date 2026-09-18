@@ -30,7 +30,7 @@ Pogledajmo šta radi svaki od ova dva dela.
 
 **Prvi deo opisuje zahtev.** Metoda `post` prima adresu i telo zahteva. Telo sama pretvara u JSON i sama postavlja zaglavlje `Content-Type`, što smo kod `fetch` pisali ručno. Objavljivanje ne šalje nikakve podatke, pa je telo prazan objekat `{}`. Zapis `<void>` iza naziva metode kaže prevodiocu kakav odgovor očekujemo. Server na objavljivanje ne vraća nikakve podatke, pa je tip `void`. Da server vraća npr. novi blog, napisali bismo `post<BlogDto>`.
 
-Važno je da prvi deo **još ne šalje zahtev**. Metoda `post` ne vraća obećanje (engl. *promise*), kao `fetch`, već objekat tipa `Observable`. **Observable** je izvor vrednosti koje stižu kasnije, možda i više puta. Možemo ga zamisliti kao pripremljen zahtev koji čeka da ga neko pokrene. Naziv ne prevodimo. `Observable` je definisan u biblioteci **RxJS** (paket `rxjs`), koja se instalira uz svaki Angular projekat i koju Angular koristi u mnogim delovima radnog okvira.
+Važno je da prvi deo **još ne šalje zahtev**. Metoda `post` ne vraća obećanje (engl. *promise*), kao `fetch`, već objekat tipa `Observable`. **Observable** je izvor vrednosti koje stižu kasnije, možda i više puta. `Observable` je definisan u biblioteci **RxJS** (paket `rxjs`), koja se instalira uz svaki Angular projekat i koju Angular koristi u mnogim delovima radnog okvira.
 
 **Drugi deo pokreće zahtev.** Metoda `subscribe` pokreće zahtev i prima dve funkcije. Funkciju `next` izvršava kada stigne odgovor, a funkciju `error` kada zahtev ne uspe. Kažemo da se pozivom `subscribe` pretplaćujemo na `Observable`.
 
