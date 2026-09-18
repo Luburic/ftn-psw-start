@@ -1,10 +1,6 @@
-Prethodna lekcija je zaključila da aplikacioni servis, repozitorijum i API kontroler dobijaju mali broj integracionih testova koji prolaze kroz sve tri klase odjednom. Ostaje pitanje kako takav test izgleda, šta u njemu zaista radi, a šta je zamenjeno, i koje scenarije pokriva. Ova lekcija odgovara na ta tri pitanja i opisuje pomoćni kod koji platformski tim održava da bi integracioni test modula bio kratak.
+U prethodnoj lekciji smo zaključili da aplikacioni servis, repozitorijum i API kontroler dobijaju integracione testove, koji jednim zahtevom na krajnju tačku prolaze kroz sve tri klase odjednom. U drugoj lekciji smo videli jedan takav test, `AddTransportTime_stores_the_time_on_the_tour`, i pratili put HTTP zahteva kroz aplikaciju. Ostaju tri pitanja. Prvo pitanje je koje zavisnosti u takvom testu ostaju prave, a koje se zamenjuju. Drugo pitanje je koje scenarije jedne funkcionalnosti vredi pokriti integracionim testom kada su pravila domena već pokrivena jediničnim testovima. Treće pitanje je kako test dolazi do pokrenute aplikacije, prijavljenog korisnika i podataka u bazi kada ništa od toga nije opisano u samom testu.
 
-## Šta je integracioni test
-
-**Integracioni test** (engl. *integration test*) je automatski test koji ne ispunjava bar jedan uslov jediničnog testa: proverava ponašanje kroz više jedinica umesto kroz najmanju jedinicu koja ga nudi, obraća se bazi podataka ili drugom sistemu, ili nije nezavisan od drugih testova. U projektu integracioni test šalje HTTP zahtev pokrenutoj aplikaciji i proverava odgovor i stanje baze podataka.
-
-Jedinični test dokazuje pravilo agregata u izolaciji. Ništa ne dokazuje da je agregat učitan iz baze, da je izmena sačuvana i da je krajnja tačka izložila ispravan odgovor. Integracioni test prolazi kroz API kontroler, aplikacioni servis, agregat, EF Core i bazu, pa hvata greške na svakom spoju. Istovremeno je udaljen od koda, jer vidi samo HTTP zahtev i red u bazi, pa preživljava refaktorisanje bilo koje od tih klasa. Sledeći kod prikazuje test iz klase `TourAuthoringCommandTests` istog imena kao test iz prve lekcije:
+Sledeći kod prikazuje test `Publishes` iz klase `TourAuthoringCommandTests`, koji proverava isto ponašanje kao istoimeni jedinični test iz prve lekcije:
 
 ```cs
 [Fact]
@@ -24,26 +20,28 @@ public async Task Publishes()
 
 U datom kodu treba uočiti sledeće:
 
-- Test ima ista tri dela kao jedinični. Priprema pravi klijenta prijavljenog kao istraživač, akcija šalje jedan `POST` zahtev, provera čita odgovor i bazu.
-- Akcija ne poziva metodu, nego krajnju tačku. Zahtev prolazi kroz istu obradu kao zahtev iz klijentske aplikacije, uključujući proveru tokena i pretvaranje izuzetka u statusni kod.
-- Provera prvo gleda statusni kod, a zatim otvara kontekst i čita red ture iz baze. Odgovor `204 No Content` ne dokazuje da je izmena sačuvana, a red u bazi dokazuje.
-- Tura `PublishableRiverside` je unapred upisana u bazu sa dovoljno dugim opisom i vremenom transporta. Odakle dolazi i kako se baza vraća u isto stanje pre svakog testa razmatra naredna lekcija.
+- Jedinični test gradi turu kroz konstruktor i metodu `AddTransportTime`. Integracioni test turu ne gradi, već je zatiče u bazi kao instancu `TourSeed.PublishableRiverside`. Priprema se zato svodi na jedan red, u kom se pravi klijent prijavljen kao korisnik `WellKnownUsers.Explorer` sa ulogom `explorer`.
+- Akcija je jedan HTTP zahtev. Odgovor sa statusnim kodom 204 dokazuje da je zahtev prošao proveru identiteta, kontroler i servis bez izuzetka.
+- Provera ne staje na statusnom kodu, nego kroz `Factory.CreateContext` otvara kontekst modula i čita turu iz baze. Tek red u bazi dokazuje da je jedinica posla sačuvala izmenu.
+- Polje `Factory` dolazi iz osnovne klase koju test klasa nasleđuje, a `TourSeed` je statička klasa sa početnim podacima modula. Ostatak lekcije opisuje kako fabrika i početni podaci nastaju.
 
 ## Upravljane i neupravljane zavisnosti
 
-**Zavisnost van procesa** (engl. *out-of-process dependency*) je sistem sa kojim aplikacija komunicira, a koji nije deo njenog procesa. **Upravljana zavisnost** (engl. *managed dependency*) je zavisnost van procesa kojoj pristupa samo naša aplikacija, poput baze podataka. **Neupravljana zavisnost** (engl. *unmanaged dependency*) je zavisnost van procesa koju vide i drugi sistemi, poput servisa za slanje pošte ili platnog provajdera.
+**Zavisnost van procesa** (engl. *out-of-process dependency*) je sistem sa kojim aplikacija komunicira, a koji ne živi u njenom procesu. Drugi uslov jediničnog testa zabranjuje obraćanje takvoj zavisnosti, pa joj se obraćaju jedino integracioni testovi. Pitanje je da li test radi sa pravom zavisnošću ili je zamenjuje.
 
-Razlika određuje šta u integracionom testu zaista radi. Komunikacija sa upravljanom zavisnošću je detalj implementacije, jer niko van aplikacije ne zna kako su tabele organizovane, pa se one mogu promeniti bez posledica po druge sisteme. Zato test koristi pravu instancu i proverava krajnje stanje u njoj. Komunikacija sa neupravljanom zavisnošću je vidljiva spolja, jer su poslata poruka ili naplaćen iznos posledica koju drugi sistem vidi. Zato se takva zavisnost u testu zamenjuje objektom koji beleži pozive, a test proverava da je poziv upućen.
+**Upravljana zavisnost** (engl. *managed dependency*) je zavisnost van procesa kojoj pristupa samo naša aplikacija. Primer je baza podataka modula. Raspored njenih tabela je detalj implementacije, jer ga niko van aplikacije ne vidi, pa se tabele mogu promeniti bez posledica po druge sisteme. Iz istog razloga test sme da radi sa pravom bazom i da proverava stanje u njoj, kao što test `Publishes` čita red ture.
 
-Svaki modul projekta danas ima jednu zavisnost van procesa, bazu podataka, i ona je upravljana. Testovi zato rade sa pravim PostgreSQL serverom. Zamena pravog servera bazom u memoriji bi test učinila bržim, ali bi test dokazivao ponašanje sistema koji aplikacija ne koristi. Modul Payment će dobiti prvu neupravljanu zavisnost, platnog provajdera, i tada će mu biti potreban objekat koji provajdera zamenjuje u testu.
+**Neupravljana zavisnost** (engl. *unmanaged dependency*) je zavisnost van procesa koju vide i drugi sistemi. Primer je servis za slanje elektronske pošte ili platni provajder. Poslata poruka ili naplaćen iznos su posledice koje drugi sistem vidi, pa test ne sme da ih izazove. Takva zavisnost se u testu zamenjuje objektom koji beleži pozive, a test proverava da li je poziv upućen sa očekivanim podacima.
 
-## Šta integracioni test pokriva
+Svaki modul projekta danas ima jednu zavisnost van procesa, bazu podataka, i ona je upravljana. Testovi zato rade sa pravim PostgreSQL serverom. Kada bi se pravi server zamenio bazom u memoriji, test bi bio brži, ali bi tada dokazivao ponašanje sistema koji aplikacija ne koristi.
 
-Integracioni test je sporiji i duži od jediničnog, pa se ne piše za svako pravilo agregata. Pravila su već pokrivena jediničnim testovima. Integracioni testovi jedne komande pokrivaju tri vrste scenarija, a testovi jednog upita dve.
+## Scenariji koje integracioni test pokriva
 
-Prva vrsta je **srećan put** (engl. *happy path*), najduži uspešan scenario, koji prolazi kroz sve slojeve i završava upisom u bazu. Za komandu kreiranja ture to je test `Create_stores_a_draft_tour`, koji šalje ispravan zahtev, proverava vraćeni DTO i čita upisanu turu.
+Integracioni test se ne piše za svako pravilo agregata, jer su pravila već pokrivena jediničnim testovima. Integracioni testovi jedne komande pokrivaju tri vrste scenarija, a testovi jednog upita dve.
 
-Druga vrsta su **rubni slučajevi van domena**, ishodi koje jedinični test agregata ne može da dosegne, jer nastaju u API kontroleru i obradi zahteva pre nego što se agregat uopšte pozove. Sledeći kod prikazuje tri takva testa iz klase `TourAuthoringCommandTests`:
+Prva vrsta je **uspešan scenario** (engl. *happy path*), tok u kome zahtev prolazi kroz sve slojeve i završava upisom u bazu. Za komandu kreiranja ture to je test `Create_stores_a_draft_tour`, koji šalje ispravan zahtev, proverava vraćenu DTO strukturu i čita upisanu turu iz baze. Za komandu objave to je test `Publishes`.
+
+Drugu vrstu čine **odbijanja van domena**, ishodi koje jedinični test agregata ne može da dosegne, jer nastaju u obradi zahteva pre nego što se agregat uopšte pozove. Sledeći kod prikazuje tri takva testa iz klase `TourAuthoringCommandTests`:
 
 ```cs
 [Fact]
@@ -83,22 +81,21 @@ public async Task Publish_rejects_another_authors_tour()
 
 U datom kodu treba uočiti sledeće:
 
-- Prvi test koristi klijenta bez tokena i očekuje `401 Unauthorized`. Zahtev ne stiže do API kontrolera, pa jedinični test ovo ne može da proveri.
-- Drugi test koristi klijenta sa ulogom administratora i očekuje `403 Forbidden`. Atribut `[Authorize(Roles = "explorer")]` na API kontroleru odbija zahtev pre akcije.
-- Treći test koristi klijenta prijavljenog kao nasumičan korisnik i očekuje `404 Not Found`, jer servis turu drugog autora ne pronalazi. Provera zatim čita bazu i potvrđuje da je tura ostala u statusu nacrta, jer odbijena komanda ne sme da ostavi trag.
-- Svaki scenario je zaseban test sa jednom akcijom, kao i kod jediničnih testova.
+- Prvi test koristi polje `Client`, klijenta bez tokena, i očekuje odgovor sa statusnim kodom 401. Middleware za proveru identiteta odbija zahtev pre nego što on stigne do kontrolera.
+- Drugi test koristi klijenta prijavljenog sa ulogom `administrator` i očekuje statusni kod 403. Atribut `[Authorize(Roles = "explorer")]` na kontroleru odbija zahtev čija uloga iz tokena nije `explorer`, pre nego što pozove akciju kontrolera.
+- Treći test koristi klijenta prijavljenog kao nasumičan korisnik i očekuje statusni kod 404, jer servis tretira turu drugog autora kao nepostojeću. Provera zatim čita bazu i potvrđuje da je tura ostala u statusu nacrta, jer odbijena komanda ne sme da ostavi trag.
 
-Treća vrsta je **jedno odbijanje domena**, jedan test kojim se proverava da izuzetak iz agregata postaje odgovor `400 Bad Request` i da baza ostaje nepromenjena. Test `Create_rejects_a_blank_name` šalje zahtev sa praznim imenom, proverava statusni kod i proverava da li se broj tura promenio. Jedan takav test po komandi je dovoljan, jer se time proverava pretvaranje izuzetka u odgovor, a ne pravilo. Ostala pravila ostaju u klasi `TourTests`.
+Treća vrsta je **odbijanje domena**, test koji proverava da li izuzetak iz agregata postaje odgovor sa statusnim kodom 400 i da li baza ostaje nepromenjena. Test `Create_rejects_a_blank_name` šalje zahtev sa praznim imenom ture, a zatim proverava statusni kod i da li je broj tura u bazi ostao isti. Po komandi je dovoljan jedan takav test, jer on proverava pretvaranje izuzetka u odgovor, a ne pravilo. Ostala pravila proverava klasa `TourTests`.
 
-Testovi upita proveravaju dve stvari. **Članstvo i projekcija** znači da odgovor sadrži tačno očekivane redove, u obliku DTO strukture. **Straničenje** (engl. *paging*) znači da parametri strane i veličine strane vraćaju očekivani deo rezultata. Za upit objavljenih tura to su testovi `GetPublished_returns_only_published_tours` i `GetPublished_pages_the_results`. Test upita ne menja ništa, pa ne čita bazu posle akcije. Odgovor krajnje tačke je ono što se testira.
+Testovi upita pokrivaju dve vrste scenarija. Prva vrsta je **članstvo i projekcija**, gde se proverava da li odgovor sadrži tačno one redove koji se očekuju, i to u obliku DTO strukture. Druga vrsta je **straničenje** (engl. *paging*), gde se proverava da li upit za zadati redni broj i veličinu stranice vraća očekivani deo rezultata. Za upit objavljenih tura to su testovi `GetPublished_returns_only_published_tours` i `GetPublished_pages_the_results`. Upit ne menja stanje sistema, pa test upita ne čita bazu posle akcije. Proverava se jedino odgovor krajnje tačke.
 
 ## Pokretanje aplikacije u testu
 
-Klasa `WebApplicationFactory<Program>` iz biblioteke Microsoft.AspNetCore.Mvc.Testing pokreće celu aplikaciju u procesu testa. Njena metoda `CreateClient()` vraća `HttpClient` čiji zahtevi odlaze pravo u tako pokrenutu aplikaciju, bez mreže.
+Klasa `WebApplicationFactory<Program>` iz biblioteke Microsoft.AspNetCore.Mvc.Testing pokreće celu aplikaciju unutar procesa testa. Njena metoda `CreateClient` vraća `HttpClient` koji zahteve šalje neposredno toj aplikaciji, bez mrežne veze.
 
-Pokretanje aplikacije traje sekunde, pa se ne ponavlja za svaki test. **Deljeni objekat** (engl. *fixture*) je objekat koji test okvir pravi jednom i prosleđuje većem broju testova. **Kolekcija** je imenovana grupa test klasa koje dele jedan deljeni objekat i izvršavaju se jedna za drugom, a ne uporedo. Kolekcija je jedinica paralelizma u test okviru xUnit, pa test klase iz različitih kolekcija test okvir sme da izvršava uporedo.
+Pokretanje aplikacije traje sekunde, pa se ne ponavlja za svaki test. **Deljeni objekat** (engl. *fixture*) je objekat koji test okvir pravi jednom i prosleđuje većem broju testova. Test okvir mora da zna koje test klase dele isti objekat, jer njih ne sme da izvršava uporedo nad istom bazom. **Kolekcija** (engl. *collection*) je imenovana grupa test klasa koje dele isti deljeni objekat. Test klase iz iste kolekcije se izvršavaju jedna za drugom, a test okvir sme uporedo da izvršava test klase iz različitih kolekcija.
 
-Klasa `ExplorerApiFactory` iz projekta `Shared.Tests` nasleđuje `WebApplicationFactory<Program>` i dodaje upravljanje testnom bazom. Svaki modul je nasleđuje jednom praznom klasom i povezuje sa kolekcijom u datoteci `BaseIntegrationTest.cs`:
+Klasa `ExplorerApiFactory` iz projekta `Shared.Tests` nasleđuje `WebApplicationFactory<Program>` i dodaje testnu bazu i prijavljenog korisnika. Svaki modul je nasleđuje jednom praznom klasom i povezuje sa kolekcijom u datoteci `BaseIntegrationTest.cs`:
 
 ```cs
 public sealed class ExplorationApiFactory : ExplorerApiFactory;
@@ -128,15 +125,16 @@ public abstract class BaseIntegrationTest
 
 U datom kodu treba uočiti sledeće:
 
-- Prazna klasa `ExplorationApiFactory` postoji da bi fabrika znala kom modulu pripada. Fabrika iz imena test projekta izvodi ime baze, `explorer-test-exploration`, pa svaki modul ima svoju testnu bazu i moduli ne ometaju jedni druge.
-- Fabrika pri prvom pokretanju briše tu bazu i pravi je iznova, a migracije se primenjuju kada se aplikacija pokrene. Struktura baze se tako postavlja jednom po pokretanju testova. Podrazumevani pristupni podaci se menjaju promenljivom okruženja `EXPLORER_TEST_DATABASE`.
-- Klasa `IntegrationCollection` definiše kolekciju `Integration` i deklariše da njen deljeni objekat ima tip `ExplorationApiFactory`. Test okvir fabriku pravi jednom za ceo test projekat.
-- Atribut `[Collection("Integration")]` na osnovnoj klasi uvodi u tu kolekciju svaku test klasu koja je nasleđuje. Konstruktor osnovne klase prima deljeni objekat, jer test okvir konstruktoru test klase prosleđuje deljene objekte njene kolekcije.
-- Konstruktor osnovne klase je mesto za pripremu koju traži svaki test. Poziv `Reseed` vraća bazu u početno stanje i razmatra se u narednoj lekciji.
+- Prazna klasa `ExplorationApiFactory` postoji da bi fabrika znala kom modulu pripada. Fabrika iz imena test projekta izvodi ime testne baze, `explorer-test-exploration`, pa svaki modul ima svoju bazu i moduli ne ometaju jedni druge. Podrazumevani podaci za konekciju se menjaju promenljivom okruženja `EXPLORER_TEST_DATABASE`.
+- Kada nastane, fabrika briše tu bazu i pravi je iznova, a migracije modula se primenjuju kada se aplikacija pokrene.
+- Klasa `IntegrationCollection` definiše kolekciju `Integration` i deklariše da je njen deljeni objekat tipa `ExplorationApiFactory`. Test okvir pravi fabriku jednom, pre prve test klase iz kolekcije.
+- Atribut `[Collection("Integration")]` na osnovnoj klasi uvodi u kolekciju svaku test klasu koja je nasleđuje. Konstruktor prima fabriku, jer test okvir prosleđuje konstruktoru test klase deljeni objekat njene kolekcije.
+- Poziv `Reseed` vraća bazu u početno stanje pre svakog testa. Polje `Client` je klijent bez prijavljenog korisnika.
+- Polje `JsonOptions` ponavlja podešavanje servera po kom se enumeracije zapisuju kao stringovi, pa test sa istim podešavanjem čita odgovor.
 
 ## Prijavljeni korisnik u testu
 
-Većina krajnjih tačaka traži prijavljenog korisnika. Registracija kroz modul Identity bi svaki test vezala za tuđu funkcionalnost, pa bi greška u registraciji obarala testove tura. Umesto toga, fabrika sama izdaje token:
+Većina krajnjih tačaka traži prijavljenog korisnika. Kada bi se svaki test registrovao i prijavljivao kroz modul Identity, greška u registraciji obarala bi i testove tura. Zato fabrika sama izdaje token:
 
 ```cs
 var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
@@ -144,12 +142,12 @@ var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
 U datom kodu treba uočiti sledeće:
 
-- Metoda `CreateClientFor(userId, role)` vraća `HttpClient` koji uz svaki zahtev šalje token za zadatog korisnika i ulogu. Token je potpisan razvojnim ključem aplikacije, pa ga aplikacija prihvata kao pravi.
-- Klasa `WellKnownUsers` iz projekta `Shared.Tests` sadrži stalne identifikatore korisnika: `Administrator`, `Explorer` i `SecondExplorer`. Isti identifikatori se koriste u početnim podacima, pa test zna ko je autor koje ture.
-- Korisnik ne mora da postoji u bazi modula Identity, jer feature moduli korisnika poznaju samo kroz identifikator iz tokena. Krajnje tačke registracije i prijave testira jedino projekat `Identity.Tests`, jer su tamo one predmet testa.
+- Metoda `CreateClientFor` vraća `HttpClient` koji uz svaki zahtev šalje token za zadatog korisnika i ulogu. Fabrika potpisuje token istim ključem koji aplikacija koristi u razvojnom okruženju, pa ga middleware za proveru identiteta prihvata kao pravi.
+- Klasa `WellKnownUsers` iz projekta `Shared.Tests` sadrži stalne identifikatore tri korisnika: `Administrator`, `Explorer` i `SecondExplorer`. Isti identifikatori se koriste u početnim podacima, pa test zna ko je autor koje ture.
+- Korisnik ne mora da postoji u bazi modula Identity, jer feature moduli poznaju korisnika samo po identifikatoru iz tokena. Krajnje tačke registracije i prijave testira jedino projekat `Identity.Tests`, jer su one predmet testiranja samo u tom modulu.
 
-## Organizacija testova modula
+## Organizacija test projekta
 
-Test projekat modula, `<Ime>.Tests`, ima dva direktorijuma. Direktorijum `Unit/` sadrži testove agregata i domenskih servisa. Direktorijum `Integration/` sadrži datoteku `BaseIntegrationTest.cs`, direktorijum `Seeds/` sa početnim podacima i po jedan direktorijum za svaku grupu slučajeva korišćenja, sa istim imenom kao u aplikacionom sloju.
+Test projekat modula, `<Ime>.Tests`, ima dva direktorijuma. Direktorijum `Unit/` sadrži testove agregata i domenskih servisa. Direktorijum `Integration/` sadrži datoteku `BaseIntegrationTest.cs`, direktorijum `Seeds/` sa klasama početnih podataka i po jedan direktorijum za svaku grupu slučajeva korišćenja, sa istim imenom kao u aplikacionom sloju.
 
-Za svaki aplikacioni servis postoji jedna test klasa `<Grupa>CommandTests`, na primer `TourAuthoringCommandTests` za `TourAuthoringService`. Za svaku upitnu klasu postoji jedna test klasa `<Grupa>QueryTests`, na primer `TourBrowsingQueryTests` za `TourBrowsingQueries`. Integracioni testovi traže lokalno pokrenut PostgreSQL server. Komanda `dotnet test` se izvršava u sistemu kontinualne integracije pri svakoj izmeni na grani `main`.
+Za svaki aplikacioni servis postoji jedna test klasa `<Grupa>CommandTests`, na primer `TourAuthoringCommandTests` za `TourAuthoringService`. Za svaku upitnu klasu postoji jedna test klasa `<Grupa>QueryTests`, na primer `TourBrowsingQueryTests` za `TourBrowsingQueries`. Isti testovi se izvršavaju i u sistemu kontinualne integracije, pri svakom slanju izmena na granu `main` i pri svakom zahtevu za spajanje.
