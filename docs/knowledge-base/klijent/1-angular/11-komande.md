@@ -1,162 +1,213 @@
-Resurs iz prethodne lekcije čita podatke sa servera i ništa na njemu ne menja. Stranica sa turama korisnika ima i dugme za objavljivanje, a stranica za pravljenje ture šalje novu turu. Podela na komande i upite iz aplikacionog sloja servera važi i na klijentu: resurs je klijentska strana upita. Ovde upoznajemo kako klijent šalje komandu, kako reaguje na odgovor i kako prikazuje grešku koju server prijavi.
+Spisak tura iz lekcije o sastavljanju komponenti upisan je u klasu, a u pravoj aplikaciji ture stižu sa servera. Time dolazimo do petog problema iz lekcije o Angularu: razmene podataka sa serverom.
 
-## Slanje zahteva
+Sam zahtev nije teško poslati. Dovoljno je pozvati `fetch`, sačekati odgovor i pročitati JSON. Međutim, stranici je oko tog poziva potrebno još mnogo toga. Dok odgovor putuje, treba da prikaže da se podaci učitavaju. Ako server vrati grešku, treba da prikaže poruku umesto podataka. Kada se promeni podatak od kog zahtev zavisi, na primer identifikator ture u adresi, treba da pošalje nov zahtev. Na kraju, prevodilac mora da zna tip odgovora, da bi šablon mogao da koristi njegova svojstva.
 
-Komandu šaljemo klasom `HttpClient`, koju servis preuzima od kontejnera zavisnosti. Najlakše je razumeti je poređenjem sa funkcijom `fetch`, koju već poznajemo. Sledeći kod objavljuje blog pomoću `fetch`:
+U React-u se sve to piše ručno: `fetch` se poziva unutar `useEffect`, a podaci, učitavanje i greška čuvaju se u tri odvojena `useState`. Angular sve to objedinjuje u jedan objekat, koji upoznajemo u ovoj lekciji.
+
+## Priprema za razmenu sa serverom
+
+Deo radnog okvira za razmenu podataka sa serverom, `HttpClient`, od Angulara 21 je podrazumevano dostupan i ne mora posebno da se uključuje. Poziv `provideHttpClient()` potreban je tek kada `HttpClient` želimo da podesimo, npr. da mu dodamo presretač koji uz svaki zahtev šalje token, što radimo u lekciji o prijavi. Konfiguracija projekta zato izgleda ovako:
 
 ```ts
-const response = await fetch(`/api/social/blogs/${id}/publish`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({}),
-});
-if (!response.ok) {
-  throw new Error('Request failed');
+providers: [
+  provideBrowserGlobalErrorListeners(),
+  provideRouter(routes, withComponentInputBinding()),
+  provideHttpClient(),
+],
+```
+
+Razvojni server na adresi `localhost:4200` isporučuje samo datoteke aplikacije, a serverska aplikacija sluša na adresi `localhost:5000`. Datoteka `proxy.conf.json` iz projekta razvojnom serveru nalaže da svaki zahtev čija adresa počinje sa `/api` prosledi serverskoj aplikaciji:
+
+```json
+{
+  "/api": {
+    "target": "http://localhost:5000"
+  }
 }
 ```
 
-Isti zahtev pomoću `HttpClient` izgleda ovako:
-
-```ts
-const request = this.http.post<void>(`/api/social/blogs/${id}/publish`, {});
-
-request.subscribe({
-  next: () => console.log('Blog je objavljen.'),
-  error: (failure) => console.error(failure),
-});
-```
-
-Pogledajmo šta radi svaki od ova dva dela.
-
-**Prvi deo opisuje zahtev.** Metoda `post` prima adresu i telo zahteva. Telo sama pretvara u JSON i sama postavlja zaglavlje `Content-Type`, što smo kod `fetch` pisali ručno. Objavljivanje ne šalje nikakve podatke, pa je telo prazan objekat `{}`. Zapis `<void>` iza naziva metode kaže prevodiocu kakav odgovor očekujemo. Server na objavljivanje ne vraća nikakve podatke, pa je tip `void`. Da server vraća npr. novi blog, napisali bismo `post<BlogDto>`.
-
-Važno je da prvi deo **još ne šalje zahtev**. Metoda `post` ne vraća obećanje (engl. *promise*), kao `fetch`, već objekat tipa `Observable`. **Observable** je izvor vrednosti koje stižu kasnije, možda i više puta. `Observable` je definisan u biblioteci **RxJS** (paket `rxjs`), koja se instalira uz svaki Angular projekat i koju Angular koristi u mnogim delovima radnog okvira.
-
-**Drugi deo pokreće zahtev.** Metoda `subscribe` pokreće zahtev i prima dve funkcije. Funkciju `next` izvršava kada stigne odgovor, a funkciju `error` kada zahtev ne uspe. Kažemo da se pozivom `subscribe` pretplaćujemo na `Observable`.
-
-U projektu se ta dva dela pišu kao jedan izraz:
-
-```ts
-this.http.post<void>(`${BASE_URL}/${id}/publish`, {}).subscribe({
-  next: () => { /* uspeh */ },
-  error: (failure) => { /* greška */ },
-});
-```
-
 U datom kodu treba uočiti sledeće:
-- Poziv `this.http.post(...)` bez `subscribe` ne prijavljuje nikakvu grešku, ali zahtev nikada ne ode na server, jer ga niko nije pokrenuo.
-- Kod `fetch` smo morali sami da proverimo `response.ok`, jer `fetch` odgovor sa greškom, npr. statusnim kodom 400, smatra uspešnim. `HttpClient` to radi umesto nas: kada server vrati statusni kod greške, izvršava se funkcija `error`, a ne `next`. Objekat greške nosi i telo odgovora, pa iz njega možemo da pročitamo poruku servera, kao što pokazuje odeljak o grešci servera.
-- Na HTTP zahtev stiže tačno jedan odgovor, pa se `Observable` iz `HttpClient` nakon njega sam završava. Pretplatu zato ne moramo ručno da prekidamo.
+- Datoteka je povezana sa razvojnim serverom kroz opciju `proxyConfig` u datoteci `angular.json`, pa je `ng serve` čita pri svakom pokretanju.
+- Zbog prosleđivanja svaka adresa u klijentskom kodu počinje sa `/api` i ne sadrži naziv servera. Prosleđivanje postoji samo u razvoju. U produkciji isti posao radi server na kom je aplikacija objavljena.
 
-## Servis sa komandama
+## Resurs
 
-Komande ne pišemo u stranici, već u servisu, pa ih svaka stranica za pisanje blogova poziva na isti način. Sledeći kod prikazuje, iz projekta, ceo taj servis:
+**Resurs** (engl. *resource*) je objekat koji šalje HTTP zahtev na zadatu adresu, a odgovor, stanje učitavanja i grešku izlaže kao signale. Pravi ga poziv `httpResource`.
+
+Adrese servera ne pišemo po komponentama, već ih držimo u servisu. Tako su sve adrese jednog modula na jednom mestu, a komponenta ne zna ništa o HTTP-u, već samo traži podatke od servisa. Sledeći kod prikazuje, iz projekta, servis koji čita ture, za sada sa jednom metodom, i tip u kom server vraća spisak:
 
 ```ts
-import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+export interface PageResult<T> {
+  items: T[];
+  totalCount: number;
+}
+```
 
-const BASE_URL = '/api/social/blogs';
+```ts
+import { Injectable } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+
+const BASE_URL = '/api/exploration/tours';
 
 @Injectable({ providedIn: 'root' })
-export class BlogAuthoring {
-  private readonly http = inject(HttpClient);
-
-  create(dto: CreateBlogDto): Observable<BlogDto> {
-    return this.http.post<BlogDto>(BASE_URL, dto);
-  }
-
-  publish(id: string): Observable<void> {
-    return this.http.post<void>(`${BASE_URL}/${id}/publish`, {});
+export class TourQueries {
+  published() {
+    return httpResource<PageResult<TourDto>>(() => `${BASE_URL}/published?page=1&pageSize=20`);
   }
 }
 ```
 
-U datom kodu treba uočiti sledeće:
-- Konstanta `BASE_URL` drži zajednički početak adrese, a svaka metoda na njega nadovezuje svoj deo. Ovo je klijentski pandan atributu `[Route]` na kontroleru.
-- Svaka metoda je jedna komanda i sastoji se od jednog poziva. Metoda `create` šalje DTO strukturu `CreateBlogDto`, koja nosi podatke novog bloga, a odgovor će nositi `BlogDto` novog bloga.
-- Metode vraćaju `Observable` i same ne pozivaju `subscribe`. Servis dakle samo opisuje zahtev, a pokreće ga stranica, jer samo ona zna šta treba da uradi kada odgovor stigne.
-- Servis nema signal i ne zna ni za jedan resurs. Obradu odgovora prepušta stranici.
-
-## Greška servera
-
-Na serveru middleware za obradu grešaka pretvara izuzetak u odgovor sa statusnim kodom greške i telom koje u polju `title` nosi poruku izuzetka. Poruka je namenjena korisniku, na primer da tura bez ijednog vremena obilaska ne može da se objavi. Stranica zato prikazuje poruku koju je server poslao, a unapred upisanu poruku samo kada telo nema `title`, na primer kada zahtev nije stigao do servera. Sledeći kod prikazuje pomoćnu funkciju iz projekta koja to radi:
+Stranica sa spiskom objavljenih tura preuzima servis i od njega dobija resurs:
 
 ```ts
-import { HttpErrorResponse } from '@angular/common/http';
+import { Component, inject } from '@angular/core';
 
-export function serverMessage(error: unknown, fallback: string): string {
-  if (error instanceof HttpErrorResponse && typeof error.error?.title === 'string') {
-    return error.error.title;
-  }
-  return fallback;
-}
-```
+@Component({
+  selector: 'app-tour-list',
+  imports: [TourCard],
+  templateUrl: './tour-list.html',
+  styleUrl: './tour-list.scss',
+})
+export class TourList {
+  private readonly tourQueries = inject(TourQueries);
 
-U datom kodu treba uočiti sledeće:
-- Prvi parametar je tipa `unknown`, što znači bilo koja vrednost. Funkcija `error` iz poziva `subscribe` ne zna unapred šta je tačno pošlo naopako: zahtev je mogao da stigne do servera i vrati grešku, ali je mogao i da ne stigne uopšte.
-- Provera `instanceof HttpErrorResponse` sužava tip sa `unknown` na odgovor servera sa greškom, isto kao što provera `=== null` sužava tip u lekciji o TypeScript-u. Svojstvo `error` tog objekta je telo odgovora, pa `error.error.title` čita poruku servera.
-- Drugi parametar je poruka koju funkcija vraća u svakom drugom slučaju: kada greška nije odgovor servera ili kada telo nema polje `title`.
-- Funkcija je zajednička za sve module.
-
-## Stranica sa komandom
-
-Stranica mora da zna da komanda traje, da prikaže grešku ako komanda ne uspe i da nakon uspeha ponovo učita svoj resurs, jer se podaci na serveru razlikuju od prikazanih. Sledeći kod prikazuje, iz projekta, deo stranice sa blogovima korisnika koji objavljuje blog:
-
-```ts
-import { finalize } from 'rxjs';
-
-export class MyBlogs {
-  private readonly blogAuthoring = inject(BlogAuthoring);
-
-  protected readonly blogs = httpResource<BlogDto[]>(() => '/api/social/blogs/mine');
-  protected readonly pending = signal(false);
-  protected readonly error = signal<string | null>(null);
-
-  protected publish(id: string): void {
-    this.pending.set(true);
-    this.error.set(null);
-    this.blogAuthoring
-      .publish(id)
-      .pipe(finalize(() => this.pending.set(false)))
-      .subscribe({
-        next: () => this.blogs.reload(),
-        error: (failure) => this.error.set(serverMessage(failure, 'Could not publish the blog.')),
-      });
-  }
+  protected readonly tours = this.tourQueries.published();
 }
 ```
 
 ```html
-@if (error()) {
-  <p class="error">{{ error() }}</p>
-}
-
-@if (blogs.hasValue()) {
-  @for (blog of blogs.value(); track blog.id) {
-    <button type="button" [disabled]="pending()" (click)="publish(blog.id)">Publish</button>
+@if (tours.hasValue()) {
+  @for (tour of tours.value().items; track tour.id) {
+    <app-tour-card [tour]="tour" />
   }
 }
 ```
 
 U datom kodu treba uočiti sledeće:
-- Signal `pending` je tačan dok komanda traje. Sva dugmad su vezana za njega, pa korisnik ne može da pošalje drugu komandu dok prva traje. Zbog toga se onemogućavaju i dugmad blogova na koje korisnik nije kliknuo. To je namerno pojednostavljenje.
-- Metoda `pipe` dodaje na `Observable` **operatore**, funkcije iz biblioteke RxJS koje menjaju ili dopunjuju njegovo ponašanje. Operator `finalize` izvršava zadatu funkciju kada se zahtev završi, bez obzira na to da li je uspeo. Zato vraća `pending` na netačno i posle uspeha i posle greške.
-- Signal `error` drži poruku o grešci komande ili `null`, a `blogs.error()` grešku čitanja. Na početku svake komande se briše, da poruka od prethodnog pokušaja ne ostane na ekranu.
-- Funkcija `next` se izvršava tek kada server potvrdi komandu, pa tek tada poziva `reload`. Stranica ne menja niz sama, već ponovo čita spisak sa servera.
-- Kada zahtev ne uspe, izvršava se funkcija `error`, koja poruku servera upisuje u signal `error`.
-- Spisak se prikazuje samo kada `blogs.hasValue()` vraća tačno, kao u prethodnoj lekciji. Bez te provere bi čitanje `blogs.value()` bacilo grešku kada čitanje spiska ne uspe.
+- Metoda `published` ne šalje zahtev sama, već pravi i vraća resurs. Resurs šalje zahtev ubrzo nakon što nastane, bez ikakvog poziva iz klase.
+- Stranica poziva metodu `published` u inicijalizatoru polja, kao i `inject`. Zato resurs pripada stranici, iako je napravljen u servisu. Kada korisnik napusti stranicu i Angular je uništi, uništava se i resurs, a zahtev koji još putuje se prekida. Metodu zato ne pozivamo iz drugih metoda klase, npr. pri kliku.
+- Polje `tourQueries` je deklarisano pre polja `tours`, jer se inicijalizatori polja izvršavaju redom. Da je redosled obrnut, `this.tourQueries` bi u trenutku pravljenja resursa još bio `undefined`.
+- Resurs nije signal, pa se ne čita pozivom `tours()`. To je objekat koji u sebi drži više signala, kao što servis `Auth` drži signale `user` i `isLoggedIn`. Zato čitamo njegove delove, npr. `tours.value()`.
+- Parametar generičkog tipa, `PageResult<TourDto>`, je tip koji prevodilac dodeljuje odgovoru. Server spisak sa stranama vraća u strukturi `PageResult`, sa svojstvima `items` i `totalCount`, pa je tip `PageResult<TourDto>`, a ne `TourDto[]`. Interfejs `PageResult` je zajednički za sve module. To je generički tip koji sami deklarišemo, po istom obrascu kao funkcija `first<T>` iz lekcije o TypeScript-u.
+- Signal `value` drži odgovor. Pre nego što odgovor stigne, njegova vrednost je `undefined`, pa je tip signala `PageResult<TourDto> | undefined`.
+- Metoda `hasValue()` vraća tačno kada odgovor postoji. Unutar bloka `@if (tours.hasValue())` prevodilac zna da `value()` nije `undefined`, pa pišemo `tours.value().items`, bez `?.`. To je isto sužavanje tipa kao kod aliasa u lekciji o kontroli toka.
+- Ovaj šablon za sada ne prikazuje ništa dok se ture učitavaju ni kada server vrati grešku. Kako se ta stanja prikazuju, pokazuje odeljak o stanjima resursa.
 
-## Objavljivanje ture
-
-Povežimo pojmove u stranicu sa turama korisnika iz projekta, sada sa komandom za objavljivanje. Servis `TourAuthoring` ima isti oblik kao `BlogAuthoring`, sa adresom `/api/exploration/tours`, a projektni `TourDto` ima i svojstvo `status` tipa `'Draft' | 'Published'`. Pošto je tip unija tačno navedenih vrednosti, prevodilac prijavljuje grešku ako u šablonu napišemo npr. `tour.status === 'draft'`.
+Pretraga iz lekcije o kontroli toka ostaje ista, samo izvedeni signal sada čita ture iz resursa:
 
 ```ts
-import { Component, inject, signal } from '@angular/core';
+protected readonly visibleTours = computed(() => {
+  if (!this.tours.hasValue()) {
+    return [];
+  }
+  const name = this.nameFilter().toLowerCase();
+  return this.tours.value().items.filter((tour) => tour.name.toLowerCase().includes(name));
+});
+```
+
+Dok odgovor nije stigao, ili ako je server vratio grešku, izvedeni signal vraća prazan spisak. Kada odgovor stigne, vraća ture čiji naziv sadrži tekst iz polja za pretragu, bez obzira na velika i mala slova. Izvedeni signal zavisi i od resursa i od polja za pretragu, pa se preračunava i kada korisnik kuca i kada stigne odgovor servera.
+
+## Adresa kao funkcija signala
+
+Resursu ne predajemo samu adresu, već funkciju koja vraća adresu. Razlog je taj što adresa često zavisi od podatka koji se menja dok je stranica otvorena. Na primer, stranica jedne ture čita turu čiji je identifikator u adresi internet čitača, isto kao stranica bloga iz lekcije o ruteru. Servis `TourQueries` za to dobija metodu `byId`:
+
+```ts
+byId(id: Signal<string | null>) {
+  return httpResource<TourDto>(() => {
+    const value = id();
+    return value === null ? undefined : `${BASE_URL}/${value}`;
+  });
+}
+```
+
+```ts
+export class TourDetail {
+  readonly id = input.required<string>();
+
+  private readonly tourQueries = inject(TourQueries);
+
+  protected readonly tour = this.tourQueries.byId(this.id);
+}
+```
+
+Resurs izvršava funkciju adrese i pri tome pamti koje signale ona poziva. Ovde funkcija poziva signal `id`, pa resurs zna da adresa zavisi od njega. Kada se `id` promeni, resurs ponovo izvršava funkciju, dobija novu adresu i šalje nov zahtev. Ako prethodni zahtev još nije završen, prekida ga, jer njegov odgovor više nije potreban.
+
+Da smo resursu predali samo tekst adrese, adresa bi se izračunala jednom, u trenutku pravljenja resursa, i resurs ne bi saznao da se `id` kasnije promenio. Funkciju, sa druge strane, može ponovo da izvrši kad god zatreba.
+
+U datom kodu treba uočiti sledeće:
+- Stranica metodi `byId` predaje **sam signal** `this.id`, a ne njegovu vrednost `this.id()`. Samo tako funkcija adrese može da poziva signal i da resurs prati njegove promene. Da smo predali `this.id()`, metoda bi dobila samo tekst `'1'` i resurs nikada ne bi saznao da je korisnik otvorio drugu turu.
+- Kada korisnik otvori `/exploration/1`, ulaz `id` ima vrednost `'1'`, pa resurs šalje zahtev na `/api/exploration/tours/1`. Kada zatim otvori `/exploration/2`, Angular zadržava istu komponentu i u ulaz upisuje `'2'`. Resurs ponovo izvršava funkciju i šalje zahtev na `/api/exploration/tours/2`.
+- Tip odgovora je `TourDto`, a ne `PageResult<TourDto>`, jer server jednu turu vraća direktno, bez strukture za spisak sa stranama.
+- Funkcija adrese metode `published` ne poziva nijedan signal. Resurs tada nema od čega da zavisi, pa zahtev šalje samo jednom.
+
+Metoda `byId` prima signal tipa `string | null`, jer podatak od kog adresa zavisi ponekad još ne postoji. Na primer, stranica sa spiskom može da prikaže detalje ture tek kada je korisnik izabere:
+
+```ts
+protected readonly selectedTourId = signal<string | null>(null);
+protected readonly selectedTour = this.tourQueries.byId(this.selectedTourId);
+```
+
+Dok je `selectedTourId` jednak `null`, funkcija adrese vraća `undefined`, a resurs ne šalje zahtev. Čim korisnik izabere turu, funkcija vraća adresu i resurs šalje zahtev. Ulaz `id` sa stranice ture je tipa `string`, ali ga metoda i dalje prihvata, jer je svaki tekst ujedno i vrednost tipa `string | null`.
+
+## Stanja resursa
+
+Pored signala `value`, resurs izlaže i signale `isLoading` i `error`. Šablon proverava stanja redom i za svako prikazuje drugi deo. Sledeći kod prikazuje, iz projekta, šablon spiska tura:
+
+```html
+@if (tours.hasValue()) {
+  @for (tour of tours.value().items; track tour.id) {
+    <app-tour-card [tour]="tour" />
+  } @empty {
+    <p>No tours yet.</p>
+  }
+} @else if (tours.error()) {
+  <p class="error">Could not load tours. Log in and try again.</p>
+} @else if (tours.isLoading()) {
+  <p>Loading tours...</p>
+}
+```
+
+U datom kodu treba uočiti sledeće:
+- Grana sa spiskom je prva i čuva je `hasValue()`. Kada zahtev ne uspe, čitanje signala `value` baca grešku, a `hasValue()` tada vraća netačno. Zato `value()` čitamo samo unutar te grane.
+- Signal `error` drži grešku kada zahtev ne uspe, na primer kada server vrati odgovor sa statusnim kodom greške, a `undefined` u svakom drugom slučaju.
+- Signal `isLoading` je tačan dok zahtev putuje, i pri svakom ponovnom slanju.
+- Sva tri signala menja resurs, pa Angular ponovo proverava šablon pri svakoj promeni stanja. Klasa ništa ne prati.
+- Metoda `reload`, poziv `this.tours.reload()`, ponovo šalje zahtev na trenutnu adresu. Klasa je poziva nakon što sama promeni podatke na serveru.
+
+Resurs služi samo za čitanje podataka. Zahtevi koji menjaju podatke na serveru, poput pravljenja ili brisanja ture, šalju se direktno kroz `HttpClient`, iz posebnog servisa, što je tema naredne lekcije. Nakon takvog zahteva klasa poziva `reload`, da bi resurs pročitao nove podatke.
+
+## Moje ture
+
+Povežimo pojmove u stranicu sa turama prijavljenog korisnika iz modula Exploration u projektu, skraćenu na čitanje. Servis `TourQueries` dobija metodu `mine`, pa ceo servis izgleda ovako:
+
+```ts
+import { Injectable, Signal } from '@angular/core';
 import { httpResource } from '@angular/common/http';
+
+const BASE_URL = '/api/exploration/tours';
+
+@Injectable({ providedIn: 'root' })
+export class TourQueries {
+  published() {
+    return httpResource<PageResult<TourDto>>(() => `${BASE_URL}/published?page=1&pageSize=20`);
+  }
+
+  mine() {
+    return httpResource<TourDto[]>(() => `${BASE_URL}/mine`);
+  }
+
+  byId(id: Signal<string | null>) {
+    return httpResource<TourDto>(() => {
+      const value = id();
+      return value === null ? undefined : `${BASE_URL}/${value}`;
+    });
+  }
+}
+```
+
+```ts
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-my-tours',
@@ -165,30 +216,16 @@ import { finalize } from 'rxjs';
   styleUrl: './my-tours.scss',
 })
 export class MyTours {
-  private readonly tourAuthoring = inject(TourAuthoring);
+  private readonly tourQueries = inject(TourQueries);
 
-  protected readonly tours = httpResource<TourDto[]>(() => '/api/exploration/tours/mine');
-  protected readonly pending = signal(false);
-  protected readonly error = signal<string | null>(null);
-
-  protected publish(tourId: string): void {
-    this.pending.set(true);
-    this.error.set(null);
-    this.tourAuthoring
-      .publish(tourId)
-      .pipe(finalize(() => this.pending.set(false)))
-      .subscribe({
-        next: () => this.tours.reload(),
-        error: (failure) => this.error.set(serverMessage(failure, 'Could not publish the tour.')),
-      });
-  }
+  protected readonly tours = this.tourQueries.mine();
 }
 ```
 
 ```html
-@if (error()) {
-  <p class="error">{{ error() }}</p>
-}
+<h1>My tours</h1>
+
+<p><a routerLink="/exploration/create">Create tour</a></p>
 
 @if (tours.hasValue()) {
   <table>
@@ -196,16 +233,11 @@ export class MyTours {
       @for (tour of tours.value(); track tour.id) {
         <tr>
           <td>{{ tour.name }}</td>
-          <td>{{ tour.status }}</td>
-          <td>
-            @if (tour.status === 'Draft') {
-              <button type="button" [disabled]="pending()" (click)="publish(tour.id)">Publish</button>
-            }
-          </td>
+          <td>{{ tour.difficulty }}</td>
         </tr>
       } @empty {
         <tr>
-          <td colspan="3">You have no tours yet.</td>
+          <td colspan="2">You have no tours yet.</td>
         </tr>
       }
     </tbody>
@@ -217,11 +249,16 @@ export class MyTours {
 }
 ```
 
-Kada korisnik klikne na dugme za objavljivanje ture koja nema nijedno vreme obilaska, dešava se sledeće:
-1. Vezivanje događaja poziva `publish` sa identifikatorom ture. Signal `pending` postaje tačan i dugmad se onemogućavaju.
-2. Servis vraća opisan zahtev, a poziv `subscribe` ga šalje na adresu `/api/exploration/tours/<id>/publish`.
-3. Na serveru domenski sloj baca izuzetak, koji middleware pretvara u odgovor sa statusnim kodom 400 i porukom u polju `title`.
-4. Pošto je statusni kod greška, izvršava se funkcija `error`, a ne `next`, pa se `reload` ne poziva. Funkcija `error` čita poruku servera i upisuje je u signal `error`. Zatim operator `finalize` vraća `pending` na netačno.
-5. Šablon je čitalac oba signala, pa Angular ponovo proverava šablon. Iznad tabele se prikazuje poruka servera, a dugmad su ponovo dostupna.
+U datom kodu treba uočiti sledeće:
+- Konstanta `BASE_URL` drži zajednički početak adrese, a svaka metoda na njega nadovezuje svoj deo. Adrese modula Exploration tako su na jednom mestu.
+- Svaka metoda servisa pravi nov resurs. Dve stranice koje pozovu `mine()` dobijaju dva odvojena resursa, svaki vezan za svoju stranicu.
+- Stranica ne zna adresu `/api/exploration/tours/mine`. Zna samo da od servisa traži ture korisnika.
 
-Kada tura ima vreme obilaska, server vraća odgovor bez greške. Tada se u četvrtom koraku izvršava funkcija `next`, koja poziva `reload`. Resurs dok ponovo čita zadržava prethodni spisak, pa `hasValue()` ostaje tačno i tabela ostaje na ekranu. Kada odgovor stigne, status ture postaje `Published` i dugme nestaje.
+Kada korisnik otvori adresu `/exploration/mine`, dešava se sledeće:
+1. Angular pravi komponentu `MyTours` na mestu iscrtavanja. Inicijalizator polja `tourQueries` preuzima servis, a inicijalizator polja `tours` poziva metodu `mine`, koja pravi resurs.
+2. Ubrzo zatim resurs izvršava funkciju adrese i šalje zahtev na `/api/exploration/tours/mine`. Signal `isLoading` je tačan, a `hasValue()` netačno, pa se prikazuje poruka o učitavanju.
+3. Razvojni server prosleđuje zahtev serverskoj aplikaciji, jer adresa počinje sa `/api`.
+4. Odgovor stiže. Resurs upisuje niz tipa `TourDto[]` u `value`, a u `isLoading` netačno. Šablon je čitalac ovih signala, pa Angular ponovo proverava šablon.
+5. Sada `hasValue()` vraća tačno, pa se prikazuje tabela. Petlja ispisuje po jedan red za svaku turu, ili blok `@empty` kada korisnik nema tura.
+
+Da server umesto spiska vrati grešku, npr. zato što korisnik nije prijavljen, u koraku 4 resurs bi upisao grešku u `error`, `hasValue()` bi ostao netačan i prikazala bi se poruka o grešci.
