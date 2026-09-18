@@ -1,4 +1,12 @@
-U React-u ulogu komponente ima funkcija koja vraća JSX. Sledeći kod prikazuje jednu karticu u oba oblika:
+Klijentske veb aplikacije danas se najčešće grade od **komponenti** tj. samostalnih delova
+stranice od kojih se, kao od cigli, sklapa ceo prikaz. Dva najpoznatija alata za to su
+React i Angular, i oni komponentu shvataju različito.
+
+**React** je *biblioteka* (engl. *library*) za izgradnju korisničkog interfejsa. Rešava
+prvenstveno jedan problem, prikaz i njegovo osvežavanje, a sve ostalo (rute, komunikaciju
+sa serverom, strukturu projekta) programer bira i dodaje zasebnim bibliotekama. U React-u
+ulogu komponente ima **funkcija** koja vraća JSX, zapis u kome su podaci i prikaz na jednom
+mestu:
 
 ```jsx
 function TourCard() {
@@ -7,10 +15,16 @@ function TourCard() {
 }
 ```
 
+**Angular** je *radni okvir* (engl. *framework*) za izgradnju klijentskih veb aplikacija u
+jeziku TypeScript. Za razliku od biblioteke, on pokriva sve delove aplikacije (prikaz,
+rute, komunikaciju sa serverom) i uz to propisuje strukturu projekta. U Angular-u je
+komponenta **klasa** sa dekoratorom `@Component`, a prikaz stoji u zasebnom šablonu:
+
 ```ts
 @Component({
   selector: 'app-tour-card',
   templateUrl: './tour-card.html',
+  styleUrl: './tour-card.scss',
 })
 export class TourCard {
   protected readonly name = 'Stari grad';
@@ -21,14 +35,32 @@ export class TourCard {
 <h3>{{ name }}</h3>
 ```
 
-Razlika je u podeli. React drži podatke i prikaz u jednoj funkciji, a Angular ih razdvaja na klasu, koja drži podatke i logiku, i šablon, koji drži prikaz. Ovde upoznajemo kako šablon čita podatke iz klase i kako klasi javlja da je korisnik nešto uradio, a na kraju i jedno ograničenje na koje ćemo naići kada se podatak promeni sam od sebe.
+```scss
+h3 {
+  margin: 0;
+  color: #333;
+}
+```
+
+Razlika je u podeli. React drži podatke i prikaz u jednoj funkciji, a Angular ih razdvaja
+na klasu, koja drži podatke i logiku, i šablon, koji drži prikaz; stilovi stoje u trećoj
+datoteci. Ovde upoznajemo kako šablon čita podatke iz klase i kako klasi javlja da je
+korisnik nešto uradio, a na kraju i jedno ograničenje na koje ćemo naići kada se podatak
+promeni sam od sebe.
 
 Tri datoteke kartice stoje u istom direktorijumu:
+
 1. `tour-card.ts` sadrži klasu sa dekoratorom `@Component`.
 2. `tour-card.html` sadrži šablon, na koji dekorator upućuje podešavanjem `templateUrl`.
 3. `tour-card.scss` sadrži stilove, na koje dekorator upućuje podešavanjem `styleUrl`.
 
-Ove datoteke ne pravimo ručno, već komandom `ng generate component tour-card` (skraćeno `ng g c tour-card`). Komanda pravi direktorijum `src/app/tour-card/` sa sve tri datoteke, kao i datotekom `tour-card.spec.ts` u kojoj se piše test komponente.
+Ove datoteke ne pravimo ručno, već komandom `ng generate component tour-card` (skraćeno
+`ng g c tour-card`). Komanda pravi direktorijum `src/app/tour-card/` sa sve tri datoteke.
+
+> **Napomena o projektu:** Podrazumevano bi `ng generate component` napravio i datoteku
+> `tour-card.spec.ts` za test komponente. Pošto se testiranje na klijentu u ovom kursu ne
+> obrađuje, a početni projekat nema test-datoteke, komponente generišemo sa
+> `ng g c tour-card --skip-tests`.
 
 ## Interpolacija
 
