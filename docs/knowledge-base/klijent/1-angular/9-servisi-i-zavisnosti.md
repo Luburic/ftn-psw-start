@@ -165,8 +165,7 @@ U datom kodu treba uočiti sledeće:
 > stranica ih čita direktno sa servera, u samoj stranici, preko `httpResource` (lekcija o
 > komunikaciji sa serverom). Na primer, `BlogList` ima `blogs = httpResource(...)`, a
 > stranica bloga `detail = httpResource(() => '/api/social/blogs/' + id())`, koji se
-> ponovo dovlači kada se `id` iz rute promeni, pa reaktivnost na `id` opstaje, samo kroz
-> `httpResource`, a ne kroz servis. Pravilo je: **upiti žive u stranici (`httpResource`),
+> ponovo dovlači kada se `id` iz rute promeni. Pravilo je: **upiti žive u stranici (`httpResource`),
 > komande u servisu.** Podatke između modula ne spajamo na klijentu, već na serveru.
 
 ## Zaglavlje sa korisnikom
@@ -224,4 +223,3 @@ u zaglavlju, dešava se sledeće:
    `null`, i prikazuje se grana `@else` sa vezama za prijavu i registraciju.
 5. Šablon spiska blogova je čitalac signala `isLoggedIn` **istog objekta servisa**, pa
    Angular ponovo proverava i njega i uklanja vezu za pravljenje bloga.
-```
