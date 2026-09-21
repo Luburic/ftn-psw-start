@@ -119,9 +119,6 @@ U datom kodu treba uočiti sledeće:
   `router-outlet` nije poznat, a `routerLink` ostaje običan HTML atribut bez dejstva.
 - Element `router-outlet` je prazan. Kada se adresa promeni, Angular na tom mestu zamenjuje
   komponentu stare rute komponentom nove. Zaglavlje iznad ostaje netaknuto.
-- Adresa u vezi ovde počinje kosom crtom, jer je to cela adresa od korena. Deo adrese u
-  tabeli ruta je bez nje, jer se nadovezuje na ono što je ispred njega. Veze mogu biti i
-  relativne, u odnosu na trenutnu rutu, ali u projektu pišemo pune adrese.
 
 > **Napomena o projektu:** Prava korenska komponenta dodatno u zaglavlju prikazuje traku
 > sa navigacijom i podatak o prijavljenom korisniku (`inject(Auth)`); ovde je dajemo u
@@ -172,8 +169,7 @@ U datom kodu treba uočiti sledeće:
 - Parametar stiže u komponentu kao ulaz istog naziva. To omogućava
   `withComponentInputBinding` iz konfiguracije aplikacije. Nakon što izabere rutu, Angular
   svaki parametar rute upiše u ulaz komponente istog naziva, isto kao što roditelj upisuje
-  vrednost u ulaz deteta zapisom `[id]="..."`. Bez tog podešavanja Angular parametar ne
-  upisuje u ulaz.
+  vrednost u ulaz deteta zapisom `[id]="..."`.
 - Vrednost parametra je uvek tekst, jer dolazi iz adrese. Zato je ulaz tipa `string`.
 - Kada korisnik sa adrese `/social/1` otvori `/social/2`, ruta je ista i komponenta je
   ista, pa je Angular ne uništava. Zadržava postojeću komponentu i upisuje novu vrednost u
@@ -192,7 +188,7 @@ U datom kodu treba uočiti sledeće:
 > **Napomena o projektu:** Iz istog razloga se na kraj tabele aplikacije uobičajeno dodaje
 > ruta `{ path: '**', component: NotFound }`. Putanja `**` se poklapa sa svakom adresom, pa
 > se prikazuje tek kada nijedna ruta pre nje ne odgovara, npr. za stranicu „Stranica ne
-> postoji“. U našem početnom projektu ta ruta još ne postoji; navodimo je kao uobičajenu
+> postoji“. U našem početnom projektu ta ruta još ne postoji, navodimo je kao uobičajenu
 > praksu koju je lako dodati.
 
 ## Stranica bloga
