@@ -109,8 +109,7 @@ try {
 
 U datom kodu treba uočiti sledeće:
 
-- Metoda `navigate` prima niz istog oblika kao veza sa parametrom iz lekcije o ruteru.
-  Radni okvir od niza sastavlja adresu i dalje radi isto kao pri kliku na vezu.
+- Metoda `navigate` prima niz, radni okvir od niza sastavlja adresu i dalje radi isto kao pri kliku na vezu.
 - Poziv stoji iza `await` komande, pa se izvršava samo kada komanda uspe. Kada komanda ne
   uspe, izvršava se `catch` i korisnik ostaje na formi sa porukom o grešci.
 - Metoda `navigate` vraća obećanje, jer navigacija uključuje pravljenje komponente nove
