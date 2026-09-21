@@ -191,8 +191,7 @@ U datom kodu treba uočiti sledeće:
 - Signal `isLoading` je tačan dok zahtev putuje, i pri svakom ponovnom slanju.
 - Signal `error` drži grešku kada zahtev ne uspe, na primer kada server vrati odgovor sa
   statusnim kodom greške, a `undefined` u svakom drugom slučaju.
-- Sva tri signala menjaju resurs, pa Angular ponovo proverava šablon pri svakoj promeni
-  stanja. Klasa ništa ne prati.
+- Sva tri signala menja resurs, pa Angular ponovo proverava šablon pri svakoj promeni stanja.
 - Poziv `this.tours.reload()`, ponovo šalje zahtev na trenutnu adresu.
   Klasa je poziva nakon što sama promeni podatke na serveru.
 
@@ -266,6 +265,6 @@ Kada korisnik otvori adresu `/exploration/mine`, dešava se sledeće:
 4. Pošto `isLoading` i `error` sada nisu tačni, prikazuje se poslednja grana sa tabelom.
    Petlja ispisuje po jedan red za svaku turu, ili blok `@empty` kada korisnik nema tura.
 
-Da server umesto spiska vrati grešku, npr. zato što korisnik nije prijavljen, u koraku 4
+Da server umesto spiska vrati grešku, npr. zato što korisnik nije prijavljen, u koraku 3
 resurs bi upisao grešku u `error`, pa bi se prikazala druga grana sa porukom o grešci, a do
 čitanja `value` uopšte ne bi ni došlo.
