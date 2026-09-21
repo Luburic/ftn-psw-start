@@ -1,4 +1,3 @@
-# Forme sa signalima
 
 Stranica za pravljenje ture prikuplja naziv, opis, težinu i oznake, a komandu za pravljenje
 sme da pošalje tek kada su naziv i opis uneti.
@@ -23,7 +22,7 @@ objekat, bez slanja forme, koje dolazi u narednoj lekciji.
 
 Formu čine tri stvari: **model**, sama **forma** i njena **polja**.
 
-**Model** je signal koji drži vrednosti forme tj. po jedno svojstvo za svaki element za unos.
+**Model** je signal koji drži vrednosti forme tj. po jedno svojstvo svako.
 Za formu pravljenja ture to su `name`, `description`, `difficulty` i `tags`. Model je
 jedini izvor tih vrednosti: kada korisnik nešto otkuca, menja se upravo model.
 
@@ -81,25 +80,20 @@ U datom kodu treba uočiti sledeće:
 - Funkcije `form` i `required` i klasa `FormField` uvoze se iz `@angular/forms/signals`, a
   ne iz `@angular/forms`. Pogrešna putanja je najčešća prva greška sa formama.
 - Model je objekat koji predajemo funkciji `form`, ovde `signal({ name: '', ... })`. Njegov
-  oblik prevodilac zaključuje iz početnih vrednosti — poseban interfejs za model ne pišemo.
+  oblik prevodilac zaključuje iz početnih vrednosti, poseban interfejs za model ne pišemo.
 - Tip težine je `TourDifficulty` iz modula Exploration, unija tri teksta
   `'Easy' | 'Moderate' | 'Hard'`. Zapis `'Easy' as TourDifficulty` prevodiocu kaže da je
   početna vrednost baš te unije, a ne običan `string`; za npr. `'Lako'` prijavio bi grešku.
-- Forma nema sopstvenu kopiju vrednosti. Svaki unos korisnika upisuje se direktno u
-  signal-model, pa polje forme uvek vraća ono što je korisnik uneo.
+- Svaki unos korisnika upisuje se direktno u signal-model, pa polje forme uvek vraća ono što je korisnik uneo.
 - Šema prima `path`, objekat sa istim svojstvima kao model, kroz koji se pravilo vezuje za
   jedno polje forme. Poziv `required(path.name, ...)` polju `name` dodaje pravilo da
   vrednost ne sme da bude prazna. Drugi argument je poruka koju forma čuva uz grešku.
 - Pravila se proveravaju pri svakoj promeni modela. Polja bez pravila, `difficulty` i
   `tags`, uvek su ispravna.
 
-Polje forme nije isto što i polje klase. Polje klase je `form` iz klase `CreateTour`, a
-polja forme su njegovi delovi, `form.name`, `form.description` i ostali, po jedan za svako
-svojstvo modela.
-
 Model može da stoji i kao **zasebno polje klase**, kada nam treba i van poziva `form`
 (npr. da bismo formu vratili na početne vrednosti). Tako je u `MyTours`, u formi za
-dodavanje vremena obilaska. Jedno polje forme sme da ima i više pravila — `min` broju
+dodavanje vremena obilaska. Jedno polje forme sme da ima i više pravila npr. `min` broju
 dodaje najmanju dozvoljenu vrednost:
 
 ```ts
@@ -113,8 +107,6 @@ protected readonly form = form(this.model, (path) => {
 
 Ostala pravila pišu se na isti način: prvo polje forme, zatim argumenti pravila, ako ih ima, i na
 kraju poruka.
-
-## Četiri oblika zapisa
 
 Do vrednosti forme možemo doći na nekoliko načina, koje je lako pomešati. Forma i svako
 polje forme čitaju se pozivom, kao signal, pa se u klasi i šablonu pojavljuju u više
@@ -137,7 +129,7 @@ Stanje polja i stanje cele forme imaju signale koje čitamo pozivom. U projektu 
 4. `valid()` je tačno kada polje nema grešaka. Za celu formu, `form().valid()` je tačno
    kada nijedno polje nema grešaka.
 
-Vrednost jednog polja čitamo kao `this.form.name().value()`. Tako projekat i čita unos pri
+Vrednost jednog polja čitamo kao `this.form.name().value()`. Tako u projekto i čitamo unos pri
 slanju, polje po polje (`this.form.name().value()`, `this.form.description().value()`,
 …), a ne ceo model odjednom. Kada model stoji kao zasebno polje, kao u `MyTours`, njegova
 cela vrednost je dostupna i kao `this.model()`.
@@ -171,8 +163,7 @@ elementa za unos sa stranice za pravljenje ture:
 
 U datom kodu treba uočiti sledeće:
 
-- Ako `FormField` nije naveden u podešavanju `imports`, vezivanje `[formField]` ne radi, a
-  prevodilac ne prijavljuje grešku. Elementi se prikazuju, ali ništa što korisnik unese ne
+- Ako `FormField` nije naveden u podešavanju `imports`, vezivanje `[formField]` ne radi. Elementi se prikazuju, ali ništa što korisnik unese ne
   stiže u model.
 - Desna strana vezivanja je polje forme, `form.name`, bez zagrada. Angular upisuje vrednost
   polja u element, a pri svakom događaju `input` upisuje sadržaj elementa u model. Model je
