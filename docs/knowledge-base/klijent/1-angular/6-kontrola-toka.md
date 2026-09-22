@@ -73,7 +73,13 @@ U datom kodu treba uočiti sledeće:
 - Zapis `as tour` smešta vrednost signala `selectedTour` u promenljivu `tour`. Dalje u bloku čitamo `tour`, bez ponovnog pozivanja signala.
 - Promenljiva `tour` postoji samo unutar bloka `@if`, isto kao promenljiva petlje `@for`.
 
-> **Važno:** Uslov `@if` proverava istinitost vrednosti, a ne samo `null`. Blok se ne prikazuje ni kada je vrednost `undefined`, `0`, prazan tekst `''` ili `false`. Zato `@if (likes(); as count)` ne prikazuje ništa kada je broj sviđanja nula. U takvim slučajevima uslov pišemo eksplicitno, npr. `@if (likes() >= 0)`.
+> **Važno:** Uslov `@if` ne proverava da li vrednost postoji, već da li je *istinita* (engl. *truthy*), isto kao `if` u JavaScript-u. Neistinite su `null` i `undefined`, ali i `0`, prazan tekst `''` i `false`.
+>
+> Zato alias koristimo samo tamo gde „nema vrednosti" zaista znači `null`, kao kod izabrane ture. Za broj sviđanja bi bio zamka: `@if (likes(); as count)` ne bi prikazao ništa kada je broj nula, iako je nula vrednost koju želimo da vidimo. Takvu vrednost čitamo direktno, bez `@if`:
+>
+> ```html
+> <span>{{ likes() }}</span>
+> ```
 
 ## Referenca na element šablona
 
@@ -143,4 +149,4 @@ Kada korisnik unese slovo u polje za pretragu, dešava se sledeće:
 
 Klik na dugme „Obriši pretragu“ prolazi isti put: signal `nameFilter` dobija prazan tekst, polje za unos se prazni, a spisak ponovo prikazuje sve ture.
 
-Naredbe `@if` i `@for` čitaju signale isto kao interpolacija, pa su njihovi čitaoci. Grana i spisak se zato ponovo biraju čim se ti signali promene, bez ručnog osvežavanja prikaza.
+Naredbe `@if` i `@for` čitaju signale isto kao interpolacija, pa su njihovi čitaoci. Grana i spisak se zato ponovo biraju čim se ti signali promene.

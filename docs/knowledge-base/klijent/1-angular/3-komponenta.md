@@ -43,7 +43,7 @@ h3 {
 ```
 
 Razlika je u podeli. React drži podatke i prikaz u jednoj funkciji, a Angular ih razdvaja
-na klasu, koja drži podatke i logiku, i šablon, koji drži prikaz; stilovi stoje u trećoj
+na klasu, koja drži podatke i logiku, šablon koji drži prikaz i stilove koji stoje u trećoj
 datoteci. Ovde upoznajemo kako šablon čita podatke iz klase i kako klasi javlja da je
 korisnik nešto uradio, a na kraju i jedno ograničenje na koje ćemo naići kada se podatak
 promeni sam od sebe.

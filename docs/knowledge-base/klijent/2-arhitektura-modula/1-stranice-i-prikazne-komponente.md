@@ -1,4 +1,4 @@
-Posmatrajmo šta se dešava kada stranica raste. Stranica bloga prikazuje blog, ispod njega spisak komentara, uz svaki komentar prijavljenog korisnika dugmad za izmenu i brisanje, a na dnu formu za nov komentar. Sledeći kod prikazuje članove klase koja bi sve to radila sama, gde su tela metoda izostavljena:
+Stranica bloga prikazuje naslov i opis bloga, ispod njih spisak komentara, uz svaki komentar prijavljenog korisnika dugmad za izmenu i brisanje, a na dnu formu za nov komentar. Ceo taj ekran može da stane u jednu komponentu. Sledeći kod prikazuje članove takve klase, gde su tela metoda izostavljena:
 
 ```ts
 export class BlogDetail {
@@ -19,27 +19,28 @@ export class BlogDetail {
 
 U datom kodu treba uočiti sledeće:
 
-- Klasa zna adresu servera, čeka odgovor na komandu, drži formu i u šablonu iscrtava spisak komentara. Menja se kada server promeni adresu, kada se promeni izgled komentara i kada se promeni pravilo validacije, a nijedna od te tri promene nema veze sa drugom.
-- Spisak komentara sa svojom dugmadi i formom ne može da se prikaže ni na jednom drugom mestu, jer je zapisan u šablonu ove klase, zajedno sa naslovom i opisom bloga.
-- Klasa se ne može proveriti bez servera, jer sve što radi počinje resursom i završava se komandom.
+- Klasa se menja iz tri nepovezana razloga: kada server promeni adresu bloga, kada komentar treba da izgleda drugačije i kada se promeni pravilo za tekst komentara. Poslednja dva razloga nemaju nikakve veze sa blogom, a ipak teraju izmenu datoteke koja je o blogu.
+- Spisak komentara ne može da se prikaže ni na jednom drugom ekranu. Njegov izgled, zajedno sa dugmadima i formom, zapisan je u šablonu ove klase, između naslova i opisa bloga. Kada zatreba negde drugde, nema šta da se upotrebi, već se prepisuje.
+- Spisak komentara ne može da se vidi bez servera. Radni okvir pri pravljenju ove klase odmah šalje zahtev za blog, pa se izgled spiska od tri komentara ne može isprobati dok server ne odgovori.
 
-Isti problem na serveru ima kontroler koji sam učitava podatke, proverava pravila i upisuje izmene. Na klijentu je odgovor jednostavniji od slojeva, jer nema domenskih pravila koja treba izolovati. Komponente delimo na dve vrste i razdvajamo ono što razgovara sa serverom od onoga što samo prikazuje.
+Sva tri problema imaju isti uzrok: jedna klasa pokriva ceo ekran. Nije sporno što komponenta i dovlači podatke i prikazuje ih — to radi i stranica posle podele. Sporno je što je u istoj klasi i zaokružena celina, spisak komentara sa dugmadima i formom, koja od servera ne traži ništa i koja bi sama za sebe mogla da stoji na bilo kom ekranu. Isti problem na serveru ima kontroler koji sam učitava podatke, proverava pravila i upisuje izmene, i tamo se rešava slojevima. Na klijentu je odgovor jednostavniji, jer nema domenskih pravila koja treba izolovati: iz stranice izdvajamo delove koji samo prikazuju, a razgovor sa serverom ostaje u njoj. Ovde upoznajemo te dve vrste komponenti, raspored direktorijuma modula u grupe slučajeva korišćenja i postupak kojim novoj komponenti biramo mesto.
 
 ## Stranica i prikazna komponenta
 
-**Stranica** (engl. *page*) je komponenta koju tabela ruta imenuje, koja preuzima servise i čije metode šablon poziva na akcije korisnika. **Prikazna komponenta** (engl. *presentational component*) je komponenta koja podatke prima kroz ulaze, akcije korisnika prijavljuje kroz izlaze i ne preuzima ništa. Stranica zna odakle podaci dolaze i kome se komanda šalje. Prikazna komponenta ne zna ni jedno ni drugo, pa se može koristiti na svakom mestu koje joj popuni ulaze.
+**Stranica** (engl. *page*) je komponenta koju tabela ruta imenuje, kojoj se ubrizgavaju servisi i čije metode šablon poziva na akcije korisnika. **Prikazna komponenta** (engl. *presentational component*) je komponenta koja podatke prima kroz ulaze, akcije korisnika prijavljuje kroz izlaze i kojoj se ne ubrizgava ništa. Stranica zna odakle podaci dolaze i kome se komanda šalje. Prikazna komponenta ne zna ni jedno ni drugo, pa se može koristiti na svakom mestu koje joj popuni ulaze.
 
-Podela ne zabranjuje prikaznoj komponenti da ima stanje. Forma za nov komentar, izabrani red tabele ili otvoren panel su stanje prikaza, koje ne nadživljava komponentu i ne zanima nikoga van nje. Prikazna komponenta takvo stanje drži u signalu, kao i svaka druga. Granica je da ne preuzima servis i ne zna adresu servera.
+Podela ne zabranjuje prikaznoj komponenti da ima stanje. Forma za nov komentar, izabrani red tabele ili otvoren panel su stanje prikaza, koje ne nadživljava komponentu i ne zanima nikoga van nje. Prikazna komponenta takvo stanje drži u signalu, kao i svaka druga. Granica je da joj se ne ubrizgava servis i da ne zna adresu servera.
 
-Podela nije vidljiva u nazivu datoteke ni u nazivu direktorijuma. Vidi se u kodu: tabela ruta modula imenuje svaku stranicu, stranica preuzima servis, a prikazna komponenta ne preuzima ništa. Sledeća tabela sažima razliku:
+Podela nije vidljiva u nazivu datoteke ni u nazivu direktorijuma. Vidi se u kodu: tabela ruta modula imenuje svaku stranicu, stranici se ubrizgava servis, a prikaznoj komponenti ništa. Sledeća tabela sažima razliku:
 
 | | Stranica | Prikazna komponenta |
 |---|---|---|
 | Ko je pravi | Radni okvir, kada se adresa poklopi sa rutom | Šablon roditelja, kroz selektor |
-| Odakle podaci | Resurs koji sama deklariše | Ulazi koje roditelj popunjava |
-| Kuda akcije korisnika | Metoda klase, koja poziva servis | Izlaz, na koji roditelj vezuje izraz |
-| Šta preuzima | Servise koje koristi | Ništa |
-| Stanje | Resurs, greška komande, filter | Stanje prikaza, poput forme |
+| Odakle joj podaci | Sama ih dovlači sa servera, kroz resurs | Roditelj joj ih predaje kroz ulaze |
+| Gde završava klik korisnika | U metodi klase, koja šalje komandu servisu | U izlazu, a šta se dalje dešava odlučuje roditelj |
+| Šta joj se ubrizgava | Servisi koje koristi | Ništa |
+| Šta drži u signalima | Resurs, `pending` i `error` komande, filter spiska | Samo stanje prikaza, u projektu formu za nov komentar |
+| Primer iz projekta | `BlogDetail` | `BlogComments` |
 
 ## Grupa slučajeva korišćenja
 
@@ -65,8 +66,8 @@ modules/social/
 U datom stablu treba uočiti sledeće:
 
 - Grupa `blog-authoring` sadrži dve stranice i servis. Grupa `blog-reading` sadrži dve stranice, dve prikazne komponente i servis. Koja je komponenta stranica saznaje se iz tabele ruta `social.routes.ts`, koja imenuje `BlogList`, `MyBlogs`, `CreateBlog` i `BlogDetail`.
-- Svaka komponenta ima sopstveni direktorijum sa tri datoteke, tačno kako ih pravi naredba `ng generate component`. Prikazna komponenta stoji pored stranica koje je koriste, a ne u zasebnom direktorijumu.
-- Ne postoje direktorijumi `pages`, `components` ni `services`. Zvanični vodič za stil Angular-a propisuje da se kod grupiše po sposobnosti, a ne po vrsti datoteke. Raspored koji usvajamo je stroži od uobičajenog, jer takve direktorijume ne dozvoljava ni unutar grupe.
+- Svaka komponenta ima sopstveni direktorijum sa tri datoteke: klasom, šablonom i stilovima. Prikazna komponenta stoji pored stranica koje je koriste, a ne u zasebnom direktorijumu.
+- Ne postoje direktorijumi `pages`, `components` ni `services`. Zvanični vodič za stil Angular-a propisuje da se kod grupiše po funkcionalnosti, a ne po vrsti datoteke.
 - Direktorijum `api` i datoteka `public-api.ts` ne pripadaju nijednoj grupi. U ovoj lekciji ih ne razmatramo.
 
 ## Mesto nove komponente
@@ -170,10 +171,9 @@ export class BlogComments {
 U datom kodu treba uočiti sledeće:
 
 - Tabela ruta `social.routes.ts` imenuje `BlogDetail` uz deo adrese `:id`, a `BlogComments` ne imenuje. Radni okvir pravi stranicu kada se adresa poklopi, a prikaznu komponentu pravi šablon stranice.
-- Stranica preuzima servis `BlogReading`, koji nosi komande za komentare, i servis `Auth`, iz kog čita prijavljenog korisnika. Prikazna komponenta ne preuzima ništa. Ko je prijavljen saznaje kroz ulaz `currentUserId`, koji stranica popunjava iz servisa `Auth`.
+- Stranici se ubrizgavaju servis `BlogReading`, koji nosi komande za komentare, i servis `Auth`, iz kog čita prijavljenog korisnika. Prikaznoj komponenti se ne ubrizgava ništa. Ko je prijavljen saznaje kroz ulaz `currentUserId`, koji stranica popunjava iz servisa `Auth`.
 - Spisak komentara stiže kroz ulaz `comments` iz vrednosti resursa `detail`. Prikazna komponenta ne zna da resurs postoji ni sa koje adrese je spisak stigao.
 - Svaka akcija korisnika nad komentarom je izlaz. Prikazna komponenta prijavljuje tekst novog komentara, identifikator i nov tekst izmenjenog ili identifikator obrisanog, a šta se sa tim dešava odlučuje stranica, koja poziva servis i osvežava resurs.
 - Forma za nov komentar živi u prikaznoj komponenti. To je stanje prikaza, koje se prazni čim je tekst prijavljen kroz izlaz, pa stranica za formu ne zna.
-- Tip `CommentEdit` postoji samo da bi izlaz `editComment` mogao da nosi dve vrednosti odjednom, pa je izvezen iz datoteke komponente koja ga prijavljuje.
 
-Klasa sa početka lekcije je podeljena na stranicu od tri komande i prikaznu komponentu od tri izlaza. Spisak komentara se sada može iscrtati na svakom mestu koje mu preda niz komentara, a stranica se čita kao spisak toga šta se dešava na svaku akciju korisnika.
+Klasa sa početka lekcije je podeljena na stranicu od tri komande i prikaznu komponentu od tri izlaza. Spisak komentara se sada može iscrtati na svakom mestu koje mu preda niz komentara.

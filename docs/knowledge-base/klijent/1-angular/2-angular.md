@@ -31,7 +31,7 @@ Da bi se Angular projekat pokrenuo na računaru, neophodno je instalirati tri al
 
 ## Struktura radnog prostora
 
-Komanda `ng new [naziv-projekta]` pravi nov projekat. U korenu projekta otvaramo dve
+Komanda `ng new [naziv-projekta]` pravi nov projekat. U korenu projekta vidimo dve
 datoteke:
 
 1. `package.json` sadrži spisak biblioteka koje projekat koristi, podeljen u dve grupe.
@@ -60,7 +60,7 @@ Datoteke u okviru direktorijuma `src` intenzivno menjamo i dodajemo:
     - `app.scss`, stilovi korenske komponente.
 
 Pored navedenih datoteka, naš početni projekat u `app/` sadrži i direktorijume `core/`,
-`modules/` i `shared/`, u kojima je smešten najveći deo koda; njima se bavimo u zasebnoj
+`modules/` i `shared/`, u kojima je smešten najveći deo koda, njima se bavimo u zasebnoj
 lekciji o strukturi aplikacije.
 
 Postoji i nekoliko stavki koje za sada zanemarujemo, npr. definicija ruta (u našem
@@ -78,7 +78,7 @@ Kod preuzimamo kloniranjem repozitorijuma, a zatim u korenu projekta pokrećemo
 `npm install`. Komanda čita `package.json` i preuzima sve biblioteke u direktorijum
 `node_modules/`. Taj direktorijum je naveden u `.gitignore` i ne šalje se na
 repozitorijum, pa komandu ponavljamo posle svakog preuzimanja tuđih izmena (`git pull`),
-da bi se lokalno instalirale biblioteke koje su saradnici dodali.
+da bi se lokalno instalirale biblioteke koje su kolege dodale.
 
 Projekat zatim pokrećemo komandom `ng serve` (ili `npm start`, koji je samo poziva). Ta
 komanda pokreće niz koraka koji izvorni kod pretvaraju u aplikaciju koju internet čitač
@@ -145,13 +145,11 @@ podatke i logiku (šta se prikazuje i kako se reaguje na akcije), a šablon opis
 prikazuje zaglavlje, druga spisak tura, treća formu. Korenska komponenta je prva koju
 Angular iscrtava i unutar sebe smešta sve ostale.
 
-Kada se podaci u klasi promene, Angular sam osvežava prikaz. U ovom projektu on to radi
-preko **signala**, bez biblioteke Zone.js; taj mehanizam obrađujemo u zasebnoj lekciji o
-reaktivnosti.
+Kada se podaci u klasi promene, Angular sam osvežava prikaz. U ovom projektu to se radi
+preko **signala**, što je mehanizam koji obrađujemo u zasebnoj lekciji o signalima.
 
 Komponentu čine tri datoteke istog naziva: `.ts` (klasa), `.html` (šablon) i `.scss`
-(stilovi). U ovom projektu datoteke komponente nemaju nastavak `.component` (dakle
-`app.ts`, a ne `app.component.ts`). Sledeći kod prikazuje klasu korenske komponente:
+(stilovi). Sledeći kod prikazuje klasu korenske komponente:
 
 ```ts
 import { Component } from '@angular/core';

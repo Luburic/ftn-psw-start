@@ -24,7 +24,7 @@ TS je jezik koji proširuje JS, prvenstveno tipovima. Svaki ispravno napisan JS 
 
 ## Anotacija tipa
 
-**Anotacija tipa** (engl. *type annotation*) je oznaka oblika `: tip` koja se piše iza naziva promenljive, polja ili parametra, kao i iza liste parametara metode. Anotacijom tipa prevodiocu saopštavamo kog tipa je vrednost. Osnovni tipovi su `string`, `number` i `boolean`. Povratni tip metode koja ne vraća vrednost je `void`.
+**Anotacija tipa** (engl. *type annotation*) je oznaka oblika `: tip` koja se piše iza naziva promenljive, polja ili parametra, kao i iza liste parametara metode. Anotacijom tipa prevodiocu saopštavamo kog tipa je vrednost. Osnovni tipovi su `string`, `number` i `boolean`.
 
 Sledeći kod prikazuje metodu sa anotiranim parametrom i povratnom vrednošću:
 
@@ -182,7 +182,7 @@ JS ima dve vrednosti koje označavaju odsustvo vrednosti:
 - `undefined` označava da vrednost nije dodeljena. Tu vrednost ima promenljiva kojoj nismo dodelili vrednost, opciono polje koje objekat ne sadrži, kao i element niza koji ne postoji.
 - `null` označava da vrednost namerno ne postoji. Ovu vrednost uvek dodeljujemo sami.
 
-U JS-u bilo koja promenljiva može da sadrži `null` ili `undefined`. U TS-u (uz strogi režim) to nije slučaj: promenljiva tipa `string` može da sadrži samo tekst. Kada vrednost može da nedostaje, to moramo eksplicitno da navedemo pomoću **unije tipova** (engl. *union type*). Unija se piše uspravnom crtom `|` i znači da vrednost može biti bilo kog od navedenih tipova. Tip `string | null` čitamo kao „tekst ili `null`“. Opciono polje `publishedAt?: string` iz prethodnog odeljka zapravo je tipa `string | undefined`.
+U JS-u bilo koja promenljiva može da sadrži `null` ili `undefined`. U TS-u (uz strogi režim) to nije slučaj: promenljiva tipa `string` može da sadrži samo tekst. Kada vrednost može da nedostaje, to moramo eksplicitno da navedemo pomoću **unije tipova** (engl. *union type*). Unija se piše uspravnom crtom `|` i znači da vrednost može biti bilo kog od navedenih tipova. Tip `string | null` čitamo kao „tekst ili `null`“. Opciono polje note?: string iz prethodnog odeljka zapravo je tipa string | undefined.
 
 Sledeći kod prikazuje polje klase `TourList` koje čuva identifikator izabrane ture i metodu koja ga koristi:
 
@@ -201,7 +201,6 @@ protected async publishSelected(): Promise<void> {
 U datom kodu treba uočiti sledeće:
 - Polje `selectedTourId` čuva identifikator izabrane ture ili `null`. Početna vrednost je `null`, jer nijedna tura još nije izabrana.
 - Konstanta `tourId` je tipa `string | null`, a metoda `publish` prima `string`. Zato prevodilac ne dozvoljava poziv `this.publish(tourId)` sve dok proverom ne isključimo `null`. Nakon provere `if (tourId === null)` sa naredbom `return`, prevodilac zna da je preostali tip `string`. Ovaj mehanizam zovemo **sužavanje tipa** (engl. *type narrowing*).
-- Vrednost polja najpre prepisujemo u lokalnu konstantu. Tako smo sigurni da proveravamo i koristimo istu vrednost, jer polje može da promeni drugi deo koda, a konstantu ne može.
 
 ## Generički tip
 

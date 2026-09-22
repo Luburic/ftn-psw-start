@@ -1,10 +1,18 @@
-Svaki resurs i svaka komanda iz prethodnih lekcija ima tip podatka koji šalje ili prima, poput `TourDto` i `CreateTourDto`. Posmatrajmo šta se dešava kada tim koji radi na serveru svojstvo `Description` strukture `TourDto` preimenuje u `Summary`. Server prevodi i radi. Klijent takođe prevodi i radi, jer njegov interfejs `TourDto` i dalje ima svojstvo `description`, koje niko ne proverava u odnosu na server. Tek stranica ture prikazuje prazan opis, a greška se otkriva u internet čitaču, kao i kod mapera na serveru čiji profil nije dopunjen.
+Svaki resurs i svaka komanda iz prethodnih lekcija ima tip podatka koji šalje ili prima, poput `TourDto` i `CreateTourDto`. Ti tipovi opisuju podatak koji ne nastaje na klijentu, nego na serveru, a klijent ih ipak drži zapisane kod sebe.
 
-Uzrok je u tome što klijent ima sopstveni opis podatka koji nije njegov. Lekcija o DTO strukturama je pokazala da je izlazna DTO struktura aplikacionog sloja oblik podatka koji klijent prikazuje, a lekcija o API sloju da je akcija vraća bez prevođenja. DTO struktura servera je zato ugovor između dve strane, a klijentski tip sme da bude samo njena slika.
+Posmatrajmo šta se dešava kada tim koji radi na serveru svojstvo `Description` strukture `TourDto` preimenuje u `Summary`.
+
+Prvo imamo prevođenje servera. Ono prolazi, jer je tim preimenovao svojstvo i na entitetu i u DTO strukturi, a maper ih spaja po imenu, pa se i dalje poklapaju. Testovi prođu, endpoint vraća JSON u kom sada stoji `summary`. Ništa u tom prevođenju ne zna da klijent postoji, pa nema ko da se pobuni.
+
+Potom imamo prevođenje klijenta. I ono prolazi, jer klijentski interfejs `TourDto` i dalje ima svojstvo `description`, a nijedan alat ga ne poredi sa serverom. Zapis `httpResource<TourDto>(...)` je obećanje dato prevodiocu, ne provera koja se izvršava.
+
+Najzad, korisnik otvori stranicu ture. Odgovor nema ključ `description`, pa je `tour.description` vrednost `undefined`, a šablon `undefined` iscrtava kao prazan tekst. Nema poruke o grešci ni traga u konzoli, samo polje koje je juče imalo tekst. Greška je iste vrste kao kada se na serveru preimenuje svojstvo, a profil mapera ostane nedopunjen, i jedna i druga prođu prevođenje i sačekaju prvog korisnika, s tim što maper bar baci izuzetak, dok klijent ćuti.
+
+Lekcija o DTO strukturama je pokazala da je izlazna DTO struktura aplikacionog sloja oblik podatka koji klijent prikazuje, a lekcija o API sloju da je akcija vraća bez prevođenja. DTO struktura servera je zato ugovor između dve strane, a klijentski tip sme da bude samo njena slika. Ovde upoznajemo preslikani tip, pravila po kojima se tipovi servera prevode u tipove klijenta i pravilo o tome kada se takav tip menja.
 
 ## Preslikani tip
 
-**Preslikani tip** (engl. *mirrored type*) je TypeScript tip koji ima ista svojstva kao DTO struktura servera, sa tipovima prevedenim po utvrđenim pravilima. Preslikani tipovi jednog modula stoje u jednoj datoteci, u direktorijumu `api` tog modula. Strukture koje server vraća svim modulima, poput `PageResult` za spisak sa stranama, stoje van modula, u delu koji dele svi moduli. Svaki modul uvozi tipove iz sopstvenog direktorijuma `api`, pa granica između modula važi i za tipove.
+**Preslikani tip** (engl. *mirrored type*) je tip koji ima ista svojstva kao DTO struktura servera, sa tipovima prevedenim po utvrđenim pravilima. Preslikani tipovi jednog modula stoje u jednoj datoteci, u direktorijumu `api` tog modula. Strukture koje server vraća svim modulima, poput `PageResult` za spisak sa stranama, stoje van modula, u direktorijumu `shared/api` koji dele svi moduli. Svaki modul uvozi tipove iz sopstvenog direktorijuma `api`, pa granica između modula važi i za tipove.
 
 Sledeći kod prikazuje DTO strukturu `TourDto` sa servera i njen preslikani tip iz datoteke `exploration-api-types.ts`:
 
@@ -48,8 +56,8 @@ export interface TourDto {
 
 U datom kodu treba uočiti sledeće:
 
-- Svako svojstvo servera ima istoimeno svojstvo na klijentu, zapisano malim početnim slovom, jer radni okvir servera tako imenuje svojstva u JSON zapisu. Svojstvo koje klijent ne prikazuje, poput `authorId`, se svejedno preslikava, jer stiže u odgovoru.
-- Enumeraciju server u JSON zapis upisuje kao tekst sa imenom vrednosti, pa je na klijentu unija tekstualnih literala. Prevodilac tada odbija svaku vrednost koju server ne poznaje.
+- Svako svojstvo servera ima istoimeno svojstvo na klijentu, zapisano malim početnim slovom, jer radni okvir servera tako imenuje svojstva u JSON zapisu.
+- Enumeraciju server u JSON zapis upisuje kao tekst sa imenom vrednosti, jer je u `Program.cs` registrovan `JsonStringEnumConverter`; bez njega bi u zapisu stajao redni broj vrednosti.
 - `Guid` i `DateTime` u JSON zapisu ne postoje, već stižu kao tekst, pa su na klijentu `string`. Klijent identifikator nikada ne tumači, a datum prevodi u prikaz tek u šablonu.
 - Svojstvo koje server sme da ostavi prazno, `DateTime?`, na klijentu ima uniju sa `null`, pa prevodilac traži proveru pre upotrebe.
 - Ugnježdena DTO struktura je ugnježden interfejs, a lista je niz.
@@ -60,7 +68,7 @@ Sledeća tabela sažima pravila preslikavanja:
 |---|---|---|
 | `string`, `int`, `bool` | `string`, `number`, `boolean` | `name: string` |
 | Enumeracija | Unija tekstualnih literala | `status: TourStatus` |
-| `Guid`, `DateTime` | `string` | `publishedAt: string \| null` |
+| `Guid`, `DateTime` | `string` | `id: string` |
 | Tip sa `?` | Unija sa `null` | `publishedAt: string \| null` |
 | DTO struktura | Interfejs | `TransportTimeDto` |
 | `List<T>` | `T[]` | `tags: string[]` |

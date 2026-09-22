@@ -30,7 +30,7 @@ Upit je resurs koji stranica deklariše u svom polju. Radni okvir pravi stranicu
 
 **Servis grupe** (engl. *group service*) je servis koji sadrži komande jedne grupe slučajeva korišćenja i ništa drugo. Svaka metoda je jedna komanda, koja šalje zahtev i vraća obećanje odgovora. Servis nema signal i ne zna da resursi postoje. Grupa bez komandi nema servis, pa grupa `tour-browsing` iz projekta sadrži samo stranicu i prikaznu komponentu.
 
-Iz dva pravila sledi obrazac koji je čitalac već pratio: stranica čeka komandu i zatim osvežava svoj resurs. Stranica koja je pokrenula komandu je ista stranica koja poseduje spisak, pa je osvežavanje jedan poziv metode `reload`, a nijedan servis ne zna koji spiskovi postoje. Ovo je slika pravila razdvajanja komandi i upita sa servera. Komanda menja stanje i ne vraća prikaz, a prikaz se dobija upitom koji se sme pozvati bilo kada.
+Iz dva pravila sledi obrazac koji smo već viđali: stranica čeka komandu i zatim osvežava svoj resurs. Stranica koja je pokrenula komandu je ista stranica koja poseduje spisak, pa je osvežavanje jedan poziv metode `reload`, a nijedan servis ne zna koji spiskovi postoje. Komanda menja stanje i ne vraća prikaz, a prikaz se dobija upitom koji se sme pozvati bilo kada.
 
 Zvanični vodič Angular-a preporučuje da se sav razgovor sa serverom, uključujući čitanje, zatvori u servise. Naš projekat od te preporuke odstupa za čitanje, jer je resurs vezan za stranicu upravo ono što čini osvežavanje trivijalnim. Za komande preporuku sledimo.
 
