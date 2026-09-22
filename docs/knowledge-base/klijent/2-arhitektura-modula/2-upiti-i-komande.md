@@ -1,4 +1,8 @@
-Prethodna lekcija je stranici dodelila resurs i servis, a prikaznoj komponenti ulaze i izlaze. Ostaje pitanje zašto resurs stoji u stranici, a ne u servisu, kada oboje razgovaraju sa serverom. Posmatrajmo suprotan izbor. Servis drži spisak tura autora u signalu, a stranice ga čitaju. Sledeći kod prikazuje takav servis, gde je telo metode koja spisak učitava izostavljeno:
+Prethodna lekcija je stranici dodelila resurs i servis, a prikaznoj komponenti ulaze i izlaze. Ostaje pitanje zašto resurs stoji u stranici, a ne u servisu, kada već kroz servis šaljemo komande na server.
+
+Posmatrajmo suprotan izbor: servis drži spisak tura autora u svom signalu, a stranice taj signal samo čitaju.
+
+Pre nego što pogledamo kod, vredi uočiti razliku u životnom veku. Servis sa `providedIn: 'root'` pravi se jednom i živi dok je aplikacija otvorena, a stranica živi od jedne navigacije do druge. Spisak koji stoji u servisu zato nadživljava svaku stranicu koja ga prikazuje. Time prestaje da bude podatak koji se upravo dovukao i postaje keš, a keš neko mora da održava svežim. Sledeći kod prikazuje takav servis, gde je telo metode koja spisak učitava izostavljeno:
 
 ```ts
 @Injectable({ providedIn: 'root' })
@@ -18,11 +22,13 @@ export class Tours {
 
 U datom kodu treba uočiti sledeće:
 
-- Komanda `publish` nakon uspeha ponovo učitava spisak `mine`, jer je objavljena tura promenila status. Isti spisak menja i komanda koja pravi turu i komanda koja dodaje vreme obilaska, pa svaka od njih mora da zna za `mine`.
-- Objavljena tura se pojavljuje i u spisku objavljenih tura, koji čita druga stranica. Ako taj spisak takođe živi u servisu, komanda `publish` mora da učita i njega. Svaka komanda modula nosi spisak spiskova koje čini zastarelim, a taj spisak raste sa svakom novom stranicom.
-- Stranica koja otvori `mine` pre nego što je iko pozvao `loadMine` prikazuje prazan niz. Stranica koja ga otvori posle vidi ono što je poslednja komanda ostavila, što može biti stanje od pre nekoliko minuta. Ko poziva `loadMine` i kada, nije zapisano nigde.
+- Svaka komanda mora da zna koje spiskove kvari. Čim `publish` uspe, tura na serveru ima nov status, pa je spisak `mine` u signalu zastareo, zato ga `publish` na kraju ponovo učitava. Isto važi za komandu koja pravi turu i za onu koja dodaje vreme obilaska, pa sve tri moraju da znaju da `mine` postoji.
+- Taj posao raste sa svakim novim ekranom. Objavljena tura se pojavljuje i u spisku objavljenih tura, koji čita druga stranica, ako i on živi u servisu, `publish` mora da osveži i njega. Kada sutra neko doda treći ekran sa svojim spiskom, moraju se dopuniti sve komande koje imaju uticaja na spisak.
+- Niko ne zna koliko su podaci stari. Signal `mine` počinje kao prazan niz, pa stranica otvorena pre nego što je iko pozvao `loadMine` prikazuje praznu tabelu i poruku da korisnik nema nijednu turu, iako ih ima. Stranica otvorena kasnije vidi ono što je poslednja komanda ostavila, možda stanje od pre nekoliko minuta. Ko poziva `loadMine` i kada, nigde nije zapisano.
 
-Arhitektura klijenta ovaj problem uklanja pravilom o mestu upita i komande.
+Sva tri problema su cena jedne odluke: podatak stoji na mestu koje nadživljava svoj prikaz. Odatle sledi da neko mora da pamti ko sve drži kopiju i kada je treba osvežiti.
+
+Zamena signala pravim resursom tu ne pomaže. Kada bi u servisu stajalo `mine = httpResource<TourDto[]>(() => '/api/exploration/tours/mine')`, prvi zahtev bi otišao sam, pa metoda `loadMine` više ne bi trebala, ali samo prvi put, jer bi resurs živeo koliko i servis. Korisnik koji ode na drugu stranicu i vrati se posle pet minuta video bi odgovor od pre pet minuta, a komande bi i dalje morale da zovu `mine.reload()`, pa bi servis i dalje morao da zna koji resursi postoje. Problem, dakle, nije u tome da li je u pitanju signal ili resurs, nego gde stoji.
 
 ## Upit u stranici, komanda u servisu grupe
 
@@ -30,9 +36,9 @@ Upit je resurs koji stranica deklariše u svom polju. Radni okvir pravi stranicu
 
 **Servis grupe** (engl. *group service*) je servis koji sadrži komande jedne grupe slučajeva korišćenja i ništa drugo. Svaka metoda je jedna komanda, koja šalje zahtev i vraća obećanje odgovora. Servis nema signal i ne zna da resursi postoje. Grupa bez komandi nema servis, pa grupa `tour-browsing` iz projekta sadrži samo stranicu i prikaznu komponentu.
 
-Iz dva pravila sledi obrazac koji smo već viđali: stranica čeka komandu i zatim osvežava svoj resurs. Stranica koja je pokrenula komandu je ista stranica koja poseduje spisak, pa je osvežavanje jedan poziv metode `reload`, a nijedan servis ne zna koji spiskovi postoje. Komanda menja stanje i ne vraća prikaz, a prikaz se dobija upitom koji se sme pozvati bilo kada.
+Dakle, sledimo sledeći obrazac: stranica čeka komandu i zatim osvežava svoj resurs. Stranica koja je pokrenula komandu je ista stranica koja poseduje spisak, pa je osvežavanje jedan poziv metode `reload`, a nijedan servis ne zna koji spiskovi postoje. Ovo je slika pravila razdvajanja komandi i upita sa servera. Komanda menja stanje i ne vraća prikaz, a prikaz se dobija upitom koji se sme pozvati bilo kada.
 
-Zvanični vodič Angular-a preporučuje da se sav razgovor sa serverom, uključujući čitanje, zatvori u servise. Naš projekat od te preporuke odstupa za čitanje, jer je resurs vezan za stranicu upravo ono što čini osvežavanje trivijalnim. Za komande preporuku sledimo.
+Uobičajena praksa u Angular zajednici jeste da se sav razgovor sa serverom, uključujući čitanje, zatvori u servise. Zvanični vodič to ne propisuje, ali su primeri koje ćete sretati najčešće takvi. Naš projekat od te prakse odstupa za čitanje, jer je resurs vezan za stranicu upravo ono što čini osvežavanje trivijalnim.
 
 ## Gde stanje živi
 
@@ -43,7 +49,7 @@ Isto pitanje se postavlja za svaki signal. **Stanje stranice** je stanje koje im
 | Stanje stranice | Polje stranice | Resurs, filter spiska, izabrani red, `pending`, `error`, model forme |
 | Stanje koje nadživljava stranicu | Signal servisa van svih modula | Prijavljeni korisnik u servisu `Auth` |
 
-Prijavljeni korisnik je jedino stanje projekta koje nadživljava stranicu. Moduli ga čitaju kroz servis `Auth`, a menja ga samo taj servis, pri prijavi i odjavi. Svako drugo stanje koje bi neko poželeo da stavi u servis, poput izabranog filtera koji treba da preživi navigaciju, je odluka koja se donosi sa platformskim timom, a ne po navici.
+Prijavljeni korisnik je jedino stanje projekta koje nadživljava stranicu. Moduli ga čitaju kroz servis `Auth`, a menja ga samo taj servis, pri prijavi i odjavi. Svako drugo stanje koje bi neko poželeo da stavi u servis, poput izabranog filtera koji treba da preživi navigaciju, je odluka koja se donosi sa platformskim timom.
 
 ## Grupa za autorstvo tura
 
@@ -139,7 +145,7 @@ export class CreateTour {
 
 U datom kodu treba uočiti sledeće:
 
-- Dve stranice preuzimaju isti servis. Servis ima jedno polje, `http`, i tri komande. Ne zna da postoje resurs `tours` ni stranica `CreateTour`.
+- Dvema stranicama se ubrizgava isti servis. Servis ima jedno polje, `http`, i tri komande. Ne zna da postoje resurs `tours` ni stranica `CreateTour`.
 - `MyTours` posle komande `publish` osvežava resurs `tours`, koji sama poseduje. Kada bi objavljena tura trebalo da se pojavi i na spisku objavljenih tura, ne bi bilo šta da se radi, jer stranica `TourList` pravi svoj resurs pri sledećem otvaranju.
 - `CreateTour` posle komande `create` ne osvežava ništa, jer ne poseduje spisak. Otvara adresu stranice `MyTours`, koju radni okvir tada pravi zajedno sa novim resursom, pa nova tura stiže sa servera.
 - `selectedTourId`, `pending`, `error` i model forme su stanje stranice. Kada korisnik otvori drugu adresu, radni okvir uništava stranicu i sa njom sva ta polja. Nijedno od njih ne bi imalo smisla u servisu, jer se odnosi na ono što korisnik trenutno radi na ovom ekranu.
