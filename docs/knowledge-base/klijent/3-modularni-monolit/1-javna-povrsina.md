@@ -70,12 +70,17 @@ U datom kodu treba uočiti sledeće:
 
 ## Korišćenje drugog modula
 
-Kada stranici jednog modula treba nešto iz drugog modula, postoje dva načina, koji se biraju ovim redom:
+Kada stranici jednog modula treba nešto iz drugog modula, biramo ovim redom:
 
-1. **Navigacija.** Stranica ima vezu ka adresi drugog modula. Stranica sa kupljenim turama u modulu Payment ima vezu `routerLink="/exploration"` ka spisku tura. Modul Payment pri tome ne uvozi ništa, jer je adresa tekst, a šta se na toj adresi prikazuje odlučuje modul Exploration.
-2. **Ugrađivanje.** Stranica u svom šablonu koristi komponentu koju drugi modul izvozi kroz javnu površinu. Takva komponenta kroz ulaz prima identifikator, kroz izlaze prijavljuje akcije korisnika, a servise svog modula preuzima sama. Stranica koja je ugrađuje tako ostaje stranica svog modula i ne preuzima ništa iz tuđeg.
+1. **Navigacija**, kada korisnik treba da ode na tuđi ekran. Stranica ima vezu ka adresi drugog modula i pri tome ne uvozi ništa, jer je adresa običan tekst, a šta se na njoj prikazuje odlučuje taj modul. Kada bi modul Payment imao stranicu sa kupljenim turama, ona bi ka spisku tura vodila vezom `routerLink="/exploration"`.
+2. **Podatak spojen na serveru**, kada treba prikazati tuđi podatak, a ne tuđi ekran. Podaci dva modula se ne skupljaju na klijentu, o čemu je naredni odeljak.
+3. **Ugrađivanje**, kada je potreban ceo komad tuđeg ekrana, zajedno sa ponašanjem koje održava tuđi tim.
 
-Kada bi modul Exploration izvozio komponentu `TourSummary`, koja po identifikatoru sama čita turu sa servera i ispisuje naziv i težinu, stranica modula Payment bi je koristila ovako:
+Kod ugrađivanja treba biti precizan, jer se lako pomisli da se time nešto postojeće ponovo upotrebljava. Ne upotrebljava se. Postojeće komponente modula Exploration ne mogu da odu u tuđi modul: `TourList` je stranica i ima svoju adresu, a `TourCard` je prikazna komponenta koja čeka gotov `TourDto`, pa bi ga modul Payment morao sam da dovuče i time saznao tuđu adresu i tuđi tip. Zato tim modula Exploration, kada ga neko zatraži, **piše novu komponentu namenjenu izvozu**: ona kroz ulaz prima identifikator, podatke dovlači sama, kroz izlaze prijavljuje akcije korisnika, a servise svog modula sama dobija ubrizgavanjem.
+
+Oblik joj, dakle, ne diktiraju ekrani sopstvenog modula, nego ograničenje onoga ko je koristi. Otud i to što se ne uklapa u podelu iz prethodne lekcije: nije stranica, jer je ne imenuje tabela ruta, ni prikazna komponenta, jer ne čeka da joj neko preda podatke. Spolja se koristi kao prikazna — staviš je u šablon, daš joj ulaz, slušaš izlaze — a iznutra se snabdeva kao stranica.
+
+Kada bi modul Exploration izvezao takvu komponentu, `TourSummary`, koja po identifikatoru čita turu sa servera i ispisuje naziv i težinu, stranica modula Payment bi je koristila ovako:
 
 ```ts
 import { TourSummary } from '../../exploration/public-api';
@@ -88,21 +93,57 @@ import { TourSummary } from '../../exploration/public-api';
 U datom kodu treba uočiti sledeće:
 
 - Uvoz ide kroz javnu površinu, pa preimenovanje unutar modula Exploration ne dotiče modul Payment sve dok javna površina izvozi isto ime.
-- Ugrađena komponenta je izuzetak od podele na stranice i prikazne komponente. Nije stranica, jer je ne imenuje tabela ruta, a preuzima servis i deklariše resurs, jer podatke ne sme da dobije od stranice tuđeg modula.
-- Navigacija ide prva jer ne stvara zavisnost u kodu. Ugrađivanje stvara uvoz javne površine i traži dogovor dva tima.
+- Payment predaje `tourId`, svoje polje iz svoje kupovine, a ne podatke o turi. Ne vidi nijedan `TourDto`, ne zna nijednu adresu modula Exploration i ne uvozi nijedan njegov tip; jedini uvoz je klasa komponente.
+- Navigacija ide prva jer ne stvara nikakvu zavisnost u kodu. Ugrađivanje stvara uvoz javne površine, traži dogovor dva tima i znači da izmene tuđeg tima stižu na tvoj ekran bez tvog učešća. To je ujedno razlog da se bira i razlog da se bira retko.
+
+> **Napomena o projektu:** U početnom projektu nijedan modul ne koristi drugi. Nijedna datoteka modula ne uvozi tuđu javnu površinu — `public-api.ts` uvozi jedino tabela ruta aplikacije, zbog lenjog učitavanja — a nijedna veza iz modula ne vodi na adresu drugog modula; veze ka modulima stoje samo u zaglavlju korenske komponente. Moduli Payment i Games za sada imaju po jednu praznu stranicu, pa su `TourSummary`, kupovina i njena stranica izmišljeni za ovaj primer. Pravila iz ovog odeljka opisuju šta raditi kada se takva potreba prvi put pojavi.
 
 ## Sastavljanje podataka na serveru
 
-Stranica modula Payment koja prikazuje kupovine sa nazivom ture mogla bi da čita adresu `/api/payment/purchases`, pa za svaku kupovinu adresu `/api/exploration/tours/...`, i da nazive spaja u izvedenom signalu. Takva stranica šalje jedan zahtev više po kupovini, zna adrese tuđeg modula i ponavlja pravilo o tome koja tura pripada kupovini, koje na serveru poseduje modul Payment. Podaci dva modula se zato sastavljaju na serveru. Modul Payment na serveru pita modul Exploration kroz njegov kontrakt i vraća jednu DTO strukturu sa nazivom ture, a stranica čita jednu adresu svog modula i preslikava tu strukturu u svoj direktorijum `api`.
+Stranica modula Payment prikazuje kupovine, a uz svaku treba i naziv ture. Kupovine dolaze sa adrese modula Payment, a nazivi tura pripadaju modulu Exploration. Prvo rešenje koje pada na pamet jeste da stranica dovuče oboje i spoji sama:
+
+```ts
+// ovako ne radimo
+protected readonly purchases = httpResource<PurchaseDto[]>(() => '/api/payment/purchases');
+// pa za svaku kupovinu još jedan zahtev na /api/exploration/tours/<tourId>,
+// pa spajanje naziva u izvedenom signalu
+```
+
+Takvo rešenje ima tri mane:
+
+- Broj zahteva raste sa brojem kupovina. Za dvadeset kupovina odlazi dvadeset i jedan zahtev, a stranica se popunjava u talasima.
+- Stranica modula Payment zna adrese modula Exploration i njegov tip, dakle tačno ono što javna površina treba da spreči.
+- Pravilo o tome koja tura pripada kojoj kupovini postoji na dva mesta. Na serveru ga poseduje modul Payment, a sada ga klijent ponavlja svojom petljom. Dve kopije jednog pravila se pre ili kasnije raziđu.
+
+Zato se podaci dva modula spajaju na serveru. Modul Payment na serveru pita modul Exploration kroz njegov kontrakt, spoji podatke i vrati jednu DTO strukturu u kojoj već stoji naziv ture. Stranica time čita jednu adresu, i to svog modula:
+
+```ts
+protected readonly purchases = httpResource<PurchaseDto[]>(() => '/api/payment/purchases');
+```
+
+a `PurchaseDto` preslikava u svoj direktorijum `api`, sa svojstvom koje nosi naziv ture i koje je server već popunio. Modul Exploration se na klijentu ne pominje nijednom.
+
+Pravilo koje iz ovoga sledi važi i šire: podatke spaja onaj ko poseduje pravilo spajanja, a to je server.
 
 ## Od adrese do stranice modula
 
-Povežimo pojmove. Prijavljeni korisnik je na početnoj stranici i klikne na vezu ka adresi `/social/mine`. Dešava se sledeće:
+Povežimo pojmove. Hod ide kroz dve tabele ruta: onu iz jezgra, koju smo videli gore, i onu modula Social, koju njegova javna površina izvozi:
+
+```ts
+export const socialRoutes: Routes = [
+  { path: '', component: BlogList },
+  { path: 'mine', component: MyBlogs },
+  { path: 'create', component: CreateBlog },
+  { path: ':id', component: BlogDetail },
+];
+```
+
+Prijavljeni korisnik je na početnoj stranici i klikne na vezu ka adresi `/social/mine`. Dešava se sledeće:
 
 1. Veza upisuje adresu `/social/mine` u internet čitač.
 2. Radni okvir u tabeli aplikacije nalazi stavku sa prefiksom `social` i poziva njenu funkciju `loadChildren`.
 3. Poziv `import` preuzima objedinjenu datoteku modula Social, ako je internet čitač već nema, a `then` iz njene javne površine čita `socialRoutes`.
-4. Radni okvir ostatak adrese, `mine`, poklapa u tabeli modula i bira komponentu `MyBlogs`.
+4. Radni okvir ostatak adrese, `mine`, poklapa u tabeli modula. Poklapa se druga stavka, pa bira komponentu `MyBlogs`.
 5. Na mestu iscrtavanja uništava početnu stranicu i pravi `MyBlogs`, čiji resurs šalje zahtev na `/api/social/blogs/mine`.
 
 Nijedna datoteka van modula Social nije pomenula stranicu `MyBlogs`. Aplikacija zna samo da modul Social postoji na prefiksu `social` i da njegovu tabelu ruta dobija iz javne površine.
