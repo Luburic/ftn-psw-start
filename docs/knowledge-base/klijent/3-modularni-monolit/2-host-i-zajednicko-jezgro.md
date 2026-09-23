@@ -1,4 +1,4 @@
-Na serveru host aplikacija sastavlja module, a zajedničko jezgro drži kod koji koriste svi moduli. Klijent ima ista dva mesta, direktorijume `core` i `shared`. Čitalac je iz oba već uvozio, servis `Auth` iz prvog, a `PageResult` i `serverMessage` iz drugog, bez pravila o tome šta u njima pripada i ko sme da ih menja. Ovde ta dva direktorijuma čitamo do kraja i utvrđujemo ko šta menja.
+Na serveru host aplikacija sastavlja module, a zajedničko jezgro drži kod koji koriste svi moduli. Klijent ima ista dva mesta, direktorijume `core` i `shared`. Sadržaj oba direktorijuma smo već delom videli. Na primer servis `Auth` iz prvog, a `PageResult` i `serverMessage` iz drugog. Ovde ta dva direktorijuma čitamo do kraja i utvrđujemo ko šta menja.
 
 ## Host aplikacija
 
@@ -22,11 +22,10 @@ app/
 
 U datom stablu treba uočiti sledeće:
 
-- Datoteka `app.config.ts` uključuje delove radnog okvira: rutiranje sa tabelom iz `core/app.routes.ts` i razmenu sa serverom sa presretačem, koji upoznajemo u narednom odeljku. Korenska komponenta `app.ts` drži zaglavlje i mesto iscrtavanja.
-- Tabela `core/app.routes.ts` je tabela aplikacije iz prethodne lekcije, jedino mesto na kom host aplikacija imenuje module.
-- Direktorijum `core/auth` drži servis `Auth`, stranice prijave i registracije i presretač. Prijavljeni korisnik, jedino stanje koje nadživljava stranicu, živi ovde.
+- Datoteka `app.config.ts` uključuje delove radnog okvira: rutiranje sa tabelom iz `core/app.routes.ts` i prestretača zahteva, kog upoznajemo u narednom odeljku. Korenska komponenta `app.ts` drži zaglavlje i mesto iscrtavanja.
+- Tabela `core/app.routes.ts` je tabela ruta iz prethodne lekcije.
+- Direktorijum `core/auth` drži servis `Auth`, stranice prijave i registracije i presretač.
 - Direktorijum `core/home` je početna stranica, koja ne pripada nijednom modulu.
-- Modul iz host aplikacije uvozi samo `core/auth`, da bi pročitao prijavljenog korisnika. Ništa drugo iz `core` modul ne uvozi, a host aplikacija modul poznaje samo kroz stavku tabele ruta.
 
 ## Presretač
 
@@ -50,9 +49,9 @@ U datom kodu treba uočiti sledeće:
 
 - Tip `HttpInterceptorFn` je tip funkcije sa dva parametra: zahtev i funkcija `next`, koja zahtev prosleđuje dalje ka serveru. Presretač mora da pozove `next`, sa istim ili izmenjenim zahtevom, i da vrati njen rezultat.
 - Presretač servis preuzima pozivom `inject`, kao i komponenta. Signal `accessToken` servisa `Auth` drži token koji server izdaje pri prijavi.
-- Bez tokena zahtev prolazi neizmenjen. Sa tokenom presretač pravi kopiju zahteva sa zaglavljem `Authorization`, jer se zahtev ne sme menjati na mestu, i prosleđuje kopiju.
+- Bez tokena zahtev prolazi neizmenjen. Sa tokenom presretač pravi kopiju zahteva sa zaglavljem `Authorization` i prosleđuje kopiju.
 - Poziv `withInterceptors` u `app.config.ts` vezuje presretač za svaki zahtev koji šalju resurs i `HttpClient`, iz bilo kog modula.
-- Posledica za kod modula je da nijedna stranica ni servis ne zna za token. Odgovor sa statusnim kodom 401 znači da korisnik nije prijavljen ili da je token istekao, a ne da stranica nije poslala token. Presretač piše platformski tim, a ovde ga čitamo da bismo znali šta se zahtevu dešava između stranice i servera.
+- Posledica za kod modula je da nijedna stranica ni servis ne zna za token. Odgovor sa statusnim kodom 401 znači da korisnik nije prijavljen ili da je token istekao, a ne da stranica nije poslala token. Presretač je u nadležnosti platformskog tima.
 
 ## Zajedničko jezgro
 
