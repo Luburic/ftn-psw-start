@@ -62,10 +62,6 @@ se navodi bez donje crte i bez nastavka. Četiri učitane datoteke drže redom:
 4. `_components.scss`, klase za elemente koji se ponavljaju, `card`, `button`, `field`,
    `table`, `error` i `meta`.
 
-Ova pravila radni okvir ne prepisuje, pa važe za svaki element dokumenta, uključujući
-elemente unutar šablona komponenti. Zato klasa `card` iz šablona deluje bez ijednog reda u
-datoteci komponente. Klasu iz ovih datoteka zovemo globalna klasa.
-
 ## Tokeni
 
 **Token** (engl. *design token*) je vrednost boje, razmaka, poluprečnika ili veličine fonta
@@ -96,8 +92,7 @@ imenovana kao CSS promenljiva na korenskom elementu dokumenta, koju sva ostala p
 U datom kodu treba uočiti sledeće:
 
 - Selektor `:root` je element `html`, pa je promenljiva dostupna svakom elementu ispod
-  njega, i unutar šablona komponenti. Datoteka stilova komponente je čita na isti način,
-  kao `var(--color-border)` u pravilu za komentare.
+  njega, i unutar šablona komponenti.
 - Kada se `--color-accent` promeni u ovoj datoteci, menja se svaki element koji je čita.
 
 ## Izbor mesta za nov stil
@@ -134,7 +129,7 @@ h3 {
 }
 ```
 
-> **Napomena:** Ovaj `.scss` isečak je ilustrativan i prati nastavnu karticu iz lekcije o
+> **Napomena:** Ovaj `.scss` isečak je ilustrativan i prati karticu iz lekcije o
 > komponenti. U projektu `tour-card.scss` stilizuje oznake i vremena obilaska (`.tags`,
 > `.times`), a ne `h3`, i kartica u šablonu nosi `class="card stack"`. Pravilo za `h3` ovde
 > služi samo da pokaže stil svojstven jednoj komponenti.
