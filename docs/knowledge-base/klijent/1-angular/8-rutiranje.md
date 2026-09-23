@@ -178,8 +178,7 @@ U datom kodu treba uočiti sledeće:
   `id` računamo iz signala.
 - Veza sa parametrom se piše kao niz, uz vezivanje svojstva `[routerLink]`. Prvi element
   niza je deo adrese koji je isti za sve blogove, a drugi je vrednost parametra. Angular od
-  niza sastavlja adresu `/social/1`. Komponenta kartice bloga mora u podešavanju `imports`
-  da navede `RouterLink`, isto kao korenska komponenta.
+  niza sastavlja adresu `/social/1`.
 - Angular bira prvu rutu u tabeli koja se poklapa sa adresom. Adresa `/social/create` se
   poklapa i sa rutom `create` i sa rutom `:id`. Ruta `create` je navedena pre, pa se otvara
   stranica za pravljenje bloga. Da je `:id` prva u tabeli, svaka adresa bi vodila na
