@@ -2,7 +2,7 @@ Resurs iz prethodne lekcije čita podatke sa servera i ništa na njemu ne menja.
 
 ## Slanje zahteva
 
-Komandu šalje klasa `HttpClient`, koju servis preuzima od kontejnera. Sledeći kod prikazuje poziv koji objavljuje blog:
+Komandu šalje klasa `HttpClient`, koja se servisu ubrizgava. Sledeći kod prikazuje poziv koji objavljuje blog:
 
 ```ts
 await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/publish`, {}));
@@ -12,7 +12,7 @@ U datom kodu treba uočiti sledeće:
 - Metoda `post` prima adresu i telo zahteva, koje pretvara u JSON. Objavljivanje nema telo, pa šalje prazan objekat.
 - Parametar generičkog tipa, `post<void>`, je tip koji prevodilac dodeljuje telu odgovora. Objavljivanje ne vraća telo, pa je tip `void`.
 - Metoda `post` ne vraća obećanje, već `Observable`. **Observable** je vrednost koja stiže kasnije i može da stigne više puta. Odgovor na HTTP zahtev stiže tačno jednom, pa nam višestruko stizanje ne treba.
-- Funkcija `firstValueFrom`, iz biblioteke `rxjs` koju Angular koristi, prima `Observable` i vraća obećanje prve vrednosti koja stigne. U projektu je svaki poziv metode `post` obuhvaćen ovim pozivom, pa se čeka sa `await` kao svaki asinhroni poziv.
+- Funkcija `firstValueFrom`, iz biblioteke `rxjs` koju Angular koristi, prima `Observable` i vraća obećanje prve vrednosti koja stigne. U projektu je svaki poziv `HttpClient`-a obuhvaćen ovim pozivom, pa se čeka sa `await` kao svaki asinhroni poziv.
 - Za razliku od `fetch`, `HttpClient` odgovor sa statusnim kodom greške pretvara u izuzetak. Tada `await` baca izuzetak, a objekat izuzetka nosi telo odgovora.
 
 ## Servis sa komandama
@@ -38,7 +38,8 @@ export class BlogAuthoring {
 
 U datom kodu treba uočiti sledeće:
 - Konstanta `BASE_URL` drži zajednički početak adrese, a svaka metoda na njega nadovezuje svoj deo. Ovo je klijentski pandan atributu `[Route]` na kontroleru.
-- Svaka metoda je jedna komanda i sastoji se od jednog poziva. Metoda `create` šalje DTO strukturu `CreateBlogDto`, koja nosi podatke novog bloga, i vraća `BlogDto` iz odgovora. Obećanje vraća bez `await`, jer asinhrona metoda sme da vrati obećanje, a pozivalac ga čeka isto.
+- Svaka metoda je jedna komanda i sastoji se od jednog poziva. Metoda `create` šalje DTO strukturu `CreateBlogDto`, koja nosi podatke novog bloga, i vraća `BlogDto` iz odgovora.
+- Razlika između `create` i `publish` je u tome da li metoda ima šta da vrati. Metoda `create` ima, pa obećanje prosleđuje naredbom `return`, bez `await`, jer asinhrona metoda sme da vrati obećanje, a pozivalac ga čeka isto. Metoda `publish` nema šta da vrati, ali i dalje mora da sačeka odgovor, pa stoji `await`. Pravilo je da se obećanje mora ili vratiti ili sačekati, kada se izostavi i jedno i drugo, metoda se završava pre nego što odgovor stigne, a greška servera ostaje neuhvaćena.
 - Servis nema signal i ne zna ni za jedan resurs. Šalje zahtev i vraća odgovor, a obradu odgovora prepušta stranici.
 
 ## Greška servera
@@ -66,11 +67,11 @@ export class MyBlogs {
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
-  protected async publish(id: string): Promise<void> {
+  protected async publish(blogId: string): Promise<void> {
     this.pending.set(true);
     this.error.set(null);
     try {
-      await this.blogAuthoring.publish(id);
+      await this.blogAuthoring.publish(blogId);
       this.blogs.reload();
     } catch (failure) {
       this.error.set(serverMessage(failure, 'Could not publish the blog.'));
@@ -87,14 +88,16 @@ export class MyBlogs {
 }
 
 @for (blog of blogs.value() ?? []; track blog.id) {
-  <button type="button" [disabled]="pending()" (click)="publish(blog.id)">Publish</button>
+  @if (blog.status === 'Draft') {
+    <button type="button" [disabled]="pending()" (click)="publish(blog.id)">Publish</button>
+  }
 }
 ```
 
 U datom kodu treba uočiti sledeće:
 - Signal `pending` je tačan dok komanda traje. Sva dugmad su vezana za njega, pa korisnik ne može da pošalje drugu komandu dok prva traje. Blok `finally` ga vraća na netačno i kada komanda uspe i kada ne uspe.
 - Signal `error` drži poruku o grešci komande ili `null`, a `blogs.error()` grešku čitanja. Na početku svake komande se briše, da poruka od prethodnog pokušaja ne ostane na ekranu.
-- Poziv `reload` stoji iza `await`, pa se izvršava tek kada server potvrdi komandu. Stranica ne menja niz sama, već ponovo čita spisak sa servera.
+- Poziv `reload` stoji iza `await`, pa se izvršava tek kada server potvrdi komandu. Ispred njega nema `await`, jer `reload` nije asinhron: on samo kaže resursu da ponovo dovuče podatke i odmah se vraća, a dok odgovor putuje, šablon prikazuje stanje učitavanja. Stranica ne menja niz sama, već ponovo čita spisak sa servera.
 - Kada zahtev ne uspe, izuzetak hvata blok `catch`, koji poruku servera upisuje u signal `error`.
 
 ## Objavljivanje ture
@@ -162,11 +165,13 @@ export class MyTours {
 }
 ```
 
+> **Napomena o projektu:** Prava stranica `MyTours` ima i formu za dodavanje vremena obilaska — signal `selectedTourId`, formu sa signalima i metodu `addTransportTime`, drugu komandu istog oblika — pa u dekoratoru uvozi i `FormField`, a tabela ima pet kolona. Taj deo ovde izostavljamo, jer forme obrađujemo u narednim lekcijama. Obrazac komande je isti: `pending`, `try`/`catch`/`finally`, `reload` iza `await`.
+
 Kada korisnik klikne na dugme za objavljivanje ture koja nema nijedno vreme obilaska, dešava se sledeće:
 1. Vezivanje događaja poziva `publish` sa identifikatorom ture. Signal `pending` postaje tačan i dugmad se onemogućavaju.
 2. Servis šalje zahtev na adresu `/api/exploration/tours/<id>/publish`, a `await` čeka odgovor.
 3. Na serveru domenski sloj baca izuzetak, koji middleware pretvara u odgovor sa statusnim kodom 400 i porukom u polju `title`.
 4. Poziv `await` baca izuzetak, pa se `reload` preskače. Blok `catch` iz izuzetka čita poruku servera i upisuje je u signal `error`. Blok `finally` vraća `pending` na netačno.
-5. Šablon je čitalac oba signala, pa radni okvir ponovo iscrtava stranicu. Iznad tabele se prikazuje poruka servera, a dugmad su ponovo dostupna.
+5. Šablon je čitalac oba signala, pa radni okvir ponovo proverava šablon stranice. Iznad tabele se prikazuje poruka servera, a dugmad su ponovo dostupna.
 
 Kada tura ima vreme obilaska, server vraća odgovor bez greške. Tada se u četvrtom koraku izvršava `reload`, pa se umesto tabele prikazuje poruka o učitavanju, a kada odgovor stigne, tabela sa turom čiji je status `Published`, bez dugmeta.

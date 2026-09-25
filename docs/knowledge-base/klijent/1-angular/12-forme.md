@@ -22,9 +22,9 @@ objekat, bez slanja forme, koje dolazi u narednoj lekciji.
 
 Formu čine tri stvari: **model**, sama **forma** i njena **polja**.
 
-**Model** je signal koji drži vrednosti forme tj. po jedno svojstvo svako.
+**Model** je signal koji drži vrednosti forme.
 Za formu pravljenja ture to su `name`, `description`, `difficulty` i `tags`. Model je
-jedini izvor tih vrednosti: kada korisnik nešto otkuca, menja se upravo model.
+jedini izvor tih vrednosti: kada korisnik nešto otkuca, menja se model.
 
 **Forma** (engl. *form*) je objekat koji Angular gradi oko modela, pozivom `form(...)`. Za
 svako svojstvo modela ona pravi po jedno **polje forme** (engl. *form field*). Polje forme
@@ -129,7 +129,7 @@ Stanje polja i stanje cele forme imaju signale koje čitamo pozivom. U projektu 
 4. `valid()` je tačno kada polje nema grešaka. Za celu formu, `form().valid()` je tačno
    kada nijedno polje nema grešaka.
 
-Vrednost jednog polja čitamo kao `this.form.name().value()`. Tako u projekto i čitamo unos pri
+Vrednost jednog polja čitamo kao `this.form.name().value()`. Tako u projektu i čitamo unos pri
 slanju, polje po polje (`this.form.name().value()`, `this.form.description().value()`,
 …), a ne ceo model odjednom. Kada model stoji kao zasebno polje, kao u `MyTours`, njegova
 cela vrednost je dostupna i kao `this.model()`.
@@ -167,8 +167,7 @@ U datom kodu treba uočiti sledeće:
   stiže u model.
 - Desna strana vezivanja je polje forme, `form.name`, bez zagrada. Angular upisuje vrednost
   polja u element, a pri svakom događaju `input` upisuje sadržaj elementa u model. Model je
-  signal, pa sve što ga čita dobija obaveštenje o promeni. Referenca na element i vezivanje
-  događaja iz lekcije o kontroli toka više nisu potrebni.
+  signal, pa sve što ga čita dobija obaveštenje o promeni.
 - Isto vezivanje radi na elementima `input`, `textarea` i `select`. Za `select` u model
   upisuje `value` izabrane opcije.
 - Kada je element `input` tipa `number`, a svojstvo modela broj, Angular u model upisuje

@@ -1,4 +1,4 @@
-Na serveru je svaki sloj modula zaseban projekat, a kompajler odbija build kada projekat koristi tip iz projekta koji ne referencira. Modul tako ne može da posegne u unutrašnjost drugog modula, jer referenca ka njoj ne postoji. Na klijentu je cela aplikacija jedan projekat, pa naredba `import` sa bilo kojom putanjom prolazi prevođenje. Uvoz kartice ture iz unutrašnjosti modula Exploration, sa početka lekcije o javnoj površini, prevodilac prihvata bez primedbe. Pravilo o javnoj površini zato mora da proverava nešto drugo, kao što na serveru arhitektonski test proverava pravila koja kompajler ne čuva.
+Na serveru je svaki sloj modula zaseban projekat, a kompajler odbija build kada projekat koristi tip iz projekta koji ne referencira. Modul tako ne može da posegne u unutrašnjost drugog modula, jer referenca ka njoj ne postoji. Na klijentu je cela aplikacija jedan projekat, pa naredba `import` sa bilo kojom putanjom prolazi prevođenje. Uvoz kartice ture iz unutrašnjosti modula Exploration, sa početka lekcije o javnoj površini, prevodilac prihvata bez primedbe. Granicu modula na klijentu zato ne može da čuva prevodilac, nego alat koji se pokreće pored njega. Slično kao što na serveru pravila koja kompajler ne vidi čuva arhitektonski test.
 
 ## Statička analiza
 
@@ -29,7 +29,7 @@ U datom kodu treba uočiti sledeće:
 - Pravilo `no-restricted-imports` zabranjuje uvoz čija putanja odgovara regularnom izrazu. Izraz se čita ovako: putanja koja jednim ili više `../` izlazi iz direktorijuma, ulazi u direktorijum `games`, `social` ili `payment` i posle toga se ne završava na `public-api`. Uvoz `../../social/public-api` prolazi, a `../../social/blog-reading/blog-card/blog-card` ne.
 - Svojstvo `message` je tekst koji linter ispisuje uz prijavu.
 - Nivo `error` znači da prijava obara proveru, a ne da samo upozorava.
-- Pravilo proverava putanju uvoza, a ne šta se uvozi. Servis koji bi neko izvezao kroz javnu površinu pravilo propušta. Granica klijenta je ovo pravilo i dogovor iz lekcije o javnoj površini, i ništa strukturno, za razliku od servera na kom referenca između projekata ne postoji.
+- Pravilo proverava putanju uvoza, a ne šta se uvozi. Servis koji bi neko izvezao kroz javnu površinu pravilo propušta.
 
 ## Čitanje prijave
 
@@ -47,7 +47,6 @@ U datom ispisu treba uočiti sledeće:
 - Prvi red je datoteka u kojoj je prekršaj, a `2:1` je red i kolona naredbe `import`.
 - Iza nivoa `error` stoji poruka. Prvi deo poruke piše ESLint, sa putanjom koja je odgovarala regularnom izrazu, a drugi deo je tekst iz svojstva `message` u konfiguraciji.
 - Na kraju reda je naziv pravila koje je prekršeno.
-- Ispravka je jedan od dva načina iz lekcije o javnoj površini. Stranica ili navigira na adresu modula Exploration, ili ugrađuje komponentu koju tim modula Exploration izveze kroz javnu površinu. Konfiguracija se ne menja.
 
 ## Kada se pravilo proverava
 

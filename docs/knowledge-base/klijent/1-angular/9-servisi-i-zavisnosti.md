@@ -144,29 +144,32 @@ export class BlogReading {
 }
 ```
 
-Stranica koja pokreće te komande dobija servis ubrizgavanjem, isto kao `Auth`, kroz
-`inject`:
+Stranica koja pokreće te komande dobija servis ubrizgavanjem, isto kao `Auth`, i poziva
+njegove metode iz svojih:
 
 ```ts
 export class BlogDetail {
   private readonly blogReading = inject(BlogReading);
-  // ...
+
+  readonly id = input.required<string>();
+
+  protected async add(text: string): Promise<void> {
+    await this.blogReading.addComment(this.id(), { text });
+  }
 }
 ```
 
 U datom kodu treba uočiti sledeće:
 
+- Metoda `add` poziva komandu servisa i čeka je sa `await`, jer zahtev serveru traje.
+  Identifikator bloga stranica ima iz parametra rute, a tekst komentara dobija iz svog
+  šablona. Stranica, dakle, odlučuje kada se komanda pokreće, a servis zna kako se šalje.
 - `BlogReading` i sam koristi ubrizgavanje: ubrizgava mu se `HttpClient` da bi slao zahteve
   serveru. Servisima se tako ubrizgavaju drugi servisi, jednako kao komponentama.
 - Servis drži samo komande, ne i podatke koje stranica prikazuje.
-
-> **Napomena o projektu:** Za razliku od stanja o korisniku, **domenske podatke (spisak
-> blogova, jedan blog, spisak tura) projekat ne drži u zajedničkom servisu.** Svaka
-> stranica ih čita direktno sa servera, u samoj stranici, preko `httpResource` (lekcija o
-> komunikaciji sa serverom). Na primer, `BlogList` ima `blogs = httpResource(...)`, a
-> stranica bloga `detail = httpResource(() => '/api/social/blogs/' + id())`, koji se
-> ponovo dovlači kada se `id` iz rute promeni. Pravilo je: **upiti žive u stranici (`httpResource`),
-> komande u servisu.** Podatke između modula ne spajamo na klijentu, već na serveru.
+- Prava metoda `add` u projektu radi još dve stvari: prijavljuje grešku kada server odbije
+  komandu i ponovo učitava podatke stranice. Oboje uvodimo u lekcijama o čitanju podataka i
+  o komandama.
 
 ## Zaglavlje sa korisnikom
 

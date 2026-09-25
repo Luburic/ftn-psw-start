@@ -6,10 +6,8 @@ aplikacije pretvara u običan CSS.
 ## Stilovi komponente
 
 Stilovi iz datoteke na koju dekorator upućuje podešavanjem `styleUrl` važe samo za šablon
-te komponente. Pri prevođenju aplikacije radni okvir svakom elementu šablona dodaje atribut
-jedinstven za tu komponentu, a svaki selektor iz njene datoteke stilova prepisuje tako da
-zahteva taj atribut. Sledeći kod prikazuje, iz projekta, jedno pravilo iz datoteke stilova
-komponente koja prikazuje spisak komentara i deo njenog šablona:
+te komponente. Sledeći kod prikazuje, iz projekta, jedno pravilo iz datoteke stilova
+komponente koja prikazuje spisak komentara:
 
 ```scss
 .comments > li + li {
@@ -30,19 +28,14 @@ U datom kodu treba uočiti sledeće:
 - Radni okvir selektor prepisuje u oblik `.comments[_ngcontent-x] > li[_ngcontent-x] + li[_ngcontent-x]`,
   gde je `_ngcontent-x` atribut koji imaju samo elementi ovog šablona. Druga komponenta sme
   da ima klasu `comments` sa drugim pravilima, bez sudara.
-- Elementi šablona druge komponente, i one koja se koristi unutar ovog šablona, taj atribut
-  nemaju, pa pravilo na njih ne deluje.
-- Prepisani selektor je određeniji od selektora bez atributa. Kada komponenta napiše
-  `.card { padding: 0; }`, pravilo važi samo za kartice u njenom šablonu, a nad njima ima
-  prednost nad pravilom koje važi za ceo dokument.
-- Datoteka stilova komponente drži samo pravila koja nisu potrebna nigde drugde. Boja linije
-  i razmak dolaze iz vrednosti zajedničkih za ceo projekat, koje upoznajemo niže.
+- Datoteka stilova komponente drži samo pravila koja su bitna za njen šablon. Ostali stilovi mogu doći 
+  iz zajedničkih datoteka koje upoznajemo ispod.
 
 ## Globalni stilovi
 
-Stilovi koji važe za ceo dokument žive u datoteci `styles.scss` iz stabla radnog prostora,
+Stilovi koji važe za ceo dokument žive u datoteci `styles.scss`,
 koju alat za prevođenje uključuje u dokument kao običnu CSS datoteku, bez ikakve oznake u
-komponentama. Ona iz projekta ima četiri reda:
+komponentama. Konkretno u projektu imamo četiri reda u `styles.scss` datoteci:
 
 ```scss
 @use 'styles/tokens';
@@ -97,23 +90,31 @@ U datom kodu treba uočiti sledeće:
 
 ## Izbor mesta za nov stil
 
-Kada elementu treba izgled koji još nema, postupamo redom:
+Kada elementu treba izgled koji još nema, pitanje je jedno: **postoji li već globalna klasa
+za taj izgled?**
 
-1. Kada neki element u projektu već ima taj izgled, na element se stavlja postojeća globalna
-   klasa.
-2. U suprotnom se pravilo piše u datoteku stilova komponente.
-3. U svakom pravilu se boja, razmak i veličina čitaju iz postojećeg tokena, a ne upisuju kao
-   nova vrednost.
+Ako postoji, ne piše se nijedno pravilo tj. na element se stavlja ta klasa. Tako `article` u
+kartici dobija `class="card"`, a dugme `class="button"`.
 
-Datoteke globalnih stilova (`_tokens.scss`, `_components.scss` i ostale) i sam `styles.scss`
-su zajedničke za ceo projekat. Dodavanje nove globalne klase ili novog tokena menja izgled
-svih modula, pa je to odluka koja se donosi promišljeno, a ne usput uz jednu komponentu.
+Ako ne postoji, a izgled treba samo toj komponenti, pravilo se piše u njenu datoteku
+stilova. Tamo ne može da dotakne nikog drugog, jer radni okvir selektor sužava na njen
+šablon.
+
+Ako ne postoji, a isti izgled treba na više mesta, u igri je nova globalna klasa. To više
+nije izmena jedne komponente, nego izmena koja menja izgled svih modula, pa se donosi kao
+i svako proširenje zajedničkog koda, u dogovoru sa timom koji te datoteke održava. Isto
+važi i za nov token.
+
+U sva tri slučaja vrednosti se čitaju iz postojećih tokena. Umesto `padding: 12px` piše
+`padding: var(--space-3)`, a umesto `color: #2f6df6` piše `color: var(--color-accent)`.
+Upisana vrednost na prvi pogled radi isto, ali ispada iz sistema: kada se token promeni,
+ona ostaje stara.
 
 ## Kartica ture
 
-Povežimo pojmove u karticu ture iz lekcije o komponenti, sada sa stilovima u datoteci
-`tour-card.scss`. Kartica dobija okvir kao svaka kartica u projektu, a naslov u boji
-naglaska, što nijedna druga komponenta nema:
+Povežimo pojmove u karticu ture iz lekcije o komponenti, sada i sa njenom datotekom
+stilova. Kartica ima okvir kao i svaka druga kartica u projektu, a naslov joj je obojen
+pravilom koje postoji samo u njenoj datoteci:
 
 ```html
 <article class="card">
@@ -129,20 +130,20 @@ h3 {
 }
 ```
 
-> **Napomena:** Ovaj `.scss` isečak je ilustrativan i prati karticu iz lekcije o
-> komponenti. U projektu `tour-card.scss` stilizuje oznake i vremena obilaska (`.tags`,
-> `.times`), a ne `h3`, i kartica u šablonu nosi `class="card stack"`. Pravilo za `h3` ovde
-> služi samo da pokaže stil svojstven jednoj komponenti.
+> **Napomena:** Ovaj `.scss` isečak je izmišljen za primer i prati karticu iz lekcije o
+> komponenti.
 
-Kada internet čitač primeni stilove na karticu, dešava se sledeće:
+Kada internet čitač iscrta karticu, svaki element dobija stilove iz više izvora:
 
-1. Element `article` nosi globalnu klasu `card`, pa dobija pozadinu, okvir, poluprečnik i
-   unutrašnji razmak iz datoteke `_components.scss`, sa vrednostima iz tokena.
-2. Na element `h3` deluje globalno pravilo za naslove iz datoteke `_base.scss`, koje mu daje
-   margine i visinu reda.
-3. Isti element nosi atribut komponente, pa na njega deluje i prepisani selektor
-   `h3[_ngcontent-x]` iz datoteke `tour-card.scss`, koji boju čita iz tokena
-   `--color-accent`. Element `h3` u drugoj komponenti taj atribut nema i zadržava boju
-   teksta dokumenta.
-4. Dugme nosi globalnu klasu `button`, pa izgleda kao svako dugme u projektu, bez ijednog
-   pravila u datoteci komponente.
+1. Element `article` nosi globalnu klasu `card`, pa iz datoteke `_components.scss` dobija
+   pozadinu, okvir, zaobljene uglove i unutrašnji razmak, sve sa vrednostima iz tokena.
+2. Na naslov `h3` prvo deluje globalno pravilo za naslove iz datoteke `_base.scss`, koje mu
+   daje margine i visinu reda.
+3. Isti `h3` nosi i atribut ove komponente, pa na njega deluje i pravilo iz datoteke
+   `tour-card.scss`, koje mu daje boju iz tokena `--color-accent`. Naslov `h3` u nekoj
+   drugoj komponenti taj atribut nema, pa ostaje u podrazumevanoj boji teksta.
+4. Dugme nosi globalnu klasu `button` i time izgleda kao svako dugme u projektu, bez
+   ijednog pravila u datoteci ove komponente.
+
+Na jednoj kartici se tako vidi cela podela: oblik i razmaci dolaze iz globalnih klasa,
+vrednosti iz tokena, a u datoteci komponente stoji samo ono što je njeno tj. boja naslova.
