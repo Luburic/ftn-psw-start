@@ -12,7 +12,7 @@ public class BlogAuthoringQueryTests : BaseIntegrationTest
     public BlogAuthoringQueryTests(SocialApiFactory factory) : base(factory) { }
 
     [Fact]
-    public async Task GetMine_returns_only_the_callers_blogs()
+    public async Task Author_lists_only_their_own_blogs()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 

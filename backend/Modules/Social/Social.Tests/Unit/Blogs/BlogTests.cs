@@ -58,7 +58,7 @@ public class BlogTests
     }
 
     [Fact]
-    public void Publishes()
+    public void Draft_blog_is_published()
     {
         var blog = CreateBlog();
 
@@ -68,7 +68,7 @@ public class BlogTests
     }
 
     [Fact]
-    public void Publish_rejects_an_already_published_blog()
+    public void Published_blog_cannot_be_published_again()
     {
         var blog = CreatePublishedBlog();
 
@@ -78,7 +78,7 @@ public class BlogTests
     }
 
     [Fact]
-    public void AddComment_stores_the_comment_on_a_published_blog()
+    public void User_comments_on_a_published_blog()
     {
         var blog = CreatePublishedBlog();
 
@@ -91,7 +91,7 @@ public class BlogTests
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public void AddComment_rejects_blank_text(string text)
+    public void Comment_requires_text(string text)
     {
         var blog = CreatePublishedBlog();
 
@@ -101,7 +101,7 @@ public class BlogTests
     }
 
     [Fact]
-    public void UpdateComment_changes_the_authors_own_comment()
+    public void User_edits_their_own_comment()
     {
         var blog = CreatePublishedBlog();
         blog.AddComment(WellKnownUsers.Administrator, "Odlična tura!");
@@ -113,7 +113,7 @@ public class BlogTests
     }
 
     [Fact]
-    public void UpdateComment_rejects_another_users_comment()
+    public void User_cannot_edit_another_users_comment()
     {
         var blog = CreatePublishedBlog();
         blog.AddComment(WellKnownUsers.Administrator, "Odlična tura!");
@@ -125,7 +125,7 @@ public class BlogTests
     }
 
     [Fact]
-    public void DeleteComment_removes_the_authors_own_comment()
+    public void User_deletes_their_own_comment()
     {
         var blog = CreatePublishedBlog();
         blog.AddComment(WellKnownUsers.Administrator, "Odlična tura!");

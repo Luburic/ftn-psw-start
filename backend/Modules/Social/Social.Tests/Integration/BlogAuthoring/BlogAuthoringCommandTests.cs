@@ -16,7 +16,7 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     public BlogAuthoringCommandTests(SocialApiFactory factory) : base(factory) { }
 
     [Fact]
-    public async Task Create_stores_a_draft_blog()
+    public async Task Explorer_creates_a_draft_blog()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
         var request = new CreateBlogDto("Novi blog", "Opis novog bloga.", ["https://example.com/slika.jpg"]);
@@ -37,7 +37,7 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Create_rejects_a_blank_title()
+    public async Task Explorer_cannot_create_a_blog_without_a_title()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
         var request = new CreateBlogDto("   ", "Opis novog bloga.", []);
@@ -52,7 +52,7 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Create_requires_authentication()
+    public async Task Anonymous_user_cannot_create_a_blog()
     {
         var request = new CreateBlogDto("Novi blog", "Opis novog bloga.", []);
 
@@ -62,7 +62,7 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Create_requires_the_explorer_role()
+    public async Task Administrator_cannot_create_a_blog()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
         var request = new CreateBlogDto("Novi blog", "Opis novog bloga.", []);
@@ -73,7 +73,7 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Publishes()
+    public async Task Draft_blog_is_published()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
@@ -86,7 +86,7 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Publish_rejects_another_authors_blog()
+    public async Task Explorer_cannot_publish_another_authors_blog()
     {
         var client = Factory.CreateClientFor(Guid.NewGuid(), "explorer");
 

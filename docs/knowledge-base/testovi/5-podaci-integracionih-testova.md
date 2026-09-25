@@ -1,10 +1,10 @@
-Test `Publishes` iz prethodne lekcije šalje zahtev za objavu ture sa identifikatorom `TourSeed.PublishableRiverside.Id` i zatiče tu turu u bazi, sa dovoljno dugim opisom i vremenom transporta. Ostaje pitanje kako je ta tura dospela u bazu, šta se sa njom dešava posle testa i zašto naredni test zatiče bazu u istom stanju kao prethodni. Baza je jedina zavisnost koju integracioni testovi modula dele, pa je ona i jedino mesto na kome jedan test može da poremeti drugi. Uz to, podaci u bazi rastu sa svakom novom funkcionalnošću, pa test koji je juče prolazio može da padne zbog reda koji je neko dodao za drugi test. Ova lekcija opisuje kako testovi dele jednu bazu, a ostaju nezavisni, i kako se početni podaci i provere pišu tako da ih rast modula ne obara.
+Test `Tour_is_published_when_all_rules_are_met` iz prethodne lekcije šalje zahtev za objavu ture sa identifikatorom `TourSeed.PublishableRiverside.Id` i zatiče tu turu u bazi, sa dovoljno dugim opisom i vremenom transporta. Ostaje pitanje kako je ta tura dospela u bazu, šta se sa njom dešava posle testa i zašto naredni test zatiče bazu u istom stanju kao prethodni. Baza je jedina zavisnost koju integracioni testovi modula dele, pa je ona i jedino mesto na kome jedan test može da poremeti drugi. Uz to, podaci u bazi rastu sa svakom novom funkcionalnošću, pa test koji je juče prolazio može da padne zbog reda koji je neko dodao za drugi test. Ova lekcija opisuje kako testovi dele jednu bazu, a ostaju nezavisni, i kako se početni podaci i provere pišu tako da ih rast modula ne obara.
 
 ## Poznato stanje pre svakog testa
 
 U integracionom testu su **početni podaci** (engl. *seed*) skup redova koji se upisuje u testnu bazu pre svakog testa. Test koji čita mora unapred da zna šta je u bazi, a test koji piše ne sme da ostavi trag narednom testu. Oba zahteva ispunjava isti postupak, kojim se pre svakog testa sve tabele modula prazne i ponovo pune istim početnim podacima.
 
-Postupak se izvršava na početku testa, a ne na kraju. Čišćenje na kraju se preskače kada se izvršavanje testa prekine, na primer u debageru, pa zaostali red obara naredne testove. Čišćenje na početku ne može da se preskoči, pa posebna faza čišćenja posle testa ne postoji. Pošto se testovi iste kolekcije izvršavaju jedan za drugim, dva testa nikada ne dele bazu u istom trenutku.
+Postupak se izvršava na početku testa, a ne na kraju. Čišćenje na kraju se preskače kada se izvršavanje testa prekine, na primer u debageru, pa zaostali red obara naredne testove. Čišćenje na početku ne može da se preskoči, pa posebna faza čišćenja posle testa ne postoji. Pošto se testovi jednog modula izvršavaju jedan za drugim, dva testa nikada ne dele bazu u istom trenutku.
 
 Konstruktor osnovne klase `BaseIntegrationTest` pokreće ovaj postupak:
 
@@ -21,7 +21,7 @@ U datom kodu treba uočiti sledeće:
 
 - Test okvir pravi novu instancu test klase za svaku test metodu, pa se konstruktor osnovne klase izvršava pre svakog testa.
 - Metoda `Reseed` fabrike prazni sve tabele koje kontekst modula mapira, a zatim upisuje prosleđene objekte. Struktura baze se postavlja jednom po pokretanju testova, a podaci pre svakog testa.
-- Poziv `Reseed` je jedini način da podaci uđu u bazu mimo krajnje tačke koja se testira.
+- Poziv `Reseed` je jedini dozvoljeni način da podaci uđu u bazu mimo krajnje tačke koja se testira.
 
 ## Početni podaci koji preživljavaju rast
 
@@ -71,7 +71,7 @@ Prvi kanal isključuje dve prečice. Kada bi test pripremao stanje pozivom druge
 
 ```cs
 [Fact]
-public async Task Create_stores_a_draft_tour()
+public async Task Explorer_creates_a_draft_tour()
 {
     var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
     var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Hard, ["planina"]);
@@ -109,7 +109,7 @@ using var assertContext = Factory.CreateContext<ExplorationDbContext>();
 assertContext.Tours.Count().Should().Be(tourCountBefore);
 ```
 
-Test upita izvodi očekivanja iz klase početnih podataka. Sledeći kod prikazuje provere iz testa `GetPublished_returns_only_published_tours`:
+Test upita izvodi očekivanja iz klase početnih podataka. Sledeći kod prikazuje provere iz testa `Only_published_tours_are_listed`:
 
 ```cs
 tours!.Items.Should().OnlyContain(tour => tour.Status == TourStatus.Published);

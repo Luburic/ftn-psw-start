@@ -1,6 +1,6 @@
-U prethodnoj lekciji smo videli test `Publishes`, koji gradi turu, objavljuje je i proverava status i vreme objave. Zamislimo dva druga testa iste klase:
+U prethodnoj lekciji smo videli test `Tour_is_published_when_all_rules_are_met`, koji gradi turu, objavljuje je i proverava status i vreme objave. Zamislimo dva druga testa iste klase:
 1. Provera da tura posle kreiranja ima ime koje joj je dato u konstruktoru.
-2. Provera `Publish` baca izuzetak kada se pozove nad objavljenom turom i da taj izuzetak sadrži poruku sa tačno određenim tekstom.
+2. Provera da li `Publish` baca izuzetak kada se pozove nad objavljenom turom i da li taj izuzetak sadrži poruku sa tačno određenim tekstom.
 
 Dati testovi nisu preterano korisni. Pitanje je kako da procenimo koje automatske testove vredi pisati. Ovo će nas služiti kod pisanja naših testova, kao i pri pregledu testova koje je napisao neko drugi.
 
@@ -8,7 +8,7 @@ Dati testovi nisu preterano korisni. Pitanje je kako da procenimo koje automatsk
 
 Cilj automatskog testiranja je **održiv rast** projekta, stanje u kome izmena koda posle godinu dana rada košta koliko i na početku. Bez testova svaka izmena rizikuje **regresiju** (engl. *regression*), grešku u funkcionalnosti koja je ranije radila. Tim tada usporava, jer posle svake izmene proverava ručno, ili ne usporava i isporučuje regresije.
 
-Sa ovim ciljem, deluje da bi najbolje bilo da testovi testiraju sav naš kod. Tada bismo maksimizovali metriku koju zovemo **pokrivenost koda** (engl. *code coverage*), što je procenat redova koje testovi izvrše. Ova metrika je parcijalno korisna. Niska pokrivenost je siguran znak da nešto nije testirano, ali visoka pokrivenost nije garancija kvaliteta. Pokrivenost samo beleži da je red izvršen, a ne da testirana jedinica radi kako treba. Test bez ijedne provere ili sa glupavim proverama daje istu pokrivenost kao test sa kvalitetnim proverama. Dakle, vrednost testa je vezana za kvalitet njegovih provera.
+Sa ovim ciljem, deluje da bi najbolje bilo da testovi testiraju sav naš kod. Tada bismo maksimizovali metriku koju zovemo **pokrivenost koda** (engl. *code coverage*), što je procenat redova koje testovi izvrše. Ova metrika je parcijalno korisna. Niska pokrivenost je siguran znak da nešto nije testirano, ali visoka pokrivenost nije garancija kvaliteta. Pokrivenost samo beleži da je red izvršen, a ne da testirana jedinica radi kako treba. Test bez ijedne provere ili sa trivijalnim proverama daje istu pokrivenost kao test sa kvalitetnim proverama. Dakle, vrednost testa je vezana za kvalitet njegovih provera.
 
 Sa druge strane, testovi unose trošak. Pored što testiraju kod, testovi su isto kod. Pišu se, čitaju, menjaju kada se menja kod koji proveravaju, i ponekad padaju bez razloga. Svaki test ima trošak.
 
@@ -38,7 +38,7 @@ Sa druge strane, analiziramo test koji aktivira metodu koja poziva mnoštvo obje
 
 ```cs
 [Fact]
-public async Task AddTransportTime_stores_the_time_on_the_tour()
+public async Task Author_adds_a_transport_time_to_a_tour()
 {
   var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
   var request = new TransportTimeDto(TransportMode.Walking, 120);
@@ -54,7 +54,7 @@ public async Task AddTransportTime_stores_the_time_on_the_tour()
 }
 ```
 
-Dati kod predstavlja integracioni test. **Integracioni test** (engl. *integration test*) je automatski test koji ne ispunjava bar jedan uslov jediničnog testa: proverava ponašanje kroz više jedinica umesto kroz najmanju jedinicu koja ga nudi, obraća se bazi podataka ili drugom sistemu, ili nije nezavisan od drugih testova. Ovaj test krši prvi i drugi uslov, jer prolazi kroz ceo modul i traži pokrenutu aplikaciju sa bazom. Za sada treba uočiti sledeće:
+Dati kod predstavlja integracioni test. **Integracioni test** (engl. *integration test*) je automatski test koji proverava jedinicu ponašanja, ali ne ispunjava drugi ili treći uslov jediničnog testa, jer se obraća bazi podataka ili drugom sistemu ili zavisi od drugih testova. Ovaj test ne ispunjava drugi uslov, jer traži pokrenutu aplikaciju sa bazom. Za sada treba uočiti sledeće:
 - Poziv `PostAsJsonAsync` pravi HTTP POST zahtev koji će aktivirati serversku aplikaciju, sve middleware komponente, odgovarajući kontroler, a onda kroz njega servis, repozitorijum, `Tour` agregat i jedinicu posla (`UnitOfWork`), pre nego što se vrati odgovor u vidu HTTP odgovora.
 - Provera statusnog koda utvrđuje da li je stigao odgovarajući HTTP odgovor, a zatim gleda da li se sadržaj baze podataka izmenio na očekivan način. Sa prvom proverom osiguravamo da bi klijentska aplikacija dobila ono što očekuje, a sa drugom da se desila transformacija sistema koju smo očekivali.
 - Ako bilo koja karika u lancu ima grešku, ovaj test će je uhvatiti.
@@ -63,13 +63,13 @@ Dati kod predstavlja integracioni test. **Integracioni test** (engl. *integratio
 
 **Refaktorisanje** je izmena strukture koda koja ne menja njegovo ponašanje. **Otpornost na refaktorisanje** je mera koliko test preživljava izmene testirane jedinice ponašanja bez da mora kod testa da se menja i bez da proizvodi lažne pozitivne rezultate (pad testa iako funkcionalnost koju test proverava radi ispravno). Lažni pozitivi imaju dve posledice. Prvo, tim se navikava da pali testovi ne znače 'greška' i prestaje da ih čita. Drugo, tim izbegava refaktorisanje, jer svaka promena obara testove koje zatim treba popravljati. Skup testova sa mnogo lažnih pozitiva vremenom prestaje da se pokreće.
 
-Testovi koji testiraju malu jedinicu ponašanja (npr. metodu vrednosnog objekta), prirodno su spregnuti za sitnu površinu, gde je visoka verovatnoća da će test morati da se modifikuje ako se refaktoriše jedinica ponašanja. Na ranijem primeru `New_tour_has_appropriate_name`, izmena naziva svojstva `Name` u `Title` zahteva korekciju testa. Naspram toga, `AddTransportTime_stores_the_time_on_the_tour` je spregnut samo sa HTTP ugovorom i sadržajem baze, a ne sa načinom na koji je logika između njih napisana, te je visoka verovatnoća da refaktorisanje te logike neće zahtevati izmenu testa.
+Testovi koji testiraju malu jedinicu ponašanja (npr. metodu agregata), prirodno su spregnuti za sitnu površinu, gde je visoka verovatnoća da će test morati da se modifikuje ako se refaktoriše jedinica ponašanja. Na ranijem primeru `New_tour_has_appropriate_name`, izmena naziva svojstva `Name` u `Title` zahteva korekciju testa. Naspram toga, `Author_adds_a_transport_time_to_a_tour` je spregnut samo sa HTTP ugovorom i sadržajem baze, a ne sa načinom na koji je logika između njih napisana, te je visoka verovatnoća da refaktorisanje te logike neće zahtevati izmenu testa.
 
 Prethodna karakteristika nam govori da je korisno da testiramo apstraktnije metode jer ćemo ređe morati da menjamo njihove testove. Uz to, korisno je da pazimo na ishode testa koje proveravamo, gde želimo da proverimo najbitnije ishode, a ne svaki detalj. Sledeći kod prikazuje test koji proverava detalj implementacije:
 
 ```cs
 [Fact]
-public void Publish_rejects_an_already_published_tour()
+public void Published_tour_cannot_be_published_again()
 {
     var tour = CreateTour(LongDescription);
     tour.AddTransportTime(TransportMode.Car, 30);
@@ -106,8 +106,8 @@ Sledeća tabela ocenjuje dva testa iz ove lekcije i test iz prethodne:
 | Test | Zaštita od regresija | Otpornost na refaktorisanje | Brzina | Lakoća održavanja |
 |---|---|---|---|---|
 | `New_tour_has_appropriate_name` | nikakva | umerena | visoka | visoka |
-| `Publish_rejects_an_already_published_tour` sa proverom poruke | niska | niska | visoka | visoka |
-| `AddTransportTime_stores_the_time_on_the_tour` | visoka | visoka | umerena | umerena |
+| `Published_tour_cannot_be_published_again` sa proverom poruke | niska | niska | visoka | visoka |
+| `Author_adds_a_transport_time_to_a_tour` | visoka | visoka | umerena | umerena |
 
 U datoj tabeli treba uočiti sledeće:
 

@@ -2,7 +2,7 @@
 
 Ovaj dokument propisuje kako se pišu testovi modula. Mehanizam je u vlasništvu platformskog tima (projekat `Shared.Tests`), a podaci i testovi su u vlasništvu tima koji je vlasnik modula. Živi primeri su `Identity.Tests` i test projekti modula `Exploration` i `Social`.
 
-Koriste se xUnit i FluentAssertions, zaključan na verziji 7 (poslednja linija pod Apache licencom; prelazak na verziju 8 zahteva prethodni razgovor o licenci). Svaki modul ima jedan test projekat sa direktorijumima `Unit/` i `Integration/`. Jedinični testovi proveravaju ponašanje agregata i domenskih servisa. Integracioni testovi šalju prave HTTP zahteve: `WebApplicationFactory<Program>` podiže host, a test poziva endpointe kroz `HttpClient`.
+Koriste se xUnit i FluentAssertions, zaključan na verziji 7 (poslednja linija pod Apache licencom; prelazak na verziju 8 zahteva prethodni razgovor o licenci). Svaki modul ima jedan test projekat sa direktorijumima `Unit/` i `Integration/`. Jedinični testovi proveravaju ponašanje agregata i domenskih servisa. Integracioni testovi šalju prave HTTP zahteve: `WebApplicationFactory<Program>` podiže host, a test poziva endpointe kroz `HttpClient`. Ime test metode je rečenica o domenu u snake_case obliku i ne sadrži imena klasa, metoda, HTTP glagola ni statusnih kodova (npr. `Published_tour_cannot_be_published_again`, `Anonymous_user_cannot_create_a_tour`).
 
 ## Testne baze podataka
 
@@ -30,7 +30,7 @@ Testovi upita ostaju na HTTP nivou — projekcija je ono što se testira — i n
 
 ## Povezivanje
 
-Svaki test projekat ima jednu datoteku `BaseIntegrationTest.cs` koja objedinjuje tri tipa: potklasu fabrike, `[CollectionDefinition("Integration")]` sa fabrikom kao `ICollectionFixture` (jedno podizanje hosta po pokretanju i serijsko izvršavanje — kolekcije su jedinica paralelizma u xUnit-u) i apstraktnu klasu `BaseIntegrationTest` čiji konstruktor poziva `factory.Reseed<TContext>(Seed.All)`, pa svaki test kreće od istovetnog početnog stanja. Direktorijumi integracionih testova prate agregate, sa klasama `<Agregat>CommandTests` i `<Agregat>QueryTests` jedna pored druge.
+Svaki test projekat ima jednu datoteku `BaseIntegrationTest.cs` koja objedinjuje tri tipa: potklasu fabrike, `[CollectionDefinition("Integration")]` sa fabrikom kao `ICollectionFixture` (jedno podizanje hosta po pokretanju i serijsko izvršavanje — kolekcije su jedinica paralelizma u xUnit-u) i apstraktnu klasu `BaseIntegrationTest` čiji konstruktor poziva `factory.Reseed<TContext>(Seed.All)`, pa svaki test kreće od istovetnog početnog stanja. Direktorijumi integracionih testova prate grupe slučajeva korišćenja iz aplikacionog sloja, sa klasom `<Grupa>CommandTests` za aplikacioni servis i `<Grupa>QueryTests` za upitnu klasu jedna pored druge (npr. `TourAuthoring/TourAuthoringCommandTests.cs` i `TourAuthoring/TourAuthoringQueryTests.cs`).
 
 ## Autentifikacija u testovima
 

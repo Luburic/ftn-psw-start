@@ -10,7 +10,7 @@ Da bismo razumeli šta je prikladno testirati i na koji način, izdelićemo kod 
 
 **Složenost** koda dolazi iz kompleksnosti izvršavanja i izraza koje koristi. Pedeset linija koje ispisuju labelu na konzolu su trivijalne. Pedeset linija sa više ugnježdenih petlji ili dugačkim lancima LINQ izraza predstavljaju složen kod. **Domenski značaj** koda je mera koliko kod neposredno iskazuje pravilo domena. Agregati i domenski servisi sadrže većinu domenskog značaja aplikacije. Ove dve osobine čine prvu dimenziju i posmatraju se zajedno, jer je kod vredan testa ako ima bilo koju od njih. Izračunavanje cene bez ijednog grananja nije složeno, ali je domenski značajno i zaslužuje test. Složen kod je mesto gde greške nastaju, a domenski značajan kod je mesto gde greška najviše košta.
 
-**Saradnik** je zavisnost koda koja ima promenljivo stanje ili živi van procesa, poput repozitorijuma ili baze podataka. Vrednosni objekti i nepromenljivi ulazi nisu saradnici. Broj saradnika je druga dimenzija i određuje trošak testa, jer takav test mora svakog saradnika da dovede u očekivano stanje pre akcije i da ga proveri posle nje. Što je veći broj saradnika, to je test teži za održavanje.
+**Saradnik** je zavisnost koda koja ima promenljivo stanje ili živi van procesa, poput repozitorijuma ili baze podataka. Objekti koje klasa sadrži kao svoje stanje, poput vremena transporta u turi, nisu njeni saradnici. Vrednosni objekti i nepromenljivi ulazi takođe nisu saradnici. Broj saradnika je druga dimenzija i određuje trošak testa, jer takav test mora svakog saradnika da dovede u očekivano stanje pre akcije i da ga proveri posle nje. Što je veći broj saradnika, to je test teži za održavanje.
 
 Sledeći kod uporedo prikazuje metodu agregata i metodu aplikacionog servisa iz projekta:
 
@@ -102,6 +102,6 @@ public async Task PublishAsync(Guid tourId, Guid authorId)
 
 U datom kodu treba uočiti sledeće:
 
-- Pravilo o dužini opisa sada živi u servisu, pored saradnika. Pravilo se može proveriti samo kroz servis, pa test mora da poseje turu sa kratkim opisom u bazu. Taj test je skuplji od testa `Publish_requires_an_appropriate_description` iz prve lekcije.
+- Pravilo o dužini opisa sada živi u servisu, pored saradnika, a metoda `Tour.Publish` ga ne sadrži. Pravilo se može proveriti samo kroz servis, pa test mora da poseje turu sa kratkim opisom u bazu. Taj test je skuplji od jediničnog testa `Tour_with_a_short_description_cannot_be_published` iz klase `TourTests`.
 - Ispravka nije bolji test, nego refaktorisanje: pravilo se premešta u metodu `Tour.Publish`, gde ono i jeste u projektu. Servis ostaje bez pravila i vraća se među koordinatorske klase.
 - Kod može da bude dubok, sa mnogo pravila, ili širok, sa mnogo saradnika, ali ne oboje. Podela na domenski i aplikacioni sloj iz čiste arhitekture je upravo ta podela, pa u modulu koji je poštuje ovo polje ostaje prazno.

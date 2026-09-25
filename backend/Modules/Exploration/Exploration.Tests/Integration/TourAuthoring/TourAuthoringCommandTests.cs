@@ -16,7 +16,7 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
     public TourAuthoringCommandTests(ExplorationApiFactory factory) : base(factory) { }
 
     [Fact]
-    public async Task Create_stores_a_draft_tour()
+    public async Task Explorer_creates_a_draft_tour()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
         var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Hard, ["planina"]);
@@ -36,7 +36,7 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Create_rejects_a_blank_name()
+    public async Task Explorer_cannot_create_a_tour_without_a_name()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
         var request = new CreateTourDto("   ", "Opis nove ture.", TourDifficulty.Easy, ["planina"]);
@@ -51,7 +51,7 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Create_requires_authentication()
+    public async Task Anonymous_user_cannot_create_a_tour()
     {
         var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Easy, ["planina"]);
 
@@ -61,7 +61,7 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Create_requires_the_explorer_role()
+    public async Task Administrator_cannot_create_a_tour()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
         var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Easy, ["planina"]);
@@ -72,7 +72,7 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task AddTransportTime_stores_the_time_on_the_tour()
+    public async Task Author_adds_a_transport_time_to_a_tour()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
         var request = new TransportTimeDto(TransportMode.Walking, 120);
@@ -87,7 +87,7 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Publishes()
+    public async Task Tour_is_published_when_all_rules_are_met()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
@@ -101,7 +101,7 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Publish_rejects_another_authors_tour()
+    public async Task Explorer_cannot_publish_another_authors_tour()
     {
         var client = Factory.CreateClientFor(Guid.NewGuid(), "explorer");
 

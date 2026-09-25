@@ -14,7 +14,7 @@ public class BlogCommentingCommandTests : BaseIntegrationTest
     public BlogCommentingCommandTests(SocialApiFactory factory) : base(factory) { }
 
     [Fact]
-    public async Task AddComment_stores_the_comment_on_a_published_blog()
+    public async Task User_comments_on_a_published_blog()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
         var request = new CreateCommentDto("Odličan blog!");
@@ -30,7 +30,7 @@ public class BlogCommentingCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task UpdateComment_changes_the_callers_own_comment()
+    public async Task User_edits_their_own_comment()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
         var commentId = BlogSeed.CommentedMuseumVisit.Comments.Single().Id;
@@ -46,7 +46,7 @@ public class BlogCommentingCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task UpdateComment_rejects_another_users_comment()
+    public async Task User_cannot_edit_another_users_comment()
     {
         var client = Factory.CreateClientFor(Guid.NewGuid(), "explorer");
         var commentId = BlogSeed.CommentedMuseumVisit.Comments.Single().Id;
@@ -62,7 +62,7 @@ public class BlogCommentingCommandTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task DeleteComment_removes_the_callers_own_comment()
+    public async Task User_deletes_their_own_comment()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
         var commentId = BlogSeed.CommentedMuseumVisit.Comments.Single().Id;

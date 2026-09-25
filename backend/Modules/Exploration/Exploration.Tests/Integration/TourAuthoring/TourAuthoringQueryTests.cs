@@ -12,7 +12,7 @@ public class TourAuthoringQueryTests : BaseIntegrationTest
     public TourAuthoringQueryTests(ExplorationApiFactory factory) : base(factory) { }
 
     [Fact]
-    public async Task GetMine_returns_only_the_callers_tours()
+    public async Task Author_lists_only_their_own_tours()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 

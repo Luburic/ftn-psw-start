@@ -52,7 +52,7 @@ public class TourTests
     }
 
     [Fact]
-    public void AddTransportTime_rejects_a_duplicate_transport()
+    public void Tour_has_one_time_per_transport_mode()
     {
         var tour = CreateTour(LongDescription);
         tour.AddTransportTime(TransportMode.Walking, 120);
@@ -65,7 +65,7 @@ public class TourTests
     [Theory]
     [InlineData(0)]
     [InlineData(-30)]
-    public void AddTransportTime_rejects_non_positive_minutes(int minutes)
+    public void Transport_time_must_be_positive(int minutes)
     {
         var tour = CreateTour(LongDescription);
 
@@ -75,7 +75,7 @@ public class TourTests
     }
 
     [Fact]
-    public void Publishes()
+    public void Tour_is_published_when_all_rules_are_met()
     {
         var tour = CreateTour(LongDescription);
         tour.AddTransportTime(TransportMode.Bicycle, 45);
@@ -87,7 +87,7 @@ public class TourTests
     }
 
     [Fact]
-    public void Publish_requires_an_appropriate_description()
+    public void Tour_with_a_short_description_cannot_be_published()
     {
         var tour = CreateTour("Kratak opis.");
         tour.AddTransportTime(TransportMode.Walking, 120);
@@ -98,7 +98,7 @@ public class TourTests
     }
 
     [Fact]
-    public void Publish_requires_a_transport_time()
+    public void Tour_without_a_transport_time_cannot_be_published()
     {
         var tour = CreateTour(LongDescription);
 
@@ -108,7 +108,7 @@ public class TourTests
     }
 
     [Fact]
-    public void Publish_rejects_an_already_published_tour()
+    public void Published_tour_cannot_be_published_again()
     {
         var tour = CreateTour(LongDescription);
         tour.AddTransportTime(TransportMode.Car, 30);

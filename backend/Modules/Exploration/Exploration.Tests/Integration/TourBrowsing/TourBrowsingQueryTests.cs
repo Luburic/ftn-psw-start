@@ -14,7 +14,7 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     public TourBrowsingQueryTests(ExplorationApiFactory factory) : base(factory) { }
 
     [Fact]
-    public async Task GetPublished_returns_only_published_tours()
+    public async Task Only_published_tours_are_listed()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
@@ -27,7 +27,7 @@ public class TourBrowsingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetPublished_pages_the_results()
+    public async Task Published_tours_are_listed_page_by_page()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 

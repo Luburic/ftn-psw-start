@@ -1,4 +1,4 @@
-U lekciji o agregatu smo videli klasu `Tour` čija metoda `Publish` sprovodi tri pravila:
+U modulu `Exploration` autor pravi turu kao agregat `Tour`. Tura ima autora, ime, opis, težinu, tagove i status. Konstruktor odbija turu bez imena, bez opisa ili bez ijednog taga, a novu turu postavlja u status nacrta. Autor zatim turi dodaje vremena transporta, odnosno koliko minuta obilazak traje pešice, biciklom ili automobilom. Kada je tura spremna, autor je objavljuje pozivom metode `Publish`, koja menja status ture u objavljen i beleži vreme objave. Metoda `Publish` sprovodi tri pravila:
 1. Tura ne sme već biti objavljena,
 2. Opis mora imati bar sto znakova i
 3. Mora postojati bar jedno vreme transporta.
@@ -33,7 +33,7 @@ public class TourTests
 U datom kodu treba uočiti sledeće:
 
 - Atribut `[Fact]` je jedini znak da je metoda test. Test okvir pronalazi sve javne metode sa tim atributom i svaku izvršava kao zaseban test. Metoda bez atributa se ne izvršava.
-- Konvencija za pisanje test metoda je Snake_case, gde naziv testa prenosi poslovnu nameru (u primeru "Nove ture zahtevaju definisan spisak tagova"). Ovo je apstraktnije od opisa tehničkog konstrukta koji se proverava (npr. "Constructor_rejects_empty_tags") i otpornije je na refaktorisanje (ako sutra zamenimo poziv konstruktora sa fabričkom metodom koja pravi objekat, naziv testa se ne menja), a uz to je čitljivije klijentu koji razume poslovnu nameru.
+- Konvencija za pisanje test metoda je Snake_case, gde je naziv testa rečenica o domenu koja prenosi poslovnu nameru (u primeru "Nove ture zahtevaju definisan spisak tagova"). Naziv zato ne sadrži imena klasa ni metoda. Ovo je apstraktnije od opisa tehničkog konstrukta koji se proverava (npr. "Constructor_rejects_empty_tags" ili "Publish_rejects_published_tour") i otpornije je na refaktorisanje (ako sutra zamenimo poziv konstruktora sa fabričkom metodom koja pravi objekat, naziv testa se ne menja), a uz to je čitljivije klijentu koji razume poslovnu nameru.
 - Test metoda ne vraća vrednost. Test uspeva ako se metoda izvrši do kraja, a pada ako neka provera ne uspe ili ako kod izbaci neočekivan izuzetak.
 - Test klasa `TourTests` je ulazna tačka za testove agregata `Tour`. Ime klase ne ograničava šta test proverava, jer test proverava ponašanje, a ponašanje može da obuhvati više klasa.
 
@@ -48,7 +48,7 @@ Sledeći kod prikazuje test iz klase `TourTests`, gde su tri segmenta razdvojena
 
 ```cs
 [Fact]
-public void Publishes()
+public void Tour_is_published_when_all_rules_are_met()
 {
     var tour = CreateTour(LongDescription);
     tour.AddTransportTime(TransportMode.Bicycle, 45);
@@ -79,20 +79,20 @@ Jasna greška u kodu testa je kada izvršavamo više od jedne akcije u centralno
 
 ## Meta testa - Jedinica ponašanja
 
-Najprostija vrsta automatskog testa je jedinični test. **Jedinični test** (engl. *unit test*) je automatski test koji proverava jednu *jedinicu ponašanja*. Teško je precizno definisati šta je jedinica ponašanja, odnosno šta su njene granice. Svaki automatski test će u *Act* sekciji pozvati konstruktor ili metodu objekta. Ponašanje koje se proverava je ponašanje te metode. Međutim, metode se razlikuju po složenosti koja stoji iza njih. Na primer, jedna metoda može proveriti jedan uslov i, kada je ispunjen, izmeniti stanje objekta, sve u par linija koda. Druga metoda može imati složenu logiku koja podrazumeva pozive metoda mnoštva drugih objekata, kako bi kroz 50 linija koda iskoordinisala ispunjenje nekog zahteva. Oba primera mogu biti jedinica ponašanja.
+Najprostija vrsta automatskog testa je jedinični test. **Jedinični test** (engl. *unit test*) je automatski test koji proverava jednu *jedinicu ponašanja*. Teško je precizno definisati šta je jedinica ponašanja, odnosno šta su njene granice. Svaki automatski test će u akciji pozvati konstruktor ili metodu objekta. Ponašanje koje se proverava je ponašanje te metode. Međutim, metode se razlikuju po složenosti koja stoji iza njih. Na primer, jedna metoda može proveriti jedan uslov i, kada je ispunjen, izmeniti stanje objekta, sve u par linija koda. Druga metoda može imati složenu logiku koja podrazumeva pozive metoda mnoštva drugih objekata, kako bi kroz 50 linija koda iskoordinisala ispunjenje nekog zahteva. Oba primera mogu biti jedinica ponašanja.
 
 Segment logike definišemo kao jedinicu ponašanja koju testira jedinični test kada:
 1. Predstavlja semantički uokvirenu sposobnost sistema koju koriste drugi delovi sistema
 2. Može da se izvrši u procesu testa, bez obraćanja bazi podataka ili drugom sistemu
 3. Može da se izoluje kako bi jedan test mogao da proveri ponašanje, nezavisno od rada drugih testova
 
-Prvi zahtev je najizazovniji za razumevanje jer traži analizu semantike. Primer "uokvirene sposobnosti sistema" pronalazimo u javnim metodama domenskih objekata. Na primer, "Objava ture je moguća za neobjavljene ture sa adekvatnim opisom i dužinom trajanja i tada se evidentira vreme objave" je jedno ponašanje. Test to ponašanje proverava kroz javnu metodu agregata `Publish`. Privatna metoda `CanPublish`, koja samo proverava ispunjenost pravila i koju `Publish` poziva, nije dostupna sposobnost ostatku sistema i krši prvi zahtev.
+Prvi uslov je najizazovniji za razumevanje jer traži analizu semantike. Zato ga u projektu svodimo na pravilo. Jedinica ponašanja počinje javnom metodom ili konstruktorom koji poziva kod iz drugog sloja ili klijent putem HTTP zahteva, a obuhvata sav kod koji se pri tom pozivu izvrši. Takve su akcije kontrolera, metode aplikacionih servisa i repozitorijuma, kao i konstruktori i metode agregata, domenskih servisa i lokalnih tehničkih stručnjaka. Na primer, "Objava ture je moguća za neobjavljene ture sa adekvatnim opisom i dužinom trajanja i tada se evidentira vreme objave" je jedno ponašanje. Test to ponašanje proverava kroz javnu metodu agregata `Publish`, koju poziva aplikacioni servis. Vrednosni objekat `TransportTime` odbija vreme transporta koje nije pozitivno, ali njega pravi agregat u metodi `AddTransportTime`, pa se to pravilo proverava kroz tu metodu.
 
-Jedinice ponašanja se ugnježdavaju. Objava ture je sposobnost koju nudi metoda agregata. Međutim, objava ture je i metoda kontrolera, koja zatim poziva servis, koji radi sa agregatom i repozitorijumom. Ova šira objava ugnježdava sitniju objavu. Jedinični test bira najmanje uokvirene jedinice ponašanja koje ispunjavaju drugi i treći zahtev.
+Jedinice ponašanja se ugnježdavaju. Objava ture je sposobnost koju nudi metoda agregata. Međutim, objava ture je i metoda kontrolera, koja zatim poziva servis, koji radi sa agregatom i repozitorijumom. Ova šira objava ugnježdava sitniju objavu. Od ugnježdenih jedinica, jedinični test proverava onu koja ispunjava drugi i treći uslov. Za objavu ture to je metoda `Publish` agregata, jer servis i kontroler rade sa bazom podataka.
 
-Primer kršenja drugog zahteva vidimo kod infrastrukturnog servisa čiji zadatak je da dobavi podatke od drugog sistema putem HTTP zahteva (konektorska klasa). Test ne kontroliše ni dostupnost tog sistema ni sadržaj njegovog odgovora.
+Primer kršenja drugog uslova vidimo kod infrastrukturnog servisa čiji zadatak je da dobavi podatke od drugog sistema putem HTTP zahteva (konektorska klasa). Test ne kontroliše ni dostupnost tog sistema ni sadržaj njegovog odgovora.
 
-Za kršenje trećeg zahteva možemo analizirati aplikacioni servis koji izvršava komande. Servis nudi metodu za ažuriranje agregata i za njegovo brisanje, gde svaka metoda ima povezani test. Ako bi oba testa radila sa istim agregatom, izvršavanje drugog testa pre prvog bi narušilo rad prvog testa, jer servis ne bi mogao da učita ciljani agregat. Prvi test bi pao (crveneo bi se), što treba da bude znak da je logika poremećena. Međutim, u ovom slučaju je to problem koji je nastao zbog međuzavisnosti između testova.
+Za kršenje trećeg uslova možemo zamisliti klasu `TourTests` koja, radi kraće pripreme, čuva jednu turu u statičkom polju, pa sve test metode rade sa istim objektom. Test `Tour_is_published_when_all_rules_are_met` objavljuje tu turu. Ako se posle njega izvrši test koji očekuje turu u statusu nacrta, taj test bi pao, što treba da bude znak da je logika poremećena. Međutim, u ovom slučaju je to problem koji je nastao zbog međuzavisnosti između testova.
 
 ## Izraz provere
 

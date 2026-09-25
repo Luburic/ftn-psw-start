@@ -14,7 +14,7 @@ public sealed class IdentityEndpointTests : BaseIntegrationTest
     public IdentityEndpointTests(IdentityApiFactory factory) : base(factory) { }
 
     [Fact]
-    public async Task Register_returns_a_token_for_a_new_user()
+    public async Task New_user_registers_as_an_explorer()
     {
         var request = new RegisterDto("new-explorer@test.com", "BrandNewSecret1!");
 
@@ -28,7 +28,7 @@ public sealed class IdentityEndpointTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Register_rejects_a_duplicate_email()
+    public async Task Email_can_be_registered_only_once()
     {
         var request = new RegisterDto(UserSeed.Explorer.Email!, "BrandNewSecret1!");
 
@@ -38,7 +38,7 @@ public sealed class IdentityEndpointTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Login_returns_a_token_for_valid_credentials()
+    public async Task User_logs_in_with_valid_credentials()
     {
         var request = new LoginDto(UserSeed.Explorer.Email!, UserSeed.Password);
 
@@ -50,7 +50,7 @@ public sealed class IdentityEndpointTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task Login_rejects_a_wrong_password()
+    public async Task User_cannot_log_in_with_a_wrong_password()
     {
         var request = new LoginDto(UserSeed.Explorer.Email!, "WrongPassword1!");
 

@@ -15,7 +15,7 @@ public class BlogReadingQueryTests : BaseIntegrationTest
     public BlogReadingQueryTests(SocialApiFactory factory) : base(factory) { }
 
     [Fact]
-    public async Task GetPublished_returns_only_published_blogs()
+    public async Task Only_published_blogs_are_listed()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
@@ -28,7 +28,7 @@ public class BlogReadingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetById_returns_a_published_blog()
+    public async Task Published_blog_is_shown_with_its_comments()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Administrator, "administrator");
 
@@ -42,7 +42,7 @@ public class BlogReadingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetById_rejects_a_draft_blog()
+    public async Task Draft_blog_cannot_be_read()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
@@ -52,7 +52,7 @@ public class BlogReadingQueryTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetById_rejects_an_unknown_blog()
+    public async Task Unknown_blog_cannot_be_read()
     {
         var client = Factory.CreateClientFor(WellKnownUsers.Explorer, "explorer");
 
