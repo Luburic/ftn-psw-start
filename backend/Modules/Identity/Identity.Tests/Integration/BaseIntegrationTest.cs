@@ -14,12 +14,10 @@ public sealed class IntegrationCollection : ICollectionFixture<IdentityApiFactor
 public abstract class BaseIntegrationTest
 {
     protected readonly IdentityApiFactory Factory;
-    protected readonly HttpClient Client;
 
     protected BaseIntegrationTest(IdentityApiFactory factory)
     {
         Factory = factory;
         Factory.Reseed<IdentityModuleDbContext>(IdentitySeed.All);
-        Client = Factory.CreateClient();
     }
 }

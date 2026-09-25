@@ -14,9 +14,9 @@ Svaki test projekat ima direktorijum `Seeds/`: po jedna statička klasa imenovan
 
 Testovi referenciraju zasejane redove preko imenovane instance, npr. `TourSeed.FortressWalk.Id`. Zato agregati generišu identifikator u konstruktoru (`base(Guid.NewGuid())`), nikada kroz EF. Redovi drugog modula dolaze iz seed klasa tog modula; test projekti smeju da referenciraju jedni druge za ovu potrebu.
 
-## Tri kanala
+## Priprema i posmatranje stanja
 
-U integracionom testu svaka briga ima tačno jedan kanal, i svaki je jednosmeran: stanje ulazi kroz seedove (`Reseed` je jedini put upisa u bazu), akcija ide kroz HTTP (Act je jedini zahtev koji test šalje), a posmatranje ide kroz bazu (`Factory.CreateContext<TContext>()`, isključivo za čitanje). Stanje se nikada ne priprema pozivanjem drugih endpointa — greška u jednoj funkcionalnosti sme da obori samo testove te funkcionalnosti — i nikada se ne piše kroz kontekst, jer bi to zaobišlo sve domenske invarijante. Ništa strukturno ne sprečava prekršaj (kontekst je dostupan); pravilo se drži konvencijom i pregledom koda.
+U integracionom testu svaka briga ima tačno jedan put, i svaki je jednosmeran: stanje ulazi kroz seedove (`Reseed` je jedini put upisa u bazu), akcija ide kroz HTTP (Act je jedini zahtev koji test šalje), a posmatranje ide kroz bazu (`Factory.CreateContext<TContext>()`, isključivo za čitanje). Stanje se nikada ne priprema pozivanjem drugih endpointa — greška u jednoj funkcionalnosti sme da obori samo testove te funkcionalnosti — i nikada se ne piše kroz kontekst, jer bi to zaobišlo sve domenske invarijante. Ništa strukturno ne sprečava prekršaj (kontekst je dostupan); pravilo se drži konvencijom i pregledom koda.
 
 Konteksti su uvek sveži i kratkotrajni: jedan se otvara u Arrange koraku za početno čitanje, poseban u Assert koraku, svaki u `using` bloku. Ponovna upotreba konteksta preko granice Act koraka vraća zastarele praćene entitete.
 

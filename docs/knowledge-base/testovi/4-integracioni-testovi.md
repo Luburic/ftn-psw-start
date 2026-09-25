@@ -24,13 +24,13 @@ public async Task Tour_is_published_when_all_rules_are_met()
 
 U datom kodu treba uočiti sledeće:
 
-- Jedinični test je direktno gradio turu (kroz konstruktor i metodu `AddTransportTime`). Integracioni test turu ne gradi već je zatiče u bazi podataka. Kako se testna baza podataka popunjava je tema za kasnije. Priprema koju vidimo se svodi na jedan red, u kom se pravi HTTP klijent koji će sa HTTP zahtevom poslati JWT za korisnika `WellKnownUsers.Explorer` sa ulogom `explorer`.
+- Jedinični test je direktno gradio turu (kroz konstruktor i metodu `AddTransportTime`). Integracioni test turu ne gradi već je zatiče u bazi podataka. Kako se testna baza podataka popunjava opisuje naredna lekcija. Priprema koju vidimo se svodi na jedan red, u kom se pravi HTTP klijent koji će sa HTTP zahtevom poslati JWT za korisnika `WellKnownUsers.Explorer` sa ulogom `explorer`.
 - Akcija podrazumeva slanje HTTP POST zahteva na navedeni URL.
 - Provera prvo sagledava da li HTTP odgovor ima statusni kod 204, što dokazuje da je zahtev prošao proveru identiteta, kontroler i ostatak funkcije bez izuzetka.
 - Provera kroz `Factory.CreateContext` otvara kontekst modula i čita turu iz baze. Tek red u bazi dokazuje da je jedinica posla sačuvala izmenu i da je postignut primarni željeni ishod.
 - Polje `Factory` dolazi iz roditeljske klase koju test klasa nasleđuje, a `TourSeed` je statička klasa sa početnim podacima modula.
 
-Pre nego što se izvrši kod test metode, serverska aplikacija je već pokrenuta, a testna baza podataka vraćena u početno stanje. U prethodnom primeru se to ne vidi, a kako se postiže sagledaćemo u nastavku. Kod integracionog testa zatim tipično ima sledeću strukturu:
+Pre nego što se izvrši kod test metode, serverska aplikacija je već pokrenuta, a testna baza podataka vraćena u početno stanje. U prethodnom primeru se to ne vidi, a kako se postiže opisuje naredna lekcija. Kod integracionog testa zatim tipično ima sledeću strukturu:
 1. Arrange
    1. Priprema HTTP klijent, koji uz zahtev šalje JWT korisnika kada krajnja tačka to traži
    2. Priprema HTTP zahtev koji se šalje serverskoj aplikaciji (kada je zahtev složeniji)
@@ -65,9 +65,10 @@ Drugu vrstu čine **odbijanja van domena**, koja nastaju u obradi zahteva pre ne
 [Fact]
 public async Task Anonymous_user_cannot_create_a_tour()
 {
+    var client = Factory.CreateClient();
     var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Easy, ["planina"]);
 
-    var response = await Client.PostAsJsonAsync("/api/exploration/tours", request);
+    var response = await client.PostAsJsonAsync("/api/exploration/tours", request);
 
     response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 }
@@ -99,46 +100,10 @@ public async Task Explorer_cannot_publish_another_authors_tour()
 
 U datom kodu treba uočiti sledeće:
 
-- Prvi test šalje HTTP POST bez tokena i očekuje odgovor sa statusnim kodom 401. Middleware za proveru identiteta odbija zahtev pre nego što on stigne do kontrolera.
+- Prvi test koristi klijenta bez prijavljenog korisnika, koji šalje HTTP POST bez tokena, i očekuje odgovor sa statusnim kodom 401. Middleware za proveru identiteta odbija zahtev pre nego što on stigne do kontrolera.
 - Drugi test koristi klijenta prijavljenog sa ulogom `administrator` i očekuje statusni kod 403. Atribut `[Authorize(Roles = "explorer")]` na kontroleru odbija zahtev čija uloga iz tokena nije `explorer`, pre nego što pozove akciju kontrolera.
 - Treći test koristi klijenta prijavljenog kao nasumičan korisnik i očekuje statusni kod 404, jer servis tretira turu drugog autora kao nepostojeću. Provera zatim čita bazu i potvrđuje da je tura ostala u statusu nacrta, jer odbijena komanda ne sme da ostavi trag.
 
 Treća vrsta je **odbijanje domena**, test koji proverava da li izuzetak iz agregata postaje odgovor sa statusnim kodom 400 i da li baza ostaje nepromenjena. Test `Explorer_cannot_create_a_tour_without_a_name` šalje zahtev sa praznim imenom ture, a zatim proverava statusni kod i da li je broj tura u bazi ostao isti.
 
 Testovi upita su slični, uz ključnu razliku da upit ne menja stanje baze podataka. Test upita ne čita bazu posle akcije, već samo proverava HTTP odgovor krajnje tačke, uz veći akcenat na ispitivanje tela odgovora.
-
-## Pokretanje aplikacije u testu
-
-Naveli smo da je serverska aplikacija pokrenuta, a testna baza podataka pripremljena pre nego što se izvrši kod test metode. Naš projekat ovo omogućuje upotrebom klase `WebApplicationFactory<Program>` iz biblioteke `Microsoft.AspNetCore.Mvc.Testing`. Ova klasa može da pokrene celu aplikaciju unutar procesa testa. Njena metoda `CreateClient` vraća `HttpClient`, objekat koji ima sposobnost da šalje HTTP zahteve i prihvata HTTP odgovore i putem kog šaljemo zahteve na testiranu aplikaciju.
-
-Klasa `ExplorerApiFactory` iz projekta `Shared.Tests` nasleđuje `WebApplicationFactory<Program>` i njena glavna odgovornost je da podesi serversku aplikaciju da radi sa testnom bazom podataka. Svaki modul definiše skup bazičnih klasa koje se vezuju za `ExplorerApiFactory` i njih pronalazimo u datoteci `BaseIntegrationTest.cs`. Skraćen sadržaj te datoteke za `Exploration` modul je prikazan u nastavku:
-
-```cs
-public sealed class ExplorationApiFactory : ExplorerApiFactory;
-
-public abstract class BaseIntegrationTest
-{
-    protected static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
-    {
-        Converters = { new JsonStringEnumConverter() }
-    };
-
-    protected readonly ExplorationApiFactory Factory;
-    protected readonly HttpClient Client;
-
-    protected BaseIntegrationTest(ExplorationApiFactory factory)
-    {
-        Factory = factory;
-        Factory.Reseed<ExplorationDbContext>(ExplorationSeed.All);
-        Client = Factory.CreateClient();
-    }
-}
-```
-
-U datom kodu treba uočiti sledeće:
-
-- Modul definiše praznu klasu `ExplorationApiFactory` koja nasleđuje `ExplorerApiFactory`. Ovo omogućuje roditeljskoj klasi da zna kom modulu pripada i da kreira testnu bazu podataka (npr. `explorer-test-exploration`) specifično za proveru rada tog modula, kako moduli ne bi remetili jedni druge tokom razvoja. Pri pokretanju testova fabrika briše bazu i pravi je iznova, nakon čega se primenjuju migracije i baza se popunjava sa testnim podacima.
-- Test okvir pravi fabriku jednom po pokretanju testova i prosleđuje je konstruktoru svake test klase modula. Aplikacija se zato pokreće, a baza pravi jednom, a ne pre svakog testa. Test klasa samo prosleđuje fabriku osnovnoj klasi, konstruktorom poput `public TourAuthoringCommandTests(ExplorationApiFactory factory) : base(factory) { }`.
-- Poziv `Reseed` vraća bazu u početno stanje pre svakog testa. Polje `Client` je klijent bez prijavljenog korisnika.
-- Polje `JsonOptions` ponavlja podešavanje servera po kom se enumeracije zapisuju kao stringovi, pa test sa istim podešavanjem čita odgovor.
-

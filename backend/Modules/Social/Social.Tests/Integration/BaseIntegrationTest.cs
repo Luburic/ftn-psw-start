@@ -21,12 +21,10 @@ public abstract class BaseIntegrationTest
     };
 
     protected readonly SocialApiFactory Factory;
-    protected readonly HttpClient Client;
 
     protected BaseIntegrationTest(SocialApiFactory factory)
     {
         Factory = factory;
         Factory.Reseed<SocialDbContext>(SocialSeed.All);
-        Client = Factory.CreateClient();
     }
 }

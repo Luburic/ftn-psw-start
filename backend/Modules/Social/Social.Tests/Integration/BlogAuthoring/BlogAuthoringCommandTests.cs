@@ -54,9 +54,10 @@ public class BlogAuthoringCommandTests : BaseIntegrationTest
     [Fact]
     public async Task Anonymous_user_cannot_create_a_blog()
     {
+        var client = Factory.CreateClient();
         var request = new CreateBlogDto("Novi blog", "Opis novog bloga.", []);
 
-        var response = await Client.PostAsJsonAsync("/api/social/blogs", request);
+        var response = await client.PostAsJsonAsync("/api/social/blogs", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }

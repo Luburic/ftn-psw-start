@@ -21,12 +21,10 @@ public abstract class BaseIntegrationTest
     };
 
     protected readonly ExplorationApiFactory Factory;
-    protected readonly HttpClient Client;
 
     protected BaseIntegrationTest(ExplorationApiFactory factory)
     {
         Factory = factory;
         Factory.Reseed<ExplorationDbContext>(ExplorationSeed.All);
-        Client = Factory.CreateClient();
     }
 }

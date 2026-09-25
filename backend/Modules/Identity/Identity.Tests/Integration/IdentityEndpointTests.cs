@@ -16,9 +16,10 @@ public sealed class IdentityEndpointTests : BaseIntegrationTest
     [Fact]
     public async Task New_user_registers_as_an_explorer()
     {
+        var client = Factory.CreateClient();
         var request = new RegisterDto("new-explorer@test.com", "BrandNewSecret1!");
 
-        var response = await Client.PostAsJsonAsync("/api/identity/register", request);
+        var response = await client.PostAsJsonAsync("/api/identity/register", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<AccessTokenDto>();
@@ -30,9 +31,10 @@ public sealed class IdentityEndpointTests : BaseIntegrationTest
     [Fact]
     public async Task Email_can_be_registered_only_once()
     {
+        var client = Factory.CreateClient();
         var request = new RegisterDto(UserSeed.Explorer.Email!, "BrandNewSecret1!");
 
-        var response = await Client.PostAsJsonAsync("/api/identity/register", request);
+        var response = await client.PostAsJsonAsync("/api/identity/register", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -40,9 +42,10 @@ public sealed class IdentityEndpointTests : BaseIntegrationTest
     [Fact]
     public async Task User_logs_in_with_valid_credentials()
     {
+        var client = Factory.CreateClient();
         var request = new LoginDto(UserSeed.Explorer.Email!, UserSeed.Password);
 
-        var response = await Client.PostAsJsonAsync("/api/identity/login", request);
+        var response = await client.PostAsJsonAsync("/api/identity/login", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<AccessTokenDto>();
@@ -52,9 +55,10 @@ public sealed class IdentityEndpointTests : BaseIntegrationTest
     [Fact]
     public async Task User_cannot_log_in_with_a_wrong_password()
     {
+        var client = Factory.CreateClient();
         var request = new LoginDto(UserSeed.Explorer.Email!, "WrongPassword1!");
 
-        var response = await Client.PostAsJsonAsync("/api/identity/login", request);
+        var response = await client.PostAsJsonAsync("/api/identity/login", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }

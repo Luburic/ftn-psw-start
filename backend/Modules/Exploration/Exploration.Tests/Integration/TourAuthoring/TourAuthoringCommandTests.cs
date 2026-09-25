@@ -53,9 +53,10 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
     [Fact]
     public async Task Anonymous_user_cannot_create_a_tour()
     {
+        var client = Factory.CreateClient();
         var request = new CreateTourDto("Nova tura", "Opis nove ture.", TourDifficulty.Easy, ["planina"]);
 
-        var response = await Client.PostAsJsonAsync("/api/exploration/tours", request);
+        var response = await client.PostAsJsonAsync("/api/exploration/tours", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
