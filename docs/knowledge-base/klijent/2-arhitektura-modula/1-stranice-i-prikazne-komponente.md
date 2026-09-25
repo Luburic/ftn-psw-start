@@ -77,11 +77,9 @@ Kada pišemo novu komponentu, mesto joj određujemo odgovorom na tri pitanja, ov
 2. Kom cilju korisnika služi ekran na kom se pojavljuje? To je njena grupa. Ako grupa ne postoji, pravimo je i dajemo joj ime grupe aplikacionog sloja servera koju ekran poziva.
 3. Ako je prikazna komponenta, da li se pojavljuje samo na jednom ekranu? Ako da, živi u grupi tog ekrana, pored stranice koja je koristi.
 
-Treće pitanje objašnjava zašto klijent ima manje grupa od servera. Server ima grupu za komentarisanje, jer su dodavanje, izmena i brisanje komentara njegovi slučajevi korišćenja. Klijent nema ekran za komentarisanje, jer se komentari pišu na stranici bloga. Zato `BlogComments` živi u grupi `blog-reading`, a servis te grupe nosi komande za komentare. Klijent grupiše ekrane, a server operacije.
-
 ## Stranica bloga i komentari
 
-Povežimo pojmove čitanjem koda iz projekta koji je nastao podelom klase sa početka lekcije. Sledeći kod prikazuje stranicu `BlogDetail`, gde su tela metoda `edit` i `remove` izostavljena jer prate oblik metode `add`:
+Sledeći kod prikazuje stranicu `BlogDetail`, gde su tela metoda `edit` i `remove` izostavljena jer prate oblik metode `add`:
 
 ```ts
 @Component({
