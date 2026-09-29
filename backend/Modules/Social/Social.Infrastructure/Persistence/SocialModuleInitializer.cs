@@ -55,12 +55,12 @@ internal sealed class SocialModuleInitializer : IHostedService
         server.AddComment(ThirdExplorer, "Kad kompajler odbije referencu između projekata, to je namerno.");
 
         var client = new Blog(ThirdExplorer, "Kako je organizovan klijent",
-            "Klijent je Angular aplikacija čiji moduli prate module servera. Tipovi za komunikaciju sa serverom se generišu iz OpenAPI dokumenta, pa ih ne pišemo ručno.",
+            "Klijent je Angular aplikacija čiji moduli prate module servera. Tipovi za komunikaciju sa serverom se pišu ručno, kao verni odraz DTO-ova sa servera.",
             []);
         client.Publish();
         client.AddComment(FirstExplorer, "Savet: držite se strukture referentnog modula, čak i kad deluje jednostavno.");
         client.AddComment(SecondExplorer, "Frontend nije strašan koliko izgleda. Srećno!");
-        client.AddComment(ThirdExplorer, "Regenerišite tipove svaki put kad se promeni DTO na serveru.");
+        client.AddComment(ThirdExplorer, "Kad menjate DTO na serveru, u istoj izmeni ažurirajte i njegov tip na klijentu.");
 
         var knowledgeBase = new Blog(ThirdExplorer, "Baza znanja kursa",
             "U direktorijumu docs/knowledge-base se nalaze lekcije koje objašnjavaju svaki koncept koji projekat koristi, od arhitekture modula do migracija baze.",

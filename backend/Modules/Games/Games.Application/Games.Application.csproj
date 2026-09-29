@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Games.Domain\Games.Domain.csproj" />
     <ProjectReference Include="..\Games.Contracts\Games.Contracts.csproj" />
   </ItemGroup>
