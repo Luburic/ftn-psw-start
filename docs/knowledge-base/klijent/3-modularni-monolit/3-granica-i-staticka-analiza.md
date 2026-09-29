@@ -13,8 +13,8 @@ Na serveru je svaki sloj modula zaseban projekat, a kompajler odbija build kada 
       {
         patterns: [
           {
-            regex: '^(\.\./)+(games|social|payment)/(?!public-api$)',
-            message: 'Import another module only through its public-api.',
+            regex: '^(\.\./)+(games|social|payment)/',
+            message: 'Modules never import from each other; link to their routes instead.',
           },
         ],
       },
@@ -26,18 +26,18 @@ Na serveru je svaki sloj modula zaseban projekat, a kompajler odbija build kada 
 U datom kodu treba uočiti sledeće:
 
 - Svojstvo `files` bira datoteke na koje blok važi, ovde sve TS datoteke modula Exploration. Ostala tri modula imaju isti blok, u kom je iz zagrade izostavljen naziv tog modula, a navedena ostala tri.
-- Pravilo `no-restricted-imports` zabranjuje uvoz čija putanja odgovara regularnom izrazu. Izraz se čita ovako: putanja koja jednim ili više `../` izlazi iz direktorijuma, ulazi u direktorijum `games`, `social` ili `payment` i posle toga se ne završava na `public-api`. Uvoz `../../social/public-api` prolazi, a `../../social/blog-reading/blog-card/blog-card` ne.
+- Pravilo `no-restricted-imports` zabranjuje uvoz čija putanja odgovara regularnom izrazu. Izraz se čita ovako: putanja koja jednim ili više `../` izlazi iz direktorijuma, ulazi u direktorijum `games`, `social` ili `payment`. Uvoz `../../social/blog-reading/blog-card/blog-card` ne prolazi, kao ni uvoz tabele ruta `../../social/social.routes`.
 - Svojstvo `message` je tekst koji linter ispisuje uz prijavu.
 - Nivo `error` znači da prijava obara proveru, a ne da samo upozorava.
-- Pravilo proverava putanju uvoza, a ne šta se uvozi. Servis koji bi neko izvezao kroz javnu površinu pravilo propušta.
+- Pravilo proverava samo oblik putanje. Uvoz koji do drugog modula stiže zaobilaznim putem, poput `../../../../modules/social/blog-reading/blog-card/blog-card`, pravilo propušta.
 
 ## Čitanje prijave
 
 Sledeći ispis prikazuje šta komanda `npm run lint` prijavljuje kada stranica modula Payment uveze karticu iz unutrašnjosti modula Exploration:
 
 ```
-src/app/modules/payment/payment-home/payment-home.ts
-  2:1  error  '../../exploration/tour-browsing/tour-card/tour-card' import is restricted from being used by a pattern. Import another module only through its public-api  no-restricted-imports
+src/app/modules/payment/tour-purchasing/purchase-tour/purchase-tour.ts
+  2:1  error  '../../../exploration/tour-browsing/tour-card/tour-card' import is restricted from being used by a pattern. Modules never import from each other; link to their routes instead  no-restricted-imports
 
 ✖ 1 problem (1 error, 0 warnings)
 ```

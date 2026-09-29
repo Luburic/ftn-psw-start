@@ -10,18 +10,18 @@ export const routes: Routes = [
   {
     path: 'exploration',
     loadChildren: () =>
-      import('../modules/exploration/public-api').then((m) => m.explorationRoutes),
+      import('../modules/exploration/exploration.routes').then((m) => m.explorationRoutes),
   },
   {
     path: 'games',
-    loadChildren: () => import('../modules/games/public-api').then((m) => m.gamesRoutes),
+    loadChildren: () => import('../modules/games/games.routes').then((m) => m.gamesRoutes),
   },
   {
     path: 'social',
-    loadChildren: () => import('../modules/social/public-api').then((m) => m.socialRoutes),
+    loadChildren: () => import('../modules/social/social.routes').then((m) => m.socialRoutes),
   },
   {
     path: 'payment',
-    loadChildren: () => import('../modules/payment/public-api').then((m) => m.paymentRoutes),
+    loadChildren: () => import('../modules/payment/payment.routes').then((m) => m.paymentRoutes),
   },
 ];

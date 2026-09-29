@@ -54,7 +54,7 @@ The compiler enforces the layering instead of a reviewer having to spot it.
 - `Domain` references `Shared.Domain` and nothing else. No EF Core, no ASP.NET.
 - `Application` references `Domain` and its own `Contracts`. Never `Infrastructure`,
   never ASP.NET.
-- `Contracts` references nothing. Primitives and IDs only.
+- `Contracts` references nothing. Primitives, IDs, and contract types built from them.
 - `Api` references `Application` and `Shared.Api`, plus
   `<FrameworkReference Include="Microsoft.AspNetCore.App" />`.
 - `Infrastructure` references `Application`, `Domain`, and `Shared.Infrastructure`.
@@ -76,6 +76,9 @@ Central package management: `Directory.Packages.props` pins every version; proje
 carry versionless `PackageReference` lines. `Directory.Build.props` turns on nullable
 reference types and treats warnings as errors, solution-wide. Both files are
 platform-owned.
+
+AutoMapper is pinned to 16.1.1 and runs without a license key; this is a settled
+platform decision. Do not change the version or add a license key.
 
 ## Identity
 
@@ -115,7 +118,7 @@ Related use cases form a group with its own folder and use-case-named classes:
   modules. Returns DTOs, never mutates, never saves (an architecture test forbids a
   `*Queries` class from depending on `IUnitOfWork`).
 
-In Exploration the groups are `TourAuthoring` and `TourBrowsing`. Group names often
+Exploration, for example, has `TourAuthoring` and `TourBrowsing`. Group names often
 start with the aggregate name because use cases cluster around aggregates, but a group
 spanning aggregates is named after the use case alone. Controllers only ever inject
 these service and queries classes; command/query separation lives one level down, in
@@ -227,7 +230,9 @@ never return domain entities (the arch tests enforce the latter).
 
 `Contracts` faces other modules, `Api` faces the outside world; keep the two public
 surfaces separate. A module's own DTOs never belong in `Contracts` — contract types are
-separate, negotiated, and deliberately minimal.
+separate, negotiated, and deliberately minimal. A module that receives another module's
+contract type maps it into its own Application DTO; a contract type never crosses the
+module's HTTP API, so the frontend only ever mirrors the module's own DTOs.
 
 `Infrastructure` types are `internal` except the `AddXxxModule` extension method. The
 `DbContext`, repositories, query implementations, and EF configurations are all internal,
@@ -248,8 +253,7 @@ The core discipline is the three-channel rule: state goes in through seeds, acti
 through HTTP, observation goes through a read-only context — each concern has exactly
 one channel. The full conventions (test databases, seed construction, assertion
 patterns, wiring, auth) live in `Shared/Shared.Tests/README.md` and are mandatory when
-writing tests. `Identity.Tests` and the Exploration and Social test projects are the
-live examples.
+writing tests.
 
 Architecture tests in `Host.Tests` use ArchUnitNET and encode the reference rules above.
 
@@ -279,11 +283,4 @@ Architecture tests in `Host.Tests` use ArchUnitNET and encode the reference rule
 
 ## Still open, ask before choosing
 
-- **Reference module.** Which module is blessed as the fully worked example students
-  copy. Exploration and Social both carry initial implementations; neither is blessed
-  yet.
-- **AutoMapper version.** The pattern is decided (mapper profile in `Application`), the
-  package is not yet added. AutoMapper changed to a commercial license in 2025; pick the
-  version deliberately when the reference module needs it, as was done for
-  FluentAssertions.
-- **Mocking library.** Deferred until the reference module has something to mock.
+- **Mocking library.** Deferred until a module has something to mock.

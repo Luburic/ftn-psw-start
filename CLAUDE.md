@@ -31,16 +31,11 @@ contract — the module that owns the cause never pushes.
 **Stack:** ASP.NET Core on .NET 10 (backend), Angular (frontend), one repository, one
 PostgreSQL database. No Docker in this project; students run PostgreSQL natively.
 
-**Current status:** backend scaffolded and building with a functional Identity module;
-Exploration (Tours) and Social (Blogs) carry initial feature implementations, Games and
-Payment are empty scaffolds. No module is blessed as the worked reference yet. Frontend
-not started; build it only when asked. Work on the backend unless asked otherwise.
-
 ## Repository layout
 
 ```
 backend/          .NET solution (Explorer.slnx), see backend/CLAUDE.md
-frontend/         Angular workspace (not yet created), see frontend/CLAUDE.md
+frontend/         Angular workspace, see frontend/CLAUDE.md
 docs/             knowledge base (course material, in Serbian), see below
 .github/          CI workflow: backend restore, build, test (Postgres service container);
                   frontend install, lint, build
@@ -58,13 +53,13 @@ frontend/src/app/modules/<name>/
 ## Rules that apply everywhere
 
 - One module never reaches into another module's internals. Cross-module access goes
-  through that module's declared public surface only, and extending such a surface
-  (`Contracts`, `public-api.ts`) is a cross-team negotiation — flag it rather than
-  quietly extending it.
+  through that module's declared public surface only: its `Contracts` on the backend,
+  its routes on the frontend. Changing such a surface is a cross-team negotiation — flag
+  it rather than quietly changing it.
 - Shared code is owned by the platform team. Adding to the shared kernel is a decision,
   not a convenience. Resist the urge to move things there.
 - Every feature module has an identical structure. Consistency beats local cleverness,
-  because students learn by pattern-matching against the reference module.
+  because students learn by pattern-matching against each other's modules.
 - All modules are pre-scaffolded so students never edit central registration files,
   project files, or the solution. Every new dependency goes through the platform team,
   because versions are pinned centrally in a platform-owned file.
@@ -104,14 +99,6 @@ of the same material.
 
 For engineering tasks (writing or changing code), do not load knowledge-base
 documents; the mandatory patterns live in the tier instructions and READMEs.
-
-## Still open, ask before choosing
-
-Each tier's instructions list its own open decisions. Cross-cutting:
-
-- **CODEOWNERS and per-module instructions.** Deliberately not created yet; add when
-  teams are fixed, as `CLAUDE.md` files inside each module folder so they load only for
-  that module's sessions.
 
 ## Working style
 

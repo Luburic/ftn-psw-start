@@ -6,7 +6,7 @@ Jedna aplikacija se pokreće i ovde. Ulogu glavne aplikacije ima direktorijum `c
 
 ## Mapa direktorijuma
 
-1. [Javna površina](1-javna-povrsina.md) - Datoteka `public-api.ts` kao kontrakt modula prema drugim modulima: šta se izvozi, šta se nikada ne izvozi, kako modul kroz nju ulazi u aplikaciju i dva načina da modul iskoristi drugi modul. Sastavljanje podataka više modula ostaje na serveru.
+1. [Javna površina](1-javna-povrsina.md) - Adrese stranica kao javna površina modula prema drugim modulima, tabela ruta kroz koju modul ulazi u aplikaciju i dva načina da modul iskoristi drugi modul. Sastavljanje podataka više modula ostaje na serveru.
 2. [Host aplikacija i zajedničko jezgro](2-host-i-zajednicko-jezgro.md) - Direktorijum `core` kao host aplikacija i `shared` kao zajedničko jezgro, presretač koji svakom zahtevu dodaje token, pravilo promocije i tabela ko šta menja.
 3. [Granica i statička analiza](3-granica-i-staticka-analiza.md) - Pravilo o dozvoljenim uvozima kao arhitektonski test klijenta, čitanje prijave koja je oborila build i zašto je granica slabija od serverske.
 

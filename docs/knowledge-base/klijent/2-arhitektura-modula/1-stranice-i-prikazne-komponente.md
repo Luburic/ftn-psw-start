@@ -58,16 +58,16 @@ modules/social/
     blog-detail/
     blog-list/
     blog-reading.ts
-  public-api.ts
   social.routes.ts
 ```
 
 U datom stablu treba uočiti sledeće:
 
 - Grupa `blog-authoring` sadrži dve stranice i servis. Grupa `blog-reading` sadrži dve stranice, dve prikazne komponente i servis. Koja je komponenta stranica saznaje se iz tabele ruta `social.routes.ts`, koja imenuje `BlogList`, `MyBlogs`, `CreateBlog` i `BlogDetail`.
+- Server modula Social ima tri grupe, a klijent dve. Komande za komentare na serveru pripadaju grupi `BlogCommenting`, a na klijentu ih nosi servis grupe `blog-reading`, jer ih šalje stranica `BlogDetail`. Klijent grupiše ekrane, a ne operacije, pa obično ima manje grupa od servera.
 - Svaka komponenta ima sopstveni direktorijum sa tri datoteke: klasom, šablonom i stilovima. Prikazna komponenta stoji pored stranica koje je koriste, a ne u zasebnom direktorijumu.
 - Ne postoje direktorijumi `pages`, `components` ni `services`. Zvanični vodič za stil Angular-a propisuje da se kod grupiše po funkcionalnosti, a ne po vrsti datoteke.
-- Direktorijum `api` i datoteka `public-api.ts` ne pripadaju nijednoj grupi. U ovoj lekciji ih ne razmatramo.
+- Direktorijum `api` ne pripada nijednoj grupi. U ovoj lekciji ga ne razmatramo.
 
 ## Mesto nove komponente
 

@@ -70,7 +70,7 @@ uključi njegovu tabelu ruta:
 {
   path: 'social',
   loadChildren: () =>
-    import('../modules/social/public-api').then((m) => m.socialRoutes),
+    import('../modules/social/social.routes').then((m) => m.socialRoutes),
 },
 ```
 

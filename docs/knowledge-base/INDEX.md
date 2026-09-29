@@ -80,7 +80,7 @@ Jedna linija po dokumentu: putanja, opis i preduslovi (dokumenti koje čitalac t
 ## Modularni monolit na klijentu
 
 - `klijent/3-modularni-monolit/README.md` — Ista podela na module kao na serveru, `core` kao glavna aplikacija, granica koju čuva statička analiza. Uvod u segment. Preduslovi: `klijent/2-arhitektura-modula/README.md`, `server/3-modularni-monolit/README.md`.
-- `klijent/3-modularni-monolit/1-javna-povrsina.md` — `public-api.ts` kao kontrakt modula: šta se izvozi, ulazak modula u aplikaciju kroz `loadChildren`, navigacija ili ugrađivanje komponente, podaci se sastavljaju na serveru. Preduslovi: `README.md`, `klijent/1-angular/8-rutiranje.md`, `server/3-modularni-monolit/1-kontrakti.md`.
+- `klijent/3-modularni-monolit/1-javna-povrsina.md` — adrese stranica kao javna površina modula, ulazak modula u aplikaciju kroz `loadChildren`, navigacija ka drugom modulu, podaci se sastavljaju na serveru. Preduslovi: `README.md`, `klijent/1-angular/8-rutiranje.md`, `server/3-modularni-monolit/1-kontrakti.md`.
 - `klijent/3-modularni-monolit/2-host-i-zajednicko-jezgro.md` — `core` kao host i `shared` kao zajedničko jezgro, presretač, promocija, tabela vlasništva. Preduslovi: `1-javna-povrsina.md`, `server/3-modularni-monolit/2-gradivni-elementi.md`.
 - `klijent/3-modularni-monolit/3-granica-i-staticka-analiza.md` — Pravilo o uvozima kao arhitektonski test klijenta, čitanje prijave, zašto je granica slabija od serverske. Preduslovi: `2-host-i-zajednicko-jezgro.md`, `server/3-modularni-monolit/3-arhitektonski-testovi.md`.
 

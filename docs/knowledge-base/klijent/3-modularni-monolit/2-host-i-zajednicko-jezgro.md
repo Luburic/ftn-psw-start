@@ -109,7 +109,7 @@ Sledeća tabela sažima ko koji direktorijum menja i šta modul iz njega sme da 
 | `core` | Platformski tim | Samo `core/auth` |
 | `shared` | Platformski tim | Sve |
 | `styles` | Platformski tim | Ništa, globalne klase se koriste u šablonu |
-| `modules/<naziv>` | Tim tog modula | Samo `public-api.ts` drugog modula |
+| `modules/<naziv>` | Tim tog modula | Ništa iz drugog modula |
 
 ## Put jednog zahteva
 

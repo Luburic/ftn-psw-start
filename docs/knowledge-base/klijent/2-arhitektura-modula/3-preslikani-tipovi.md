@@ -92,4 +92,4 @@ export interface CommentEdit {
 U datom kodu treba uočiti sledeće:
 
 - Tip živi u datoteci `blog-comments.ts`, pored izlaza koji ga koristi. Stranica uvozi tip iz iste datoteke iz koje uvozi komponentu.
-- Ne postoji direktorijum `models`. Tip koji koristi jedna komponenta stoji u toj komponenti, a tip koji dolazi sa servera stoji u direktorijumu `api`. Trećeg mesta nema.
+- U feature modulu tip koji postoji samo na klijentu stoji u komponenti čiji ga ulaz ili izlaz koristi, a tip koji dolazi sa servera stoji u direktorijumu `api`.

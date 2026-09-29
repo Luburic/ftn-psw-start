@@ -1,7 +1,7 @@
 Klijentska aplikacija je podeljena na iste feature module kao i serverska, pa svaki tim poseduje i modul na klijentu. Posmatrajmo stranicu modula Payment koja prodaje turu i treba da prikaže naziv i težinu ture koju korisnik kupuje. Prvo što pada na pamet je da stranica uveze karticu ture iz modula Exploration:
 
 ```ts
-import { TourCard } from '../../exploration/tour-browsing/tour-card/tour-card';
+import { TourCard } from '../../../exploration/tour-browsing/tour-card/tour-card';
 ```
 
 U datom kodu treba uočiti sledeće:
@@ -10,25 +10,29 @@ U datom kodu treba uočiti sledeće:
 - Kartica je napravljena za spisak objavljenih tura, pa ima ulaze i izgled tog ekrana. Modul Payment sada zavisi od odluka donetih za tuđi ekran.
 - Dva tima dele jednu datoteku, a da se o tome nisu dogovorila.
 
-Isti problem je na serveru rešio kontrakt, javna površina modula namenjena drugim modulima. Na klijentu istu ulogu ima jedna datoteka, koju upoznajemo u narednom odeljku. Ona kaže šta sme da pređe granicu modula, a to nije ni kartica ni bilo koji drugi deo tuđeg ekrana. Naziv i težina ture do stranice modula Payment stižu sasvim drugim putem, sa njenog sopstvenog servera, o čemu je odeljak o sastavljanju podataka.
+Isti problem je na serveru rešio kontrakt, javna površina modula namenjena drugim modulima. Na klijentu istu ulogu imaju adrese stranica modula, koje upoznajemo u narednom odeljku. Granicu modula ne prelazi nijedna datoteka, pa ni kartica ni bilo koji drugi deo tuđeg ekrana. Naziv i težina ture do stranice modula Payment stižu sasvim drugim putem, sa njenog sopstvenog servera, o čemu je odeljak o sastavljanju podataka.
 
 ## Javna površina
 
-**Javna površina** (engl. *public API*) modula je datoteka `public-api.ts` u korenu modula, jedina datoteka modula koju sme da uveze datoteka van njega. Sledeći kod prikazuje javnu površinu modula Social iz projekta:
+**Javna površina** (engl. *public API*) modula na klijentu je skup adresa njegovih stranica. Drugi modul do ekrana modula stiže adresom, a ne uvozom, pa nijedna datoteka modula ne sme da uveze datoteku drugog modula. Adrese modula određuje njegova tabela ruta. Sledeći kod prikazuje tabelu ruta modula Social iz projekta:
 
 ```ts
-export { socialRoutes } from './social.routes';
-export type { BlogDto } from './api/social-api-types';
+export const socialRoutes: Routes = [
+  { path: '', component: BlogList },
+  { path: 'mine', component: MyBlogs },
+  { path: 'create', component: CreateBlog },
+  { path: ':id', component: BlogDetail },
+];
 ```
 
 U datom kodu treba uočiti sledeće:
 
-- Datoteka ne sadrži sopstveni kod, već samo izvozi ono što je definisano na drugim mestima u modulu. Naredba `export ... from` čini vrednost iz druge datoteke dostupnom pod putanjom ove datoteke.
-- Prvi red izvozi tabelu ruta modula. Kroz nju modul ulazi u aplikaciju, što razmatramo u narednom odeljku.
-- Drugi red izvozi preslikani tip, uz ključnu reč `type`. Tip postoji samo za prevodioca i pri prevođenju u JS nestaje, pa uvoz tipa ne unosi kod drugog modula u modul koji ga koristi.
-- Javna površina nikada ne izvozi servis. Servis sa `providedIn: 'root'` je jedan objekat za celu aplikaciju, pa bi dva modula koja ga preuzmu delila stanje kroz taj objekat, a nigde ne bi bilo zapisano koji modul to stanje menja.
+- Svaka stavka povezuje deo adrese sa stranicom. Uz prefiks modula, o kom je naredni odeljak, modul Social ima četiri adrese: `/social`, `/social/mine`, `/social/create` i `/social/<id>`.
+- Samo tabela ruta aplikacije uvozi tabelu ruta modula iz datoteke `social.routes.ts`, i kroz nju modul ulazi u aplikaciju. To je jedina datoteka modula koju uvozi datoteka van njega, a nijedan drugi modul je ne uvozi.
+- Dok adresa ostaje ista, tim modula sme da preimenuje, premesti ili zameni stranicu na njoj, a nijedan drugi modul to ne primećuje.
+- Modul drugom modulu ne predaje ni servis ni tip. Servis sa `providedIn: 'root'` je jedan objekat za celu aplikaciju, pa bi dva modula koja ga dele delila i stanje, a nigde ne bi bilo zapisano koji modul to stanje menja. Kada modulu treba podatak drugog modula, dobija ga od svog servera i preslikava u sopstveni tip, o čemu je odeljak o sastavljanju podataka.
 
-Proširenje javne površine je dogovor dva tima, kao i proširenje kontrakta na serveru. Tim kome treba tip drugog modula traži od vlasnika modula da ga izveze, a vlasnik odlučuje šta izvozi i u kom obliku.
+Promena javne površine je dogovor dva tima, kao i promena kontrakta na serveru. Tim koji preimenuje ili ukloni adresu ka kojoj vodi veza iz drugog modula dogovara to sa timom tog modula.
 
 ## Ulazak modula u aplikaciju
 
@@ -42,19 +46,19 @@ export const routes: Routes = [
   {
     path: 'exploration',
     loadChildren: () =>
-      import('../modules/exploration/public-api').then((m) => m.explorationRoutes),
+      import('../modules/exploration/exploration.routes').then((m) => m.explorationRoutes),
   },
   {
     path: 'games',
-    loadChildren: () => import('../modules/games/public-api').then((m) => m.gamesRoutes),
+    loadChildren: () => import('../modules/games/games.routes').then((m) => m.gamesRoutes),
   },
   {
     path: 'social',
-    loadChildren: () => import('../modules/social/public-api').then((m) => m.socialRoutes),
+    loadChildren: () => import('../modules/social/social.routes').then((m) => m.socialRoutes),
   },
   {
     path: 'payment',
-    loadChildren: () => import('../modules/payment/public-api').then((m) => m.paymentRoutes),
+    loadChildren: () => import('../modules/payment/payment.routes').then((m) => m.paymentRoutes),
   },
 ];
 ```
@@ -72,9 +76,9 @@ Kada stranici jednog modula treba nešto iz drugog modula, postoje dva načina:
 1. **Navigacija**, kada korisnik treba da ode na tuđi ekran. Stranica ima vezu ka adresi drugog modula i pri tome ne uvozi ništa, jer je adresa običan tekst, a šta se na njoj prikazuje odlučuje taj modul. Kada bi modul Payment imao stranicu sa kupljenim turama, ona bi ka spisku tura vodila vezom `routerLink="/exploration"`.
 2. **Podatak spojen na serveru**, kada treba prikazati tuđi podatak, a ne tuđi ekran. Stranica tada i dalje čita samo adresu svog modula, a server joj u odgovoru donosi ono što je uzeo od drugog modula. O tome je naredni odeljak.
 
-Trećeg načina nema. Modul ne uzima komponentu drugog modula, pa ni kroz javnu površinu. Delovi ekrana ostaju unutar modula koji ih je napravio, jer su napravljeni za njegove ekrane: `TourList` je stranica i ima svoju adresu, a `TourCard` čeka gotov `TourDto`, pa bi ga modul Payment morao sam da dovuče i time saznao tuđu adresu i tuđi tip. Kada modulu Payment treba naziv ture, ne uzima tuđu karticu, nego traži da mu naziv stigne u njegovom odgovoru.
+Trećeg načina nema. Modul ne uzima komponentu drugog modula. Delovi ekrana ostaju unutar modula koji ih je napravio, jer su napravljeni za njegove ekrane: `TourList` je stranica i ima svoju adresu, a `TourCard` čeka gotov `TourDto`, pa bi ga modul Payment morao sam da dovuče i time saznao tuđu adresu i tuđi tip. Kada modulu Payment treba naziv ture, ne uzima tuđu karticu, nego traži da mu naziv stigne u njegovom odgovoru.
 
-> **Napomena o projektu:** U početnom projektu nijedan modul ne koristi drugi. Nijedna datoteka modula ne uvozi tuđu javnu površinu tj. `public-api.ts` uvozi jedino tabela ruta aplikacije, zbog lenjog učitavanja. Ni preslikani tipovi koje javne površine izvoze, `TourDto` i `BlogDto`, zasad nemaju nijednog korisnika van svog modula.
+> **Napomena o projektu:** U početnom projektu nijedan modul ne koristi drugi. Veze ka svim modulima postoje samo u zaglavlju korenske komponente, koja ne pripada nijednom modulu.
 
 ## Sastavljanje podataka na serveru
 
@@ -103,23 +107,14 @@ a `PurchaseDto` preslikava u svoj direktorijum `api`, sa svojstvom koje nosi naz
 
 ## Od adrese do stranice modula
 
-Povežimo pojmove. Hod ide kroz dve tabele ruta: onu iz jezgra, koju smo videli gore, i onu modula Social, koju njegova javna površina izvozi:
+Povežimo pojmove. Hod ide kroz dve tabele ruta koje smo videli gore: onu iz jezgra i onu modula Social.
 
-```ts
-export const socialRoutes: Routes = [
-  { path: '', component: BlogList },
-  { path: 'mine', component: MyBlogs },
-  { path: 'create', component: CreateBlog },
-  { path: ':id', component: BlogDetail },
-];
-```
+Prijavljeni korisnik je na početnoj stranici i u zaglavlju klikne na vezu ka adresi `/social`. Dešava se sledeće:
 
-Prijavljeni korisnik je na početnoj stranici i klikne na vezu ka adresi `/social/mine`. Dešava se sledeće:
-
-1. Veza upisuje adresu `/social/mine` u internet čitač.
+1. Veza upisuje adresu `/social` u internet čitač.
 2. Radni okvir u tabeli aplikacije nalazi stavku sa prefiksom `social` i poziva njenu funkciju `loadChildren`.
-3. Poziv `import` preuzima objedinjenu datoteku modula Social, ako je internet čitač već nema, a `then` iz njene javne površine čita `socialRoutes`.
-4. Radni okvir ostatak adrese, `mine`, poklapa u tabeli modula. Poklapa se druga stavka, pa bira komponentu `MyBlogs`.
-5. Na mestu iscrtavanja uništava početnu stranicu i pravi `MyBlogs`, čiji resurs šalje zahtev na `/api/social/blogs/mine`.
+3. Poziv `import` preuzima objedinjenu datoteku modula Social, ako je internet čitač već nema, a `then` iz datoteke `social.routes.ts` čita `socialRoutes`.
+4. Radni okvir ostatak adrese, koji je prazan, poklapa u tabeli modula. Poklapa se prva stavka, čiji je `path` prazan, pa bira komponentu `BlogList`.
+5. Na mestu iscrtavanja uništava početnu stranicu i pravi `BlogList`, čiji resurs šalje zahtev na `/api/social/blogs/published?page=1&pageSize=20`.
 
-Nijedna datoteka van modula Social nije pomenula stranicu `MyBlogs`. Aplikacija zna samo da modul Social postoji na prefiksu `social` i da njegovu tabelu ruta dobija iz javne površine.
+Nijedna datoteka van modula Social nije pomenula stranicu `BlogList`. Aplikacija zna samo da modul Social postoji na prefiksu `social` i u kojoj se datoteci nalazi njegova tabela ruta.

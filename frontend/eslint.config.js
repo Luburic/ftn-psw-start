@@ -41,8 +41,8 @@ module.exports = defineConfig([
         {
           patterns: [
             {
-              regex: '^(\.\./)+(games|social|payment)/(?!public-api$)',
-              message: 'Import another module only through its public-api.',
+              regex: '^(\.\./)+(games|social|payment)/',
+              message: 'Modules never import from each other; link to their routes instead.',
             },
           ],
         },
@@ -57,8 +57,8 @@ module.exports = defineConfig([
         {
           patterns: [
             {
-              regex: '^(\.\./)+(exploration|social|payment)/(?!public-api$)',
-              message: 'Import another module only through its public-api.',
+              regex: '^(\.\./)+(exploration|social|payment)/',
+              message: 'Modules never import from each other; link to their routes instead.',
             },
           ],
         },
@@ -73,8 +73,8 @@ module.exports = defineConfig([
         {
           patterns: [
             {
-              regex: '^(\.\./)+(exploration|games|payment)/(?!public-api$)',
-              message: 'Import another module only through its public-api.',
+              regex: '^(\.\./)+(exploration|games|payment)/',
+              message: 'Modules never import from each other; link to their routes instead.',
             },
           ],
         },
@@ -89,8 +89,8 @@ module.exports = defineConfig([
         {
           patterns: [
             {
-              regex: '^(\.\./)+(exploration|games|social)/(?!public-api$)',
-              message: 'Import another module only through its public-api.',
+              regex: '^(\.\./)+(exploration|games|social)/',
+              message: 'Modules never import from each other; link to their routes instead.',
             },
           ],
         },
