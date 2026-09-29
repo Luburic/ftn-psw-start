@@ -2,6 +2,10 @@
 
 Jedna linija po dokumentu: putanja, opis i preduslovi (dokumenti koje čitalac treba prethodno da poznaje). Direktorijumi su segmenti, a redni brojevi u nazivima daju redosled čitanja. Svaki direktorijum ima `README.md` sa uvodom u segment i mapom svojih lekcija. Dokumenti su lekcije sa namerno pojednostavljenim primerima, osim onih označenih kao normativni.
 
+## Server
+
+- `server/README.md` — Serverska aplikacija podeljena na feature module i tri pitanja kojima se bave segmenti servera. Uvod u server. Preduslovi: nema.
+
 ## ASP.NET Core
 
 - `server/1-aspnet/README.md` — Šta radni okvir preuzima od serverske aplikacije i kako se razlikuje od biblioteke. Uvod u segment. Preduslovi: nema.
@@ -51,6 +55,10 @@ Jedna linija po dokumentu: putanja, opis i preduslovi (dokumenti koje čitalac t
 - `server/3-modularni-monolit/1-kontrakti.md` — Kontrakt kao javna površina modula prema drugim modulima: interfejs i minimalne DTO strukture, implementacija i poziv kroz kontejner zavisnosti. Preduslovi: `README.md`, `server/2-arhitektura-modula/2-aplikacioni-sloj/README.md`.
 - `server/3-modularni-monolit/2-gradivni-elementi.md` — Zajedničko jezgro, gradivni elementi po slojevima, platformski radni okvir i promocija koda u jezgro. Preduslovi: `README.md`.
 - `server/3-modularni-monolit/3-arhitektonski-testovi.md` — Arhitektonski testovi: pravila o zavisnostima kao automatski testovi i tri vrste pravila sa primerom za svaku. Preduslovi: `server/2-arhitektura-modula/5-čista-arhitektura.md`, `2-gradivni-elementi.md`.
+
+## Klijent
+
+- `klijent/README.md` — Klijentska aplikacija podeljena na iste feature module kao server i tri pitanja kojima se bave segmenti klijenta. Uvod u klijent. Preduslovi: nema.
 
 ## Angular
 
