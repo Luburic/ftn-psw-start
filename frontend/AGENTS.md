@@ -1,6 +1,6 @@
 # Frontend
 
-Mandatory patterns for `frontend/`. The root `CLAUDE.md` holds the project context and
+Mandatory patterns for `frontend/`. The root `AGENTS.md` holds the project context and
 the rules that apply to both tiers; this file adds the frontend-specific ones. If a
 pattern you are about to write is not described here, stop and ask.
 

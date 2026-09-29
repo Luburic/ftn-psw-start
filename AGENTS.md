@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 This is an educational project, not a full production solution. Keep cognitive load theory
 in mind and do not introduce new technologies, concepts, or libraries without checking
@@ -34,8 +34,8 @@ PostgreSQL database. No Docker in this project; students run PostgreSQL natively
 ## Repository layout
 
 ```
-backend/          .NET solution (Explorer.slnx), see backend/CLAUDE.md
-frontend/         Angular workspace, see frontend/CLAUDE.md
+backend/          .NET solution (Explorer.slnx), see backend/AGENTS.md
+frontend/         Angular workspace, see frontend/AGENTS.md
 docs/             knowledge base (course material, in Serbian), see below
 .github/          CI workflow: backend restore, build, test (Postgres service container);
                   frontend install, lint, build
@@ -66,7 +66,7 @@ frontend/src/app/modules/<name>/
 
 ## Where to look next
 
-The instructions are scoped by tier. `backend/CLAUDE.md` and `frontend/CLAUDE.md` hold
+The instructions are scoped by tier. `backend/AGENTS.md` and `frontend/AGENTS.md` hold
 the mandatory patterns for their folder and load automatically once a session touches
 files there; read the relevant one before writing code, not after the first file is
 open. READMEs placed next to the code they govern hold the finer conventions (for
@@ -74,8 +74,8 @@ example `backend/Shared/Shared.Tests/README.md` for tests). When a platform chan
 alters a mandatory pattern, updating the affected instructions file or README is part
 of that change.
 
-- Backend feature or fix: `backend/CLAUDE.md`.
-- Frontend feature or fix: `frontend/CLAUDE.md`.
+- Backend feature or fix: `backend/AGENTS.md`.
+- Frontend feature or fix: `frontend/AGENTS.md`.
 - A feature spanning both tiers: both. The seam is the backend's Application DTO, which
   is the wire contract the frontend's `api/` types mirror.
 - Understanding a concept or trade-off: the knowledge base, below. Do not load the

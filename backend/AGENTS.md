@@ -1,6 +1,6 @@
 # Backend
 
-Mandatory patterns for `backend/`. The root `CLAUDE.md` holds the project context and
+Mandatory patterns for `backend/`. The root `AGENTS.md` holds the project context and
 the rules that apply to both tiers; this file adds the backend-specific ones. If a
 pattern you are about to write is not described here, stop and ask.
 
