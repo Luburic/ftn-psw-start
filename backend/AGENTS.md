@@ -242,20 +242,69 @@ them.
 
 ## Testing
 
-xUnit with FluentAssertions, pinned to FluentAssertions 7 (the last Apache-licensed
-line; do not bump to 8 without a licensing discussion). One test project per module with
-`Unit/` and `Integration/` folders. Integration tests send real HTTP requests:
-`WebApplicationFactory<Program>` boots the host, tests call endpoints with an
-`HttpClient`. Test projects are exempt from the module reference rules; they may
-reference `Host.Api`, `Shared.Tests`, and other modules' test projects (for seeds).
+xUnit with FluentAssertions, pinned to FluentAssertions 7 (the last Apache-licensed line;
+do not bump to 8 without a licensing discussion). One test project per module with
+`Unit/` and `Integration/` folders. Test projects are exempt from the module reference
+rules; they may reference `Host.Api`, `Shared.Tests`, and other modules' test projects.
 
-The core discipline is the three-channel rule: state goes in through seeds, actions go
-through HTTP, observation goes through a read-only context — each concern has exactly
-one channel. The full conventions (test databases, seed construction, assertion
-patterns, wiring, auth) live in `Shared/Shared.Tests/README.md` and are mandatory when
-writing tests.
+**What gets a test.** Decided before any test is written:
+- Domain rules or complex algorithms with few collaborators (aggregates, domain services,
+  complex local technical experts): unit tests.
+- Coordination of collaborators (application services): integration tests through HTTP,
+  never unit tests with mocked repositories.
+- Trivial or pass-through code (properties, DTOs, mapping, repositories, unit of work,
+  controllers, thin library wrappers): no test of its own.
+- A class that both coordinates and holds a rule: move the rule into the domain first.
+
+Each rule is tested once, at the lowest level where it lives. A command's integration
+tests cover the success case and one rejection per layer that can reject the request
+(authentication, role, application service, domain).
+
+**What a test asserts.** Keep a test only if a plausible code change could break it;
+coverage is not a goal. Assert what the caller observes (return value, state, exception
+type, status code, body, stored row), never implementation details (exception messages,
+private state, call order). Test through the public entry point another layer calls;
+objects an aggregate creates and owns are tested through the aggregate.
+
+**Shape.** Names are domain sentences in snake_case, with no class, method, HTTP verb, or
+status code. Arrange, Act, and Assert are separated by blank lines, without comments. Act
+is one call, or one HTTP request; needing two means the aggregate lacks a method,
+otherwise split the test. Repeated unit-test setup goes into a private method of the test
+class; variations of primitive inputs use `[Theory]`. Tests share no mutable state.
+
+**Integration tests.** Each concern has one channel. State enters only through seeds,
+restored by `Reseed` before every test. The action is the single HTTP request.
+Observation goes through `Factory.CreateContext<TContext>()`, read-only, opened in a
+`using` where it is needed and never reused across Act. Never prepare state through
+another endpoint or by writing through a context.
+
+**Seeds.** `Integration/Seeds/` holds one static class of named instances per aggregate
+and a module class gathering them in `All`. Instances are built only through
+constructors and domain methods, as linear statements without branching, helpers, or
+parameters; the name states the state, and a variation is a new instance. Tests refer to
+rows by instance ID. Seed instances belong to integration tests and are never mutated
+outside their static constructor.
+
+**Assertions.** Commands: assert the response, then the database. Success requires the
+written consequence; a rejection that reached the application layer requires its
+absence; authentication and role rejections check only the response. Counts are
+relative to a count read in Arrange. Queries: HTTP only, never a literal count; derive
+expectations from seed `All`, or assert shape and membership by seeded ID. Read bodies
+with the base class's `JsonOptions`.
+
+**Wiring.** One `BaseIntegrationTest.cs` per test project: factory subclass, the
+`Integration` collection fixture, and the abstract base class. Integration folders
+mirror the application layer's use-case groups, with `<Group>CommandTests` and
+`<Group>QueryTests` side by side. Feature-module tests authenticate with
+`Factory.CreateClientFor(userId, role)` and `WellKnownUsers`; only `Identity.Tests`
+uses the real register and login endpoints.
+
+**Test doubles.** Only for an out-of-process dependency whose effects other systems see
+and that has no test instance. Never for the database or the module's own classes.
 
 Architecture tests in `Host.Tests` use ArchUnitNET and encode the reference rules above.
+The module list in `BaseArchitectureTests` is the only place they change when a module
+is added.
 
 ## Conventions
 
@@ -283,4 +332,5 @@ Architecture tests in `Host.Tests` use ArchUnitNET and encode the reference rule
 
 ## Still open, ask before choosing
 
-- **Mocking library.** Deferred until a module has something to mock.
+- **Mocking library.** Chosen when the first dependency that warrants a test double
+  (see Testing) appears.

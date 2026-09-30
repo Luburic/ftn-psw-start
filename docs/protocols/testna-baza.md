@@ -4,7 +4,7 @@
 
 ## Kada se primenjuje
 
-Kada integracioni testovi padaju iz razloga koji ne liči na vaš kod: greške o konekciji, o bazi koja ne postoji ili je zauzeta, o tabeli ili koloni koje nema. Za pisanje samih testova merodavan je dokument `docs/knowledge-base/tests/xunit.md`.
+Kada integracioni testovi padaju iz razloga koji ne liči na vaš kod: greške o konekciji, o bazi koja ne postoji ili je zauzeta, o tabeli ili koloni koje nema. Za pisanje samih testova merodavan je odeljak Testing u dokumentu `backend/AGENTS.md`.
 
 ## Kako sistem radi
 
@@ -22,7 +22,7 @@ Posledica za svakodnevni rad: u testnu bazu se ništa ne dodaje ručno i ništa 
 - **`28P01: password authentication failed`** — lozinka korisnika `postgres` nije `admin`. Uskladite lozinku kroz pgAdmin; konekcioni string u kodu se ne menja.
 - **Pad pri kreiranju baze, baza „is being accessed by other users"** — obaranje baze prekida i zatečene konekcije (`WITH FORCE`), ali konekciju u kojoj vi držite otvorenu transakciju iz pgAdmin-a ili prethodno zaglavljen test proces ume da nadživi to. Zatvorite pgAdmin konekcije na testnu bazu i proverite da nije ostao zombi `dotnet`/`testhost` proces.
 - **`relation ... does not exist` ili nedostaje kolona** — kod i migracije nisu usklađeni: izmenili ste model, a niste dodali migraciju, ili je grana koju ste povukli donela model bez svoje migracije. Vidite protokol [Migracije: lokalni rad](migracije-lokalni-rad.md).
-- **Test pada samo kada se pokrene ceo skup, pojedinačno prolazi** — test zavisi od stanja koje je ostavio drugi test, umesto od seed podataka. To je greška u testu: sve što testu treba pravi se u njegovom arrange koraku ili dolazi iz seed-a.
+- **Test pada samo kada se pokrene ceo skup, pojedinačno prolazi** — test zavisi od stanja koje je ostavio drugi test, umesto od seed podataka. To je greška u testu: podaci koji su testu potrebni dolaze isključivo iz seed-a.
 
 ## Druga instanca PostgreSQL-a (izuzetak)
 

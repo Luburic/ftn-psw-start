@@ -6,7 +6,7 @@ Deo koda je u vlasništvu platformskog tima, a deo u vlasništvu timova koji raz
 
 ## Explorer.slnx
 
-Šredstavlja rešenje (engl. *solution*) koje okuplja sve projekte serverske aplikacije.
+Predstavlja rešenje (engl. *solution*) koje okuplja sve projekte serverske aplikacije.
 
 Datoteka je u vlasništvu platformskog tima. Menja se samo kada se u rešenje dodaje nov projekat ili kada se postojeći uklanja.
 
@@ -32,15 +32,15 @@ Projekat je u vlasništvu platformskog tima. Menja se kada se u sistem dodaje no
 
 Sadrži projekat sa arhitektonskim testovima. Ti testovi proveravaju da li projekti poštuju pravila zavisnosti (npr. da domenski sloj ne zavisi od tehnoloških detalja i da jedan modul ne pristupa unutrašnjosti drugog modula). Testovi se izvršavaju i lokalno i u sistemu kontinualne integracije, pa narušavanje pravila obara izgradnju.
 
-Projekat je u vlasništvu platformskog tima. Menja se samo kada se menja arhitektura. Ako ovi testovi prijave grešku, ispravlja se kod, a ne test.
+Projekat je u vlasništvu platformskog tima. Menja se kada se menja arhitektura ili kada se dodaje nov modul, jer se modul upisuje u spisak u klasi `BaseArchitectureTests`. Ako ovi testovi prijave grešku, ispravlja se kod, a ne test. Vrste arhitektonskih testova i pravila koja čuvaju objašnjava lekcija `docs/knowledge-base/server/3-modularni-monolit/3-arhitektonski-testovi.md`.
 
 ## Shared
 
 Sadrži zajednički kod koji koriste svi moduli. Podeljen je na četiri projekta:
 - `Shared.Api` sadrži pomoćni kod za kontrolerski sloj (npr. metodu `GetUserId`, kojom kontroler čita identifikator prijavljenog korisnika iz tokena).
-- `Shared.Domain` sadrži klase `Entity` i `AggregateRoot`, koje nasleđuju domenske klase (vrednosni objekat se modeluje kroz C# record). Izuzeci `DomainException` i `NotFoundException` domen prijavljuje narušavanje pravila i nepostojanje traženog podatka.
+- `Shared.Domain` sadrži klase `Entity` i `AggregateRoot`, koje nasleđuju domenske klase (vrednosni objekat se modeluje kroz C# record). Izuzecima `DomainException` i `NotFoundException` domen prijavljuje narušavanje pravila, odnosno nepostojanje traženog podatka. Klasa `PageResult` je oblik rezultata upita koji vraća stranicu liste.
 - `Shared.Infrastructure` sadrži pomoćni kod za sloj infrastrukture (npr. metoda `AddModuleDbContext`, koja registruje bazu podataka modula tako da modul dobije sopstvenu šemu i sopstvenu tabelu istorije migracija).
-- `Shared.Tests` sadrži pomoćni kod za integracione testove: klasu `ExplorerApiFactory`, koja svakom test projektu obezbeđuje sopstvenu testnu bazu (obara je i ponovo kreira jednom po pokretanju testova), metodu `Reseed` za vraćanje podataka na početno stanje pre svakog testa, izdavanje test tokena (`CreateClientFor`) i klasu `WellKnownUsers` sa fiksnim identifikatorima korisnika koje testovi koriste.
+- `Shared.Tests` sadrži pomoćni kod za integracione testove: klasu `ExplorerApiFactory`, koja svakom test projektu obezbeđuje sopstvenu testnu bazu (obara je i ponovo kreira jednom po pokretanju testova), metodu `Reseed` za vraćanje podataka na početno stanje pre svakog testa, izdavanje test tokena (`CreateClientFor`), metodu `CreateContext`, kroz koju provera čita bazu, i klasu `WellKnownUsers` sa fiksnim identifikatorima korisnika koje testovi koriste.
 
 Sva četiri projekta su u vlasništvu platformskog tima. Menjaju se samo kada se pojavi potreba koja je zaista zajednička za više modula. Premeštanje koda u zajedničke projekte je odluka koja se donosi u dogovoru sa platformskim timom, jer svaki dodatak ovde postaje zavisnost svih modula.
 
@@ -50,16 +50,16 @@ Ovaj direktorijum sadrži module aplikacije. Ovde se odvija najveći deo rada ti
 
 ### Identity
 
-Modul `Identity` je izuzetak od strukture ostalih modula. To je projekat u vlasništvu platformskog tima, zadužen za registraciju i prijavu korisnika i za izdavanje JWT tokena. Ostali moduli ga ne referenciraju, već korisnika pamte samo preko njegovog identifikatora. Uz njega postoji i projekat `Identity.Tests`, koji služi kao ugledni primer integracionih testova.
+Modul `Identity` je izuzetak od strukture ostalih modula. To je projekat u vlasništvu platformskog tima, zadužen za registraciju i prijavu korisnika i za izdavanje JWT tokena. Ostali moduli ga ne referenciraju, već korisnika pamte samo preko njegovog identifikatora. Uz njega postoji i projekat `Identity.Tests`. Njegovi testovi koriste prave krajnje tačke za registraciju i prijavu, pa nisu uzor za testove funkcionalnih modula. Uzor su test projekti modula `Exploration` i `Social`.
 
 ### Funkcionalni moduli
 
 Funkcionalni moduli su `Exploration`, `Games`, `Social` i `Payment`. Svaki od njih ima istovetnu strukturu od šest projekata:
 - `<Ime>.Api` sadrži kontrolere koji primaju HTTP zahtev, pozivaju jednu metodu aplikacionog sloja i vraćaju HTTP odgovor.
-- `<Ime>.Application` sadrži aplikacione servise koji opisuju kako se koordinišu domenski objekti i tehničke sposobnosti da se ispuni slučaj korišćenja. Tu su i DTO klase, čije instance prihvataju i vraćaju aplikacioni servisi, profili za transliranje DTO u domenski objekat i obratno, kao i interfejsi od infrastrukturnih servisa.
-- `<Ime>.Contracts` sadrži interfejs koji modul nudi drugim modulima i po potrebi DTO klase čije instance se razumenjuju između modula. To je jedini deo modula koji drugi moduli smeju da referenciraju. Navedene interfejse implementiraju aplikacioni servisi, zbog čega je svaka izmena ovog projekta dogovor između dva tima (vlasnika modula i tima koji želi pojedine podatke iz modula).
+- `<Ime>.Application` sadrži aplikacione servise i upitne klase koji opisuju kako se koordinišu domenski objekti i tehničke sposobnosti da se ispuni slučaj korišćenja. Tu su i DTO klase, čije instance prihvataju i vraćaju aplikacioni servisi, profili za mapiranje DTO u domenski objekat i obratno, kao i interfejsi od infrastrukturnih servisa.
+- `<Ime>.Contracts` sadrži interfejs koji modul nudi drugim modulima i po potrebi DTO klase čije instance se razmenjuju između modula. To je jedini deo modula koji drugi moduli smeju da referenciraju. Navedene interfejse implementiraju aplikacioni servisi, zbog čega je svaka izmena ovog projekta dogovor između dva tima (vlasnika modula i tima koji želi pojedine podatke iz modula).
 - `<Ime>.Domain` sadrži domenske objekte (koren agregata, entiteti, vrednosni objekti) i domenske servise. Ovde se implementiraju domenski koncepti i pravila.
 - `<Ime>.Infrastructure` sadrži implementacije infrastrukturnih servisa, poput repozitorijuma, konektorskih klasa i tehničkih stručnjačkih klasa koje koriste biblioteke. U njemu su `DbContext`, EF konfiguracije, migracije, implementacije repozitorijuma i upita.
-- `<Ime>.Tests` sadrži testove modula, podeljene na direktorijume `Unit` i `Integration`. Jedinični testovi proveravaju ponašanje agregata i domenskih servisa, a integracioni testovi šalju prave HTTP zahteve i proveravaju rad severske aplikacije u interakciji sa testnom bazom podataka.
+- `<Ime>.Tests` sadrži testove modula, podeljene na direktorijume `Unit` i `Integration`. Jedinični testovi proveravaju pravila domena, a integracioni testovi šalju prave HTTP zahteve serverskoj aplikaciji koja radi nad testnom bazom podataka. Pravila za pisanje testova navedena su u odeljku Testing dokumenta `backend/AGENTS.md`.
 
 Ovih šest projekata menja tim koji je vlasnik modula pri svakom razvoju nove funkcionalnosti.

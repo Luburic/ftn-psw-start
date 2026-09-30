@@ -69,10 +69,9 @@ frontend/src/app/modules/<name>/
 The instructions are scoped by tier. `backend/AGENTS.md` and `frontend/AGENTS.md` hold
 the mandatory patterns for their folder and load automatically once a session touches
 files there; read the relevant one before writing code, not after the first file is
-open. READMEs placed next to the code they govern hold the finer conventions (for
-example `backend/Shared/Shared.Tests/README.md` for tests). When a platform change
-alters a mandatory pattern, updating the affected instructions file or README is part
-of that change.
+open. READMEs placed next to the code they govern hold the finer conventions. When a
+platform change alters a mandatory pattern, updating the affected instructions file or
+README is part of that change.
 
 - Backend feature or fix: `backend/AGENTS.md`.
 - Frontend feature or fix: `frontend/AGENTS.md`.
