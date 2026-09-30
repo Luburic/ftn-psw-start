@@ -10,8 +10,8 @@ Svaki put kada menjate model podataka svog modula: dodajete agregat, dodajete il
 
 Dve činjenice objašnjavaju sve korake:
 
-1. **Migracije se primenjuju automatski.** Pri svakom pokretanju aplikacije svaki modul primeni svoje neprimenjene migracije na bazu `explorer` (metoda `MigrateAsync` u inicijalizatoru modula). Zato komandu `dotnet ef database update` nikada ne pokrećete da biste primenili migracije — samo pokrenete aplikaciju. Ručno se baza dira samo pri vraćanju unazad.
-2. **Migracija i snimak modela idu u paru.** Komanda za dodavanje migracije generiše datoteku migracije i ažurira `<Ime>DbContextModelSnapshot.cs`. Snimak modela je zbir svih migracija; EF ga koristi da izračuna sledeću migraciju. Zato se migracije nikada ne pišu ni ne brišu ručno — isključivo kroz `dotnet ef` komande, da snimak modela i migracije ostanu usklađeni.
+1. **Migracije se primenjuju automatski.** Pri svakom pokretanju aplikacije svaki modul primeni svoje neprimenjene migracije na bazu `explorer` (metoda `MigrateAsync` u inicijalizatoru modula). Zato komandu `dotnet ef database update` nikada ne pokrećete da biste primenili migracije — samo pokrenete aplikaciju. Ručno se baza dira samo pri vraćanju unazad i pri resetu (oba su opisana ispod).
+2. **Migracija i snimak modela idu u paru.** Komanda za dodavanje migracije generiše datoteku migracije i ažurira `<Ime>DbContextModelSnapshot.cs`. Snimak modela je zbir svih migracija; EF ga koristi da izračuna sledeću migraciju. Zato se migracije nikada ne pišu ni ne brišu ručno — isključivo kroz `dotnet ef` komande, da snimak modela i migracije ostanu usklađeni. Jedini izuzetak opisuje protokol [Migracije: rešavanje konflikata](migracije-resavanje-konflikata.md#ako-je-konflikt-već-napravljen).
 
 Svaki modul ima sopstvenu šemu i sopstvenu tabelu istorije migracija, pa migracije različitih modula ne utiču jedna na drugu.
 
@@ -53,10 +53,12 @@ Kada pređete na granu koja ne sadrži migraciju već primenjenu na vašu bazu (
 
 ## Reset lokalne baze
 
-Baza `explorer` je razvojna i sme da se obriše u svakom trenutku — pri sledećem pokretanju aplikacija je ponovo kreira, primenom svih migracija svih modula:
+Baza `explorer` je razvojna i sme da se obriše u svakom trenutku — pri sledećem pokretanju aplikacija je ponovo kreira, primenom svih migracija svih modula. Zaustavite aplikaciju, pa iz direktorijuma `backend` pokrenite:
 
 ```
-dotnet ef database drop --project Modules/Exploration/Exploration.Infrastructure --startup-project Host.Api
+dotnet ef database drop --force --project Modules/Exploration/Exploration.Infrastructure --startup-project Host.Api
 ```
+
+Parametar `--force` preskače pitanje za potvrdu. Komanda briše celu bazu, a ne samo šemu vašeg modula: nestaju podaci svih modula, uključujući i korisnike koje ste sami registrovali. Posle pokretanja aplikacije baza ponovo sadrži samo početne podatke.
 
 Ovo je standardan izlaz iz svakog nejasnog stanja lokalne baze. Nije sramota, brže je od detektivskog posla.

@@ -52,4 +52,4 @@ U datom ispisu treba uočiti sledeće:
 
 Pravilo se proverava na dva mesta. Lokalno ga proverava komanda `npm run lint`, koju pokrećemo pre nego što izmene pošaljemo na repozitorijum. Na serveru za kontinuiranu integraciju, pri svakom push-u na granu `main` i pri svakom pull request-u, pokreću se dva odvojena posla: posao `frontend`, koji redom izvršava `npm ci`, `npm run lint` i `npm run build`, i posao koji prevodi i testira serversku aplikaciju. Oba moraju da prođu, pa prekršaj pravila obara proveru za ceo tim, kao i arhitektonski test na serveru.
 
-Kada build padne, u zapisu izvršavanja treba naći posao `frontend` i u njemu korak `Lint`. Njegov ispis je isti kao ispis komande `npm run lint` iz prethodnog odeljka i čita se na isti način.
+Kada build padne, u zapisu izvršavanja treba naći posao `frontend` i u njemu korak `Lint`. Njegov ispis je isti kao ispis komande `npm run lint` iz prethodnog odeljka i čita se na isti način. Sve provere koje se pokreću lokalno pre otvaranja pull request-a navodi protokol [Rad sa granama i pull request-ovima](../../../protocols/rad-sa-granama.md).

@@ -51,7 +51,7 @@ public class TourAuthoringCommandTests : BaseIntegrationTest
 }
 ```
 
-Test okvir pravi novu instancu test klase za svaku test metodu i njenom konstruktoru prosleđuje fabriku. Konstruktor roditeljske klase se zato izvršava pre svakog testa i pozivom `Reseed` vraća bazu u početno stanje.
+Test okvir pravi novu instancu test klase za svaku test metodu i njenom konstruktoru prosleđuje fabriku. Konstruktor roditeljske klase se zato izvršava pre svakog testa i pozivom `Reseed` vraća bazu u početno stanje. Česte padove testne baze i njihova rešenja opisuje protokol [Testna baza podataka](../../protocols/testna-baza.md).
 
 ## Definisanje početnih podataka
 

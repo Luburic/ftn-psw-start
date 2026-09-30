@@ -51,7 +51,7 @@ Pre nego što se izvrši kod test metode, serverska aplikacija je već pokrenuta
 1. Uvedemo upravljanu zavisnost koja zamenjuje eksterni sistem (npr. testni API ili posebnu bazu podataka za testiranje).
 2. Podmetnemo lažnu implementaciju (engl. *test double*) naše klase koja interaguje sa eksternim sistemom, tako da osiguramo da ga ne opterećuje. Ovo radimo kada opcija 1 nije moguća i razmatraćemo kasnije.
 
-U našem projektu smo osposobili serversku aplikaciju da podigne testnu bazu podataka kada god se testovi pokrenu. Testovi rade sa pravim PostgreSQL serverom, ali ne prljaju podatke produkcione baze.
+U našem projektu smo osposobili serversku aplikaciju da podigne testnu bazu podataka kada god se testovi pokrenu. Testovi rade sa pravim PostgreSQL serverom, ali ne prljaju podatke razvojne baze.
 
 ## Scenariji koje integracioni test pokriva
 
