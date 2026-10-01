@@ -17,12 +17,12 @@ Svaki modul ima sopstvenu šemu i sopstvenu tabelu istorije migracija, pa migrac
 
 ## Izmena modela
 
-Sve komande se pokreću iz direktorijuma `backend`. Primeri su za modul `Exploration`; zamenite ime svog modula.
+Sve komande se pokreću iz direktorijuma `backend`. Primeri su za modul `Exploration`; zamenite ime svog modula i njegovog konteksta (`<Ime>DbContext`).
 
 1. Izmenite domenske klase i, po potrebi, EF konfiguraciju u `Infrastructure`.
 2. Dodajte migraciju, sa imenom koje opisuje izmenu:
    ```
-   dotnet ef migrations add DodataOcenaTure --project Modules/Exploration/Exploration.Infrastructure --startup-project Host.Api
+   dotnet ef migrations add DodataOcenaTure --project Modules/Exploration/Exploration.Infrastructure --startup-project Host.Api --context ExplorationDbContext
    ```
 3. Pregledajte generisanu datoteku u `Modules/Exploration/Exploration.Infrastructure/Persistence/Migrations/`. Proverite da menja samo ono što ste nameravali i samo šemu vašeg modula. Migracija koja briše kolonu ili tabelu briše i podatke u njoj — to je u razvoju prihvatljivo, ali treba da bude svesno.
 4. Pokrenite aplikaciju — migracija se primenjuje automatski. Prođite kroz Scalar slučaj korišćenja koji dira izmenjeni deo modela.
@@ -34,12 +34,12 @@ Primenjuje se kada ste dodali migraciju, pa zaključili da izmena modela nije do
 
 1. Vratite bazu na stanje pre vaše migracije (navodi se ime poslednje migracije koja **ostaje**):
    ```
-   dotnet ef database update PrethodnaMigracija --project Modules/Exploration/Exploration.Infrastructure --startup-project Host.Api
+   dotnet ef database update PrethodnaMigracija --project Modules/Exploration/Exploration.Infrastructure --startup-project Host.Api --context ExplorationDbContext
    ```
    Spisak migracija, sa oznakom koje su primenjene, daje `dotnet ef migrations list` sa istim parametrima.
 2. Uklonite migraciju (briše datoteku migracije i vraća snimak modela):
    ```
-   dotnet ef migrations remove --project Modules/Exploration/Exploration.Infrastructure --startup-project Host.Api
+   dotnet ef migrations remove --project Modules/Exploration/Exploration.Infrastructure --startup-project Host.Api --context ExplorationDbContext
    ```
 3. Ispravite model, pa dodajte novu migraciju po koracima iznad.
 
@@ -56,7 +56,7 @@ Kada pređete na granu koja ne sadrži migraciju već primenjenu na vašu bazu (
 Baza `explorer` je razvojna i sme da se obriše u svakom trenutku — pri sledećem pokretanju aplikacija je ponovo kreira, primenom svih migracija svih modula. Zaustavite aplikaciju, pa iz direktorijuma `backend` pokrenite:
 
 ```
-dotnet ef database drop --force --project Modules/Exploration/Exploration.Infrastructure --startup-project Host.Api
+dotnet ef database drop --force --project Modules/Exploration/Exploration.Infrastructure --startup-project Host.Api --context ExplorationDbContext
 ```
 
 Parametar `--force` preskače pitanje za potvrdu. Komanda briše celu bazu, a ne samo šemu vašeg modula: nestaju podaci svih modula, uključujući i korisnike koje ste sami registrovali. Posle pokretanja aplikacije baza ponovo sadrži samo početne podatke.

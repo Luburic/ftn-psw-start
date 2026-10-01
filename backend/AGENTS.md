@@ -94,7 +94,8 @@ services as an explicit `Guid userId` parameter. There is no ambient current-use
 abstraction.
 
 Migrations are added with `dotnet ef` (tool manifest in `.config/`), e.g.
-`dotnet ef migrations add X --project Modules/Identity/Identity --startup-project Host.Api`.
+`dotnet ef migrations add X --project Modules/Identity/Identity --startup-project Host.Api --context IdentityModuleDbContext`.
+`--context` is required because `Host.Api` registers every module's `DbContext`.
 
 ## Application layer patterns
 
