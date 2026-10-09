@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, development]
   pull_request:
 
 jobs:
@@ -40,6 +40,36 @@ jobs:
       - name: Test
         run: dotnet test --no-build --configuration Release
         working-directory: backend
+
+  migrations:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Check migration order
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          base="origin/$BASE_REF"
+          git rev-parse --verify --quiet "$base" > /dev/null || { echo "::error::Grana $base nije dostupna."; exit 1; }
+          failed=0
+          for dir in $(git ls-tree -r --name-only HEAD backend/Modules | grep '/Migrations/' | xargs -r -n1 dirname | sort -u); do
+            for added in $(git diff --name-only --diff-filter=A "$base"...HEAD -- "$dir" | grep -E '/[0-9]{14}_[^/]+\.cs$' | grep -v '\.Designer\.cs$'); do
+              commit=$(git log --diff-filter=A --format=%H -1 HEAD -- "$added")
+              for existing in $(git ls-tree --name-only "$base" -- "$dir/" | grep -E '/[0-9]{14}_[^/]+\.cs$' | grep -v '\.Designer\.cs$'); do
+                if ! git cat-file -e "$commit:$existing" 2>/dev/null; then
+                  echo "::error file=$added::Migracija ${added##*/} je generisana bez migracije ${existing##*/}, koja je u međuvremenu stigla u granu $BASE_REF. Pratite protokol docs/protocols/migracije-resavanje-konflikata.md."
+                  failed=1
+                fi
+              done
+            done
+          done
+          exit $failed
 
   frontend:
     runs-on: ubuntu-latest

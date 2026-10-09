@@ -80,7 +80,7 @@ nothing.
   current user). Nothing else, and never anything from another module.
 - Enforced by `no-restricted-imports` in `eslint.config.js` (`angular-eslint`, flat
   config), one block per module whose regex names the sibling modules. It runs locally with `npm run lint` and in CI on every push to
-  `main` and every pull request. This is a lint rule, not a compiler guarantee. Unlike
+  `main` or `development` and every pull request. This is a lint rule, not a compiler guarantee. Unlike
   the backend, nothing structurally prevents a violation.
 - Routes are lazy-loaded per module with `loadChildren` from `core/app.routes.ts`. That
   file is platform-owned and set up once.

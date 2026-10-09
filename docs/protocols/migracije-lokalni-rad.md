@@ -45,11 +45,13 @@ Primenjuje se kada ste dodali migraciju, pa zaključili da izmena modela nije do
 
 Obrnut redosled (prvo `remove`) ostavlja bazu sa primenjenom migracijom koje više nema u kodu — to stanje aplikacija ne ume sama da razreši i tada sledi reset (ispod).
 
-**Granica:** ovako se vraćaju samo migracije koje još nisu stigle u `main`. Migracija koja je u `main`-u primenjena je kod drugih članova tima; nju ne uklanjate, već dodajete novu migraciju koja menja šta treba. Ako vaša grana i `main` sadrže različite migracije, pratite protokol [Migracije: rešavanje konflikata](migracije-resavanje-konflikata.md).
+**Granica:** ovako se vraćaju samo migracije koje još nisu stigle u `development`. Migracija koja je u `development`-u primenjena je kod drugih članova tima; nju ne uklanjate, već dodajete novu migraciju koja menja šta treba. Ako vaša grana i `development` sadrže različite migracije, pratite protokol [Migracije: rešavanje konflikata](migracije-resavanje-konflikata.md).
 
 ## Zamka pri promeni grane
 
-Kada pređete na granu koja ne sadrži migraciju već primenjenu na vašu bazu (npr. vratite se na `main` sa grane na kojoj ste eksperimentisali), aplikacija to ne vraća unazad — u bazi ostaje višak. Najčešće sve i dalje radi; ako ne radi, ili sumnjate, uradite reset.
+Kada pređete na granu koja ne sadrži migraciju već primenjenu na vašu bazu (npr. vratite se na `development` sa grane na kojoj ste eksperimentisali), aplikacija to ne vraća unazad — u bazi ostaje višak. Najčešće sve i dalje radi; ako ne radi, ili sumnjate, uradite reset.
+
+Čest slučaj je pregled tuđeg pull request-a koji sadrži migraciju. Čim pokrenete aplikaciju na toj grani, migracija se primeni na vašu bazu. Ako se ta migracija kasnije ponovo generiše po protokolu [Migracije: rešavanje konflikata](migracije-resavanje-konflikata.md), EF je vidi kao novu migraciju, a vaša baza već sadrži izmene stare verzije. Aplikacija tada pada pri pokretanju (npr. sa greškom da kolona već postoji). Zato posle pregleda grane sa migracijom uradite reset pre nego što nastavite svoj rad.
 
 ## Reset lokalne baze
 

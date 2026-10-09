@@ -331,6 +331,23 @@ is added.
   framework calls. They appear only where a framework interface forces them into a
   signature (e.g. `IHostedService`), where they are accepted and ignored.
 
+## Migrations
+
+Each module's migrations live in `<Name>.Infrastructure/Persistence/Migrations/` and are
+applied by the module initializer at startup; there is no `database update` step. A
+migration and the model snapshot are only ever added and removed through `dotnet ef`
+(`--context <Name>DbContext`), never written, edited, or merged by hand. The steps are
+in `docs/protocols/migracije-lokalni-rad.md`.
+
+Several branches may change the same module's model at once. Before merging the target
+branch into a branch that carries a migration, check whether the target branch received a
+migration of the same module in the meantime. If it did, or if a merge reports a conflict
+on the snapshot, do not resolve it: follow `docs/protocols/migracije-resavanje-konflikata.md`,
+which removes the branch's migration, merges, and regenerates it on top. A snapshot that
+merges without a conflict is not evidence that the migrations are compatible. CI rejects a
+pull request whose migration was generated without a migration of the same module that is
+already on the target branch.
+
 ## Still open, ask before choosing
 
 - **Mocking library.** Chosen when the first dependency that warrants a test double

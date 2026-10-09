@@ -2,11 +2,11 @@
 
 Prethodni segment je pokazao kako je jedan stereotipan *feature modul* izgrađen. Ostaje pitanje kako se više modula sastavlja u jednu aplikaciju. Svaki tim treba da razvija svoj deo bez stalnog usklađivanja sa ostalima, a aplikacija treba da ostane jedna celina koju je jednostavno pokrenuti i testirati.
 
-Monolit bez granica tu podelu ne nudi. Svaka klasa može da koristi svaku drugu, pa se delovi sistema vremenom prepliću i promena jednog tima lomi kod drugog. Mikroservisna arhitektura nudi granice kroz zasebne aplikacije, ali donosi operativni trošak, jer se pokreće više procesa, komunikacija ide preko mreže, a podaci su raspodeljeni po više baza. **Modularni monolit** (engl. *modular monolith*) je arhitektura u kojoj se aplikacija razvija i pokreće kao jedna celina, a njen kod je podeljen na module sa strogim granicama. Zadržava jednostavnost jedne aplikacije, a granice uvodi u samom kodu.
+Monolit bez granica ne uvodi segmentaciju koja olakšava razvoj. Svaka klasa može da koristi svaku drugu, pa se delovi sistema vremenom prepliću i promena jednog tima izaziva probleme drugom timu. Sa druge strane, mikroservisna arhitektura nudi granice kroz zasebne aplikacije, ali donosi operativni trošak, jer se pokreće više procesa, komunikacija ide preko mreže, a podaci su raspodeljeni po više baza. **Modularni monolit** (engl. *modular monolith*) je arhitektura u kojoj se aplikacija razvija i pokreće kao jedna celina, a njen kod je podeljen na module sa strogim granicama. Zadržava jednostavnost jedne aplikacije, a kroz granice olakšava razvoj i redukuje problem koji jedna greška može da izazove.
 
 ## Feature modul
 
-**Feature modul** je deo aplikacije koji realizuje jednu poslovnu sposobnost i poseduje sav kod i podatke potrebne za nju.
+**Feature modul** je deo aplikacije koji realizuje jednu poslovnu sposobnost i poseduje sav kod i podatke potrebne za nju. Sadrži kohezivan isečak domenskih koncepata, skup slučajeva korišćenja koji rade nad njima i tehničke mogućnosti koje su potrebne tim slučajevima.
 
 Posmatrajmo softver za istraživanje javnog mnjenja. Njegovi moduli mogu da budu:
 - Ankete, koji poseduje ankete i odgovore ispitanika, i
