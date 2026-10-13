@@ -48,7 +48,7 @@ Prođite kroz ovu listu lokalno; CI proverava isto, ali je krug kroz CI sporiji 
 
 ## Pull request
 
-- Opis odgovara na dva pitanja: šta je izmenjeno i kako je provereno. Dovoljne su po dve-tri rečenice.
+- Opis navodi nameru funkcionalnosti (ko ima korist i koju), dizajn u glavnim crtama (tok korišćenja, domenski model, operacije i testovi) i način na koji je izmena proverena. Veština `/psw-implementacija` na kraju rada ispisuje takav pregled, koji možete da prenesete u opis.
 - PR pregleda bar jedan član vašeg tima koji nije pisao izmenu. Ako PR dira `Contracts`, pregleda ga i tim koji taj contract koristi.
 - Mali PR se pregleda za deset minuta, veliki se odlaže danima — veličina PR-a je vaš uticaj na brzinu tima.
 

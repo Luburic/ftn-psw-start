@@ -1,0 +1,53 @@
+{
+  "cleanupPeriodDays": 365,
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build *)",
+      "Bash(dotnet test *)",
+      "Bash(dotnet restore *)",
+      "Bash(dotnet tool restore)",
+      "Bash(dotnet ef migrations *)",
+      "Bash(npm run lint *)",
+      "Bash(npm run build *)",
+      "Bash(ng generate *)",
+      "Bash(ng g *)",
+      "Bash(npx ng generate *)",
+      "Bash(npx ng g *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git blame *)",
+      "Bash(git config user.name)",
+      "Bash(git config user.email)",
+      "Bash(node .claude/skills/psw-izvoz-razgovora/export-conversations.mjs *)",
+      "PowerShell(dotnet build *)",
+      "PowerShell(dotnet test *)",
+      "PowerShell(dotnet restore *)",
+      "PowerShell(dotnet tool restore)",
+      "PowerShell(dotnet ef migrations *)",
+      "PowerShell(npm run lint *)",
+      "PowerShell(npm run build *)",
+      "PowerShell(ng generate *)",
+      "PowerShell(ng g *)",
+      "PowerShell(npx ng generate *)",
+      "PowerShell(npx ng g *)",
+      "PowerShell(git status *)",
+      "PowerShell(git diff *)",
+      "PowerShell(git log *)",
+      "PowerShell(git show *)",
+      "PowerShell(git blame *)",
+      "PowerShell(git config user.name)",
+      "PowerShell(git config user.email)",
+      "PowerShell(node .claude/skills/psw-izvoz-razgovora/export-conversations.mjs *)",
+      "Edit(/.workspace/**)",
+      "Edit(/backend/Modules/**)",
+      "Edit(/frontend/src/app/modules/**)"
+    ],
+    "ask": [
+      "Edit(/backend/Modules/Identity/**)",
+      "Edit(/backend/Modules/*/*.Contracts/**)",
+      "Edit(/backend/**/*.csproj)"
+    ]
+  }
+}

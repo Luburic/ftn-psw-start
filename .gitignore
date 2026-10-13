@@ -23,6 +23,7 @@ coverage/
 **/.claude/settings.local.json
 .codex/
 CLAUDE.local.md
+.workspace/
 
 # Secrets and local env
 .env

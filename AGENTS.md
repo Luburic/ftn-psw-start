@@ -40,6 +40,9 @@ docs/             knowledge base (course material, in Serbian), see below
 .github/          CI workflow: backend restore, build, test (Postgres service container);
                   frontend install, lint, build
 .config/          dotnet tool manifest (dotnet-ef)
+.claude/          shared agent settings and the psw-* skills, see below
+.workspace/       per-student working files of the skills (specs, study log, exports);
+                  gitignored, never committed
 ```
 
 Feature modules are Exploration, Games, Social, and Payment. Module paths are strictly
@@ -98,6 +101,21 @@ of the same material.
 
 For engineering tasks (writing or changing code), do not load knowledge-base
 documents; the mandatory patterns live in the tier instructions and READMEs.
+
+When you explain a concept, pattern, or trade-off that no knowledge-base lesson covers,
+start that part of the answer on its own line with the exact prefix `Van baze znanja:`.
+This holds in every session, with or without a skill. Project conventions from the tier
+instructions and facts about the code in front of you are not flagged. If you cannot
+tell whether a lesson covers it, flag it.
+
+## Skills
+
+`.claude/skills/` holds the `psw-*` skills, which run only when a student invokes one by
+name. They exist to teach: a skill slows the work down on purpose and asks the student
+to reason before it answers, so never shorten its phases to finish sooner. Each skill
+names the lessons and tier instructions it reads, and that list overrides the two
+loading rules above (no knowledge base for engineering tasks, no tier instructions for
+a discussion). The skills keep their working files in `.workspace/`.
 
 ## Working style
 
