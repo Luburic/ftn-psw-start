@@ -1,7 +1,5 @@
 # Podešavanje radne stanice
 
-> **Status: normativan.** Koraci u ovom dokumentu odgovaraju stvarnoj konfiguraciji projekta i obavezni su za sve članove tima.
-
 ## Kada se primenjuje
 
 Jednom, pre prvog rada na projektu. Protokol se završava proverom koja potvrđuje da je radna stanica ispravno podešena — ne prijavljujte da ste spremni dok poslednji korak ne prođe.
@@ -16,8 +14,8 @@ Instalirajte sledeće, redom kojim su navedeni:
    git config --global user.email "adresa@uns.ac.rs"
    ```
 2. **.NET 10 SDK** — [dotnet.microsoft.com](https://dotnet.microsoft.com/download/dotnet/10.0). Instalirajte SDK, ne samo runtime. Provera: `dotnet --version` ispisuje verziju koja počinje sa `10.`.
-3. **Razvojno okruženje** — Visual Studio 2026 (Community je dovoljan) sa radnim opterećenjem „ASP.NET and web development", ili Rider. Za rad na klijentskoj aplikaciji dovoljan je VS Code.
-4. **PostgreSQL 17** — [postgresql.org](https://www.postgresql.org/download/). Instalira se nativno, bez Docker-a. Tokom instalacije:
+3. **Razvojno okruženje** — Visual Studio 2026 (Community je dovoljan) sa paketom „ASP.NET and web development", ili Rider. Za rad na klijentskoj aplikaciji dovoljan je VS Code.
+4. **PostgreSQL 17** — [postgresql.org](https://www.postgresql.org/download/). Tokom instalacije:
    - lozinka korisnika `postgres` mora biti `admin`,
    - port ostaje podrazumevani `5432`.
 
@@ -39,9 +37,9 @@ cd ../frontend
 npm install
 ```
 
-`dotnet tool restore` instalira lokalne alate projekta (trenutno `dotnet-ef`, potreban za migracije) prema manifestu u `.config/`. Verzija alata je zajednička za ceo tim — ne instalirajte `dotnet-ef` globalno.
+`dotnet tool restore` instalira lokalne alate projekta (trenutno `dotnet-ef`, potreban za migracije) prema spisku u `.config/`. Verzija alata je zajednička za ceo tim.
 
-`dotnet build` mora proći bez grešaka. Upozorenja se u ovom projektu tretiraju kao greške, pa je uspešan build jednoznačan signal.
+`dotnet build` mora proći bez grešaka. Upozorenja se u ovom projektu tretiraju kao greške.
 
 `npm install` preuzima biblioteke klijentske aplikacije u direktorijum `frontend/node_modules/`, koji se ne commit-uje. Komandu ponavljate posle svakog povlačenja tuđih izmena, jer su one možda donele novu biblioteku.
 
@@ -53,7 +51,7 @@ Iz direktorijuma `backend`:
 dotnet run --project Host.Api
 ```
 
-Pri prvom pokretanju aplikacija sama kreira potrebne strukture u bazi `explorer` — o tome detaljnije u protokolu [Migracije: lokalni rad](migracije-lokalni-rad.md). Zatim u pregledaču otvorite `http://localhost:5000/scalar`: prikazuje se Scalar, interaktivni pregled svih endpoint-a. Kroz njega pozovite `POST /api/identity/register` sa proizvoljnom e-adresom i lozinkom koja ima bar šest znakova, veliko i malo slovo, cifru i specijalni znak (npr. `Lozinka1!`). Primer koji Scalar sam popuni (`"string"`) ne zadovoljava ta pravila i vraća odgovor 400. Odgovor sa JWT tokenom potvrđuje da aplikacija i baza rade zajedno.
+Pri prvom pokretanju aplikacija sama kreira potrebne strukture u bazi `explorer` (o tome detaljnije u protokolu [Migracije: lokalni rad](migracije-lokalni-rad.md)). Zatim u pregledaču otvorite `http://localhost:5000/scalar`: prikazuje se Scalar, interaktivni pregled svih endpoint-a. Kroz njega pozovite `POST /api/identity/register` sa proizvoljnom e-adresom i lozinkom koja ima bar šest znakova, veliko i malo slovo, cifru i specijalni znak (npr. `Lozinka1!`). Primer koji Scalar sam popuni (`"string"`) ne zadovoljava ta pravila i vraća odgovor 400. Odgovor sa JWT tokenom potvrđuje da aplikacija i baza rade zajedno.
 
 Ne zaustavljajući serversku aplikaciju, u drugom terminalu iz direktorijuma `frontend` pokrenite:
 
