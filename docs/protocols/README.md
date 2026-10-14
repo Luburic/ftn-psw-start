@@ -1,6 +1,6 @@
 # Protokoli
 
-Protokol je kratko, obavezno uputstvo za situaciju koja se ponavlja i u kojoj improvizacija košta ceo tim. Svaki protokol počinje odeljkom „Kada se primenjuje" — ako prepoznate svoju situaciju u tom odeljku, pratite korake redom i ne preskačite ih.
+Protokol je kratko, obavezno uputstvo za situaciju koja se ponavlja i koja može da stvori timu glavobolju. Svaki protokol počinje odeljkom „Kada se primenjuje", pa kada prepoznate svoju situaciju u tom odeljku, pratite korake redom.
 
 | Protokol | Kada se primenjuje |
 |---|---|
@@ -11,4 +11,4 @@ Protokol je kratko, obavezno uputstvo za situaciju koja se ponavlja i u kojoj im
 | [Testna baza podataka](testna-baza.md) | Kada integracioni testovi padaju iz razloga koji ne liči na vaš kod. |
 | [Zahtevi platformskom timu](zahtevi-platformskom-timu.md) | Kada vam treba izmena koda koji ne posedujete. |
 
-Protokoli su u vlasništvu platformskog tima. Ako protokol ne pokriva vašu situaciju ili vas neki korak dovede u ćorsokak, ne improvizujte — javite se platformskom timu, pa se protokol dopunjuje.
+Protokoli su u vlasništvu platformskog tima. Ako protokol ne pokriva vašu situaciju ili vas neki korak dovede u problem, javite se platformskom timu da korigujete protokol.
