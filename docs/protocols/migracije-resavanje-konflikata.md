@@ -1,7 +1,5 @@
 # Migracije: rešavanje konflikata
 
-> **Status: normativan.** Koraci u ovom dokumentu odgovaraju stvarnoj konfiguraciji projekta i obavezni su za sve članove tima.
-
 ## Kada se primenjuje
 
 Kada vaša grana sadrži migraciju vašeg modula, a u `development` je u međuvremenu stigla druga migracija **istog** modula (od člana vašeg tima). Pouzdano se prepoznaje samo pre spajanja, proverom opisanom u protokolu [Rad sa granama i pull request-ovima](rad-sa-granama.md#dnevna-higijena). Konflikt na datoteci `<Ime>DbContextModelSnapshot.cs` pri spajanju nije pouzdan znak: javlja se samo kada se izmene preklapaju u istom delu snimka modela. Kada dve migracije menjaju različite delove modela, git ih spaja bez konflikta, a greška ostaje skrivena do sledeće izmene modela. Ako proveru preskočite, posao `migrations` na CI odbija pull request.

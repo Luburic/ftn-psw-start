@@ -1,7 +1,5 @@
 # Migracije: lokalni rad
 
-> **Status: normativan.** Koraci u ovom dokumentu odgovaraju stvarnoj konfiguraciji projekta i obavezni su za sve članove tima.
-
 ## Kada se primenjuje
 
 Svaki put kada menjate model podataka svog modula: dodajete agregat, dodajete ili menjate polje, menjate EF konfiguraciju. Takođe kada vam lokalna baza uđe u stanje koje ne umete da objasnite — na kraju je korak za potpuni reset.

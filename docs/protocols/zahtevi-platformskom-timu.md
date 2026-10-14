@@ -1,7 +1,5 @@
 # Zahtevi platformskom timu
 
-> **Status: normativan.** Koraci u ovom dokumentu odgovaraju stvarnoj organizaciji projekta i obavezni su za sve članove tima.
-
 ## Kada se primenjuje
 
 Kada vam za zadatak treba izmena koda čiji vlasnik niste. Granica vlasništva je prosta: vaš tim menja isključivo `backend/Modules/<Ime>/` i `frontend/src/app/modules/<ime>/`. Sve ostalo je platformsko ili tuđe, i tamo se ne commit-uje — čak ni „mala i očigledna" izmena.

@@ -1,7 +1,5 @@
 # Testna baza podataka
 
-> **Status: normativan.** Koraci u ovom dokumentu odgovaraju stvarnoj konfiguraciji projekta i obavezni su za sve članove tima.
-
 ## Kada se primenjuje
 
 Kada integracioni testovi padaju iz razloga koji ne liči na vaš kod: greške o konekciji, o bazi koja ne postoji ili je zauzeta, o tabeli ili koloni koje nema. Kako se pišu sami testovi objašnjavaju lekcije [Integracioni testovi](../knowledge-base/testovi/4-integracioni-testovi.md) i [Platformski radni okvir za testove](../knowledge-base/testovi/5-platformski-radni-okvir-za-testove.md), a obavezna pravila navodi odeljak Testing u dokumentu `backend/AGENTS.md`.
