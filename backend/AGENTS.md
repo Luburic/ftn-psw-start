@@ -155,8 +155,8 @@ are named after what the module actually needs and return aggregates.
 `DbContext` implements it, which requires no code because the method is already there.
 Commands call it exactly once, at the end. This is the transaction boundary.
 
-**Read side.** `I<Aggregate>ReadRepository` is implemented in `Infrastructure` using
-`AsNoTracking` and projecting directly to DTOs. Aggregates may also expose side-effect-free
+**Read side.** `I<Aggregate>ReadRepository` is implemented in `Infrastructure` by
+projecting directly to DTOs. Aggregates may also expose side-effect-free
 query methods that return values derived from their own state; commands use them as guards,
 and a read use case may reuse them instead of duplicating the derivation in SQL.
 

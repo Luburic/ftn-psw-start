@@ -132,7 +132,6 @@ public sealed class SurveyReadRepository : ISurveyReadRepository
   public Task<List<SurveySummaryDto>> GetPublishedAsync()
   {
     return _dbContext.Surveys
-      .AsNoTracking()
       .Where(survey => survey.Status == SurveyStatus.Published)
       .Select(survey => new SurveySummaryDto(survey.Id, survey.Title, survey.Questions.Count))
       .ToListAsync();
@@ -143,6 +142,4 @@ public sealed class SurveyReadRepository : ISurveyReadRepository
 U datom kodu treba uočiti sledeće:
 
 - Poziv `Where` se prevodi u `WHERE` uslov, a `Select` u projekciju, pa baza vraća samo kolone koje DTO struktura sadrži. Objekat `Survey` se nikada ne pravi u memoriji, a `Questions.Count` se izvršava u bazi kao brojanje redova, bez učitavanja pitanja.
-- Poziv `AsNoTracking` saopštava da rezultat upita ne treba pratiti. Kontekst DTO strukture ionako ne prati, jer nisu deo modela mapiranja, ali poziv stoji u svakom upitu za čitanje, da namera bude vidljiva i da važi i kada upit vrati domenski objekat. Upit tako ni pri grešci u kodu ne može da proizvede upis u bazu.
-
 Repozitorijum agregata i repozitorijum za čitanje dele isti kontekst i iste tabele, a razlikuju se u tome šta od konteksta traže. Prvi traži praćen agregat koji će komanda menjati, a drugi nepraćene podatke koje će upit vratiti.

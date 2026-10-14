@@ -37,7 +37,6 @@ internal sealed class TourReadRepository : ITourReadRepository
     private static IQueryable<TourDto> ProjectToDtos(IQueryable<Tour> tours)
     {
         return tours
-            .AsNoTracking()
             .Select(tour => new TourDto(
                 tour.Id,
                 tour.AuthorId,

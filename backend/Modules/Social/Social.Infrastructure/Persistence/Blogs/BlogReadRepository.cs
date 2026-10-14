@@ -42,7 +42,6 @@ internal sealed class BlogReadRepository : IBlogReadRepository
     private static IQueryable<BlogDto> ProjectToDtos(IQueryable<Blog> blogs)
     {
         return blogs
-            .AsNoTracking()
             .Select(blog => new BlogDto(
                 blog.Id,
                 blog.AuthorId,
