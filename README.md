@@ -1,6 +1,6 @@
 # Explorer
 
-Explorer je nastavni projekat: platforma za istraživanje turističkih sadržaja koju jedan tim studenata razvija kao modularni monolit (ASP.NET Core, Angular, PostgreSQL). Pre prvog rada pratite protokol [Podešavanje radne stanice](docs/protocols/podesavanje-radne-stanice.md). Gradivo koje pokriva predmet i koje razvijamo kroz rad na projektu je u [bazi znanja](docs/knowledge-base/INDEX.md).
+Explorer je nastavni projekat: platforma za istraživanje turističkih sadržaja koju jedan tim studenata razvija kao modularni monolit (ASP.NET Core, Angular, PostgreSQL). Pre prvog rada pratite protokol [Podešavanje radne stanice](docs/protocols/podesavanje-radne-stanice.md). Gradivo koje pokriva predmet i koje razvijamo kroz rad na projektu je u [bazi znanja](docs/knowledge-base).
 
 ## Veštine za rad sa agentom
 
