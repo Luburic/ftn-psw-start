@@ -63,7 +63,7 @@ Jedna linija po dokumentu: putanja, opis i preduslovi (dokumenti koje čitalac t
 ## Angular
 
 - `klijent/1-angular/README.md` — Šta radni okvir preuzima od klijentske aplikacije i koji deo Angular-a projekat koristi. Uvod u segment. Preduslovi: nema.
-- `klijent/1-angular/1-typescript.md` — Najmanji deo TypeScript-a potreban za čitanje projekta: anotacije, interfejs, generički tip, nepostojeća vrednost, klasni modifikatori. Preduslovi: nema.
+- `klijent/1-angular/1-typescript.md` — Najmanji deo TypeScript-a potreban za čitanje projekta: anotacije, nepostojeća vrednost, interfejs, generički tip, klasni modifikatori. Preduslovi: nema.
 - `klijent/1-angular/2-angular.md` — Najmanja Angular aplikacija pročitana datoteku po datoteku: pokretanje, konfiguracija, korenska komponenta. Preduslovi: `1-typescript.md`.
 - `klijent/1-angular/3-komponenta.md` — Komponenta kao klasa, šablon i stil; ispis, vezivanje svojstava i događaja; prikaz koji se ne osvežava. Preduslovi: `2-angular.md`.
 - `klijent/1-angular/4-signali.md` — Zašto prikaz ne prati obično polje, signal kao stanje, poređenje sa React-om. Preduslovi: `3-komponenta.md`.

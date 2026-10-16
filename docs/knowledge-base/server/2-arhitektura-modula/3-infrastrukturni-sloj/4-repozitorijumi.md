@@ -142,4 +142,5 @@ public sealed class SurveyReadRepository : ISurveyReadRepository
 U datom kodu treba uočiti sledeće:
 
 - Poziv `Where` se prevodi u `WHERE` uslov, a `Select` u projekciju, pa baza vraća samo kolone koje DTO struktura sadrži. Objekat `Survey` se nikada ne pravi u memoriji, a `Questions.Count` se izvršava u bazi kao brojanje redova, bez učitavanja pitanja.
+
 Repozitorijum agregata i repozitorijum za čitanje dele isti kontekst i iste tabele, a razlikuju se u tome šta od konteksta traže. Prvi traži praćen agregat koji će komanda menjati, a drugi nepraćene podatke koje će upit vratiti.
