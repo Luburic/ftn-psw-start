@@ -1,4 +1,4 @@
-Stranica sa spiskom tura iz prethodne lekcije ispisuje naziv svake ture u jednom elementu liste. Kada kartica ture dobije opis, težinu, oznake i vremena obilaska, blok petlje naraste na dvadeset redova, a šablon stranice postane teško čitljiv. Takođe, isti izgled kartice potreban je eventualno i drugim stranicama. U React-u se takav deo izdvaja u zasebnu komponentu, a podaci joj se prosleđuju kroz svojstva (engl. *props*). U Angularu je postupak sličan.
+Savremene klijentske aplikacije nisu izgrađene u okviru jedne komponente, već komponuju više komponenti da formiraju prikaz na stranici. Ovakva modularnost omogućava lakše održavanje komponenti, ponovnu iskoristivost i bolje performanse kada aplikacija učita samo one komponente koje su potrebne za dati prikaz.
 
 ## Korišćenje komponente u komponenti
 
@@ -47,6 +47,7 @@ export class TourCard {
 </article>
 ```
 
+Dok je HTML roditeljske komponente:
 ```html
 @for (tour of visibleTours(); track tour.id) {
   <app-tour-card [tour]="tour" />
@@ -54,14 +55,12 @@ export class TourCard {
 ```
 
 U datom kodu treba uočiti sledeće:
-- Poziv `input.required<TourDto>()` deklariše obavezan ulaz tipa `TourDto`. Prevodilac prijavljuje grešku ako roditelj u šablonu ne veže vrednost za ovaj ulaz. Ulaz sa podrazumevanom vrednošću se piše npr. `input<string | null>(null)` i roditelj ga sme izostaviti.
+- Poziv `input.required<TourDto>()` deklariše obavezan ulaz tipa `TourDto`. Prevodilac prijavljuje grešku ako roditelj u šablonu ne veže vrednost za ovaj ulaz. Ulaz sa podrazumevanom vrednošću se piše npr. `input<boolean>(false)` i roditelj ga sme izostaviti.
+- Roditelj popunjava ulaz vezivanjem svojstva, `[tour]="tour"`. Leva strana je naziv ulaza u detetu, a desna izraz u šablonu roditelja (u primeru promenljiva petlje).
 - Ulaz je signal i čita se pozivom, `tour()`. Kada roditelj prosledi novu vrednost, Angular ponovo proverava šablon kartice, po istom pravilu kao za svaki drugi signal.
-- Roditelj popunjava ulaz vezivanjem svojstva, `[tour]="tour"`. Leva strana je naziv ulaza u detetu, a desna izraz u šablonu roditelja, ovde promenljiva petlje.
 - Ulaz je deo javnog „ugovora“ komponente, jer ga koristi roditelj. Zato ga po konvenciji pišemo bez modifikatora pristupa, tj. kao javan, uz `readonly`. Modifikator `protected` ostaje za članove koje koristi samo šablon same komponente.
 
 Ulaz je signal samo za čitanje i nema metode `set` i `update`. Vrednost ulaza određuje isključivo roditelj. Dete ne sme ni da menja objekat koji je dobilo, npr. `this.tour().name = 'Novi naziv'`: to je izmena postojećeg objekta, koju signali ne primećuju, a menja i podatak koji pripada roditelju. Kada dete želi da se podatak promeni, javlja to roditelju, kao što pokazuje naredni odeljak.
-
-> **Važno:** Obavezan ulaz nema vrednost dok ga roditelj ne popuni, pa čitanje `this.tour()` u konstruktoru prijavljuje grešku. Vrednost izvedenu iz ulaza pišemo kao izvedeni signal, npr. `computed(() => this.tour().name.toUpperCase())`, koji ulaz čita tek kada mu vrednost zatreba.
 
 ## Izlaz
 
@@ -81,14 +80,14 @@ export class TourCard {
 </article>
 ```
 
+Dok je HTML roditeljske komponente:
 ```html
 @for (tour of visibleTours(); track tour.id) {
   <app-tour-card [tour]="tour" (deleteTour)="remove($event)" />
 }
 ```
 
-Roditelj u svojoj klasi ima metodu `remove`, koja prima poslatu vrednost i uklanja turu iz spiska. Spisak je već signal iz prethodne lekcije, pa uklanjanje osvežava prikaz:
-
+Roditelj u svojoj klasi ima metodu `remove`, koja prima poslatu vrednost i uklanja turu iz spiska:
 ```ts
 export class TourList {
   private readonly tours = signal<TourDto[]>([ ... ]);
@@ -100,11 +99,10 @@ export class TourList {
 ```
 
 U datom kodu treba uočiti sledeće:
-- Poziv `output<string>()` deklariše izlaz koji nosi tekst. Tip u izlomljenim zagradama je tip vrednosti koju izlaz šalje roditelju.
-- Poziv `emit` okida izlaz sa vrednošću. Ovde se poziva iz vezivanja događaja na dugmetu, sa identifikatorom ture.
+- Poziv `output<string>()` deklariše izlaz koji nosi tekst. Parametrizovan tip je tip vrednosti koju izlaz šalje roditelju.
+- Poziv `emit` okida izlaz sa vrednošću. Ovde se poziva iz vezivanja događaja na dugmetu, sa identifikatorom ture. Kartica ne zna ko je sluša niti šta se posle klika dešava. Njen posao se završava pozivom `emit`.
 - Roditelj sluša izlaz vezivanjem događaja, `(deleteTour)="remove($event)"`. Naziv u zagradi je naziv izlaza u detetu, a `$event` je vrednost koju je dete poslalo kroz `emit`. Metoda `remove` pripada roditelju.
-- Kao i ulaz, izlaz je deo javnog ugovora komponente, pa ga pišemo kao javan, uz `readonly`.
-- Kartica ne zna ko je sluša niti šta se posle klika dešava. Njen posao se završava pozivom `emit`.
+- Kao i ulaz, izlaz je deo javnog ugovora komponente, pa ga pišemo kao javan, uz `readonly` ključnu reč.
 
 ## Podaci naniže, događaji naviše
 
@@ -115,9 +113,6 @@ Prethodna dva odeljka daju pravilo po kom se komponente sastavljaju. Podaci putu
 Povežimo pojmove u stranicu koja filtrira ture, prikazuje ih kroz kartice i uklanja turu koju kartica javi. Kartica ima ulaz i izlaz:
 
 ```ts
-import { Component, input, output } from '@angular/core';
-import { TourDto } from '../tour-dto';
-
 @Component({
   selector: 'app-tour-card',
   templateUrl: './tour-card.html',
@@ -140,10 +135,6 @@ export class TourCard {
 Stranica zadržava filtriranje po težini iz prethodne lekcije i dodaje uklanjanje:
 
 ```ts
-import { Component, computed, signal } from '@angular/core';
-import { TourCard } from './tour-card/tour-card';
-import { TourDifficulty, TourDto } from './tour-dto';
-
 @Component({
   selector: 'app-tour-list',
   imports: [TourCard],
@@ -159,6 +150,8 @@ export class TourList {
   protected readonly difficultyFilter = signal<TourDifficulty | null>(null);
 
   protected readonly visibleTours = computed(() => {
+    // Izvedeni signal čita i `tours` i `difficultyFilter`,
+    // pa se preračunava kada se promeni bilo koji od njih
     const difficulty = this.difficultyFilter();
     return this.tours().filter((tour) => difficulty === null || tour.difficulty === difficulty);
   });
@@ -181,10 +174,6 @@ export class TourList {
   <p>Nijedna tura nema izabranu težinu.</p>
 }
 ```
-
-U datom kodu treba uočiti sledeće:
-- Polje `tours` ostaje `private`, jer ga šablon ne čita. Metoda `remove` menja `tours`, a šablon prikazuje `visibleTours`.
-- Izvedeni signal `visibleTours` čita i `tours` i `difficultyFilter`, pa se preračunava kada se promeni bilo koji od njih. Uklanjanje ture zato radi i dok je težina izabrana.
 
 Kada korisnik klikne na dugme za brisanje na kartici ture „Fruška gora“, dešava se sledeće:
 1. Vezivanje događaja na dugmetu poziva `deleteTour.emit('2')`.

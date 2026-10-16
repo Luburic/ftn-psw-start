@@ -36,38 +36,26 @@ Promena javne površine je dogovor dva tima, kao i promena kontrakta na serveru.
 
 ## Ulazak modula u aplikaciju
 
-Tabela ruta aplikacije živi u datoteci `core/app.routes.ts` i ima jednu stavku za svaki modul. Sledeći kod prikazuje tu tabelu iz projekta:
+Tabela ruta aplikacije živi u datoteci `core/app.routes.ts` i ima jednu stavku za svaki modul. Sledeći kod prikazuje deo te tabele, sa početnom stranicom i modulom Social:
 
 ```ts
 export const routes: Routes = [
   { path: '', component: Home },
-  { path: 'login', component: Login },
-  { path: 'register', component: Register },
-  {
-    path: 'exploration',
-    loadChildren: () =>
-      import('../modules/exploration/exploration.routes').then((m) => m.explorationRoutes),
-  },
-  {
-    path: 'games',
-    loadChildren: () => import('../modules/games/games.routes').then((m) => m.gamesRoutes),
-  },
   {
     path: 'social',
     loadChildren: () => import('../modules/social/social.routes').then((m) => m.socialRoutes),
   },
-  {
-    path: 'payment',
-    loadChildren: () => import('../modules/payment/payment.routes').then((m) => m.paymentRoutes),
-  },
+  // ... ostale stranice i moduli
 ];
 ```
 
 U datom kodu treba uočiti sledeće:
 
-- Prve tri stavke imaju svojstvo `component`, jer početna stranica, prijava i registracija ne pripadaju nijednom modulu.
-- Stavka modula umesto svojstva `component` ima svojstvo `loadChildren`, funkciju koja vraća tabelu ruta modula. Svojstvo `path` je prefiks modula. Kada adresa počinje prefiksom, radni okvir poziva funkciju i ostatak adrese poklapa u tabeli koju ona vrati.
-- Poziv `import('putanja')` sa zagradama je uvoz koji se izvršava tek kada se funkcija pozove, a ne pri pokretanju aplikacije. Ovakav uvoz zovemo **lenjo učitavanje** (engl. *lazy loading*). Alat za prevođenje kod tako uvezene datoteke, zajedno sa svim što ona uvozi, objedinjuje u zasebnu datoteku, koju internet čitač preuzima tek kada korisnik prvi put otvori adresu sa prefiksom modula.
+- Stavka početne stranice ima svojstvo `component`, koje neposredno bira komponentu `Home`.
+- Stavka modula umesto svojstva `component` ima svojstvo `loadChildren`. To je funkcija koja učitava tabelu ruta modula. Svojstvo `path` je prefiks modula: za adresu `/social/42` radni okvir u tabeli aplikacije prepoznaje `social`, a ostatak, `42`, traži u tabeli modula Social.
+- Poziv `import('putanja')` sa zagradama učitava datoteku `social.routes.ts` i vraća obećanje. Funkcija prosleđena pozivu `then` izvršava se kada se učitavanje završi. Njen parametar `m` sadrži ono što datoteka izvozi, pa izraz `m.socialRoutes` izdvaja tabelu ruta iz prethodnog odeljka. Obećanje te tabele je rezultat funkcije `loadChildren`; radni okvir sačeka tabelu i zatim u njoj traži odgovarajuću rutu.
+
+Kod modula se ovim putem učitava tek kada korisnik prvi put otvori njegovu adresu. To zovemo **lenjo učitavanje** (engl. *lazy loading*). Alat za prevođenje izdvaja taj kod iz početnog paketa aplikacije, pa internet čitač ne mora odmah da preuzme kod svih modula.
 
 ## Korišćenje drugog modula
 
@@ -109,12 +97,12 @@ a `PurchaseDto` preslikava u svoj direktorijum `api`, sa svojstvom koje nosi naz
 
 Povežimo pojmove. Hod ide kroz dve tabele ruta koje smo videli gore: onu iz jezgra i onu modula Social.
 
-Prijavljeni korisnik je na početnoj stranici i u zaglavlju klikne na vezu ka adresi `/social`. Dešava se sledeće:
+Korisnik je na početnoj stranici i otvara adresu `/social/42`. Dešava se sledeće:
 
-1. Veza upisuje adresu `/social` u internet čitač.
+1. Radni okvir iz adrese čita putanju `social/42`.
 2. Radni okvir u tabeli aplikacije nalazi stavku sa prefiksom `social` i poziva njenu funkciju `loadChildren`.
-3. Poziv `import` preuzima objedinjenu datoteku modula Social, ako je internet čitač već nema, a `then` iz datoteke `social.routes.ts` čita `socialRoutes`.
-4. Radni okvir ostatak adrese, koji je prazan, poklapa u tabeli modula. Poklapa se prva stavka, čiji je `path` prazan, pa bira komponentu `BlogList`.
-5. Na mestu iscrtavanja uništava početnu stranicu i pravi `BlogList`, čiji resurs šalje zahtev na `/api/social/blogs/published?page=1&pageSize=20`.
+3. Poziv `import` učitava kod modula Social ako već nije učitan, a funkcija prosleđena pozivu `then` izdvaja `socialRoutes`.
+4. Radni okvir ostatak adrese, `42`, poklapa u tabeli modula. Stavke `''`, `mine` i `create` ne odgovaraju, a `:id` odgovara, pa bira komponentu `BlogDetail` i parametar `id` dobija vrednost `'42'`.
+5. Na mestu iscrtavanja uništava početnu stranicu i pravi `BlogDetail`. Zahvaljujući podešavanju `withComponentInputBinding()` iz lekcije o rutiranju, parametar upisuje u ulaz `id` te komponente.
 
-Nijedna datoteka van modula Social nije pomenula stranicu `BlogList`. Aplikacija zna samo da modul Social postoji na prefiksu `social` i u kojoj se datoteci nalazi njegova tabela ruta.
+Nijedna datoteka van modula Social nije pomenula stranicu `BlogDetail`. Aplikacija zna samo da modul Social postoji na prefiksu `social` i u kojoj se datoteci nalazi njegova tabela ruta.

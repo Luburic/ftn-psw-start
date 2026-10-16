@@ -41,7 +41,7 @@ export class TourCard {
 ```
 
 U datom kodu treba uočiti sledeće:
-- Poziv `computed` prima funkciju koja čita druge signale i vraća vrednost. Signali koje funkcija pročita postaju izvori izvedenog signala. Ovde je to signal `likes`. Svaki put kada se promeni neki od izvornih signala, telo funkcije se izvršava.
+- Poziv `computed` prima funkciju koja čita druge signale i vraća vrednost. Signali koje funkcija pročita postaju izvori izvedenog signala. Ovde je to signal `likes`. Svaki put kada se promeni neki od izvornih signala, izvedeni signal se označava za ponovno računanje.
 - Izvedeni signal se čita pozivom kao i običan, ali nema metode `set` i `update`. Njegov tip je `Signal`, a ne `WritableSignal`, pa prevodilac prijavljuje grešku ako pokušamo da ih pozovemo. Vrednost izvedenog signala menja se samo kada se promeni neki od izvora.
 - Vrednost se računa tek pri prvom čitanju i zatim se pamti. Dok se `likes` ne promeni, svako čitanje `likesLabel` vraća zapamćenu vrednost bez ponovnog računanja, iako ga šablon čita na dva mesta.
 

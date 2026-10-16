@@ -2,7 +2,7 @@
 
 Serverska aplikacija je podeljena na feature module sa strogim granicama, a svaki tim poseduje svoj modul. Klijentska aplikacija prati istu podelu, pa tim poseduje modul na obe strane. Pitanja su ista kao na serveru: kako modul koristi ono što poseduje drugi modul, koji kod dele svi moduli i kako se granice proveravaju automatski. Odgovori se razlikuju, jer na klijentu granicu ne čuva prevodilac, već pravilo alata za statičku analizu.
 
-Jedna aplikacija se pokreće i ovde. Ulogu glavne aplikacije ima direktorijum `core`, koji drži tabelu ruta i za svaki modul lenjo učitava njegove rute. Modul se u aplikaciju uključuje jednom stavkom u toj tabeli i ničim drugim.
+Jedna aplikacija se pokreće i ovde. Ulogu glavne aplikacije ima direktorijum `core`, čija tabela ruta povezuje tabele ruta modula sa aplikacijom. Modul se u aplikaciju uključuje jednom stavkom u toj tabeli i ničim drugim.
 
 ## Mapa direktorijuma
 
