@@ -81,7 +81,6 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
-  imports: [RouterOutlet],
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -97,15 +96,12 @@ Sledeći kod prikazuje njen šablon, iz datoteke `app.html`:
 </header>
 
 <main>
-  <router-outlet />
+  <p>Hello World!</p>
 </main>
 ```
 
 U datom kodu treba uočiti sledeće:
 
-- Zapis `@Component({ ... })` je **dekorator** (engl. *decorator*), što je oznaka iznad klase kojom radni okvir prepoznaje ulogu klase, slično kao atribut `[ApiController]` na serveru. Objekat u zagradi nosi podešavanja komponente.
-   - `selector` određuje naziv HTML elementa pod kojim se komponenta koristi. Zato `index.html` sadrži element `app-root`.
+- Zapis `@Component({ ... })` je **dekorator** (engl. *decorator*), što je oznaka iznad klase kojom radni okvir prepoznaje ulogu klase, slično kao atribut `[ApiController]` na serveru. Objekat u zagradi nosi podešavanja komponente:
+   - `selector` određuje naziv HTML elementa pod kojim se komponenta koristi. U primeru je to `app-root`, što je HTML tag koji se navodi u `index.html` iznad.
    - `templateUrl` i `styleUrl` vezuju klasu za šablon i za datoteku stilova.
-   - `imports` navodi druge komponente i direktive koje koristi u svom HTML šablonu. Korenska komponenta koristi `RouterOutlet`, pa je navodi u `imports`.
-- Oznaka `<router-outlet />` je mesto na kome Angular iscrtava stranicu koja odgovara trenutnoj adresi. Rutama se bavimo u zasebnoj lekciji.
-- Šablon vidi samo članove komponente kojoj pripada. Polja druge komponente nisu mu dostupna.

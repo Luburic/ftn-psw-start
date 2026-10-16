@@ -69,17 +69,17 @@ U datom kodu treba uočiti sledeće:
 - Signal `value` drži odgovor. Pre nego što odgovor stigne, njegova vrednost je `undefined`, pa je tip signala `PageResult<TourDto> | undefined`. Zato ga u kodu čitamo uz `?.` i podrazumevanu vrednost, npr. `tours.value()?.items ?? []`.
 - Kako se `value` bezbedno prikazuje u šablonu, zajedno sa stanjem učitavanja i greškom, pokazuje odeljak o stanjima resursa.
 
-Pretraga iz lekcije o kontroli toka ostaje ista, samo izvedeni signal sada čita ture iz resursa, tačno kako to radi `TourList` u projektu:
+Filtriranje iz lekcije o kontroli toka ostaje isto, samo izvedeni signal sada čita ture iz resursa:
 
 ```ts
 protected readonly visibleTours = computed<TourDto[]>(() => {
   const all = this.tours.value()?.items ?? [];
-  const name = this.nameFilter().toLowerCase();
-  return all.filter((tour) => tour.name.toLowerCase().includes(name));
+  const difficulty = this.difficultyFilter();
+  return all.filter((tour) => difficulty === null || tour.difficulty === difficulty);
 });
 ```
 
-Izvedeni signal je čitalac resursa, pa se preračunava i kada korisnik kuca u polje za pretragu i kada stigne odgovor servera.
+Izvedeni signal je čitalac resursa, pa se preračunava i kada korisnik izabere težinu i kada stigne odgovor servera.
 
 ## Adresa kao funkcija signala
 

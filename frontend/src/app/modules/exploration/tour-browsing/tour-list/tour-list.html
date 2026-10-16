@@ -11,23 +11,12 @@
   <div class="filters">
     <div class="field">
       <label for="name-filter">Search by name</label>
-      <input
-        #nameInput
-        id="name-filter"
-        type="search"
-        [value]="nameFilter()"
-        (input)="nameFilter.set(nameInput.value)"
-      />
+      <input id="name-filter" type="search" [formField]="form.name" />
     </div>
 
     <div class="field">
       <label for="difficulty-filter">Difficulty</label>
-      <select
-        #difficultyInput
-        id="difficulty-filter"
-        [value]="difficultyFilter()"
-        (change)="difficultyFilter.set(difficultyInput.value)"
-      >
+      <select id="difficulty-filter" [formField]="form.difficulty">
         <option value="">All</option>
         <option value="Easy">Easy</option>
         <option value="Moderate">Moderate</option>

@@ -68,7 +68,7 @@ Jedna linija po dokumentu: putanja, opis i preduslovi (dokumenti koje čitalac t
 - `klijent/1-angular/3-komponenta.md` — Komponenta kao klasa, šablon i stil; ispis, vezivanje svojstava i događaja; prikaz koji se ne osvežava. Preduslovi: `2-angular.md`.
 - `klijent/1-angular/4-signali.md` — Zašto prikaz ne prati obično polje, signal kao stanje, poređenje sa React-om. Preduslovi: `3-komponenta.md`.
 - `klijent/1-angular/5-izvedeni-signali.md` — Signal izračunat iz drugih signala; nizovi i objekti u signalu. Preduslovi: `4-signali.md`.
-- `klijent/1-angular/6-kontrola-toka.md` — Grananje i petlja u šablonu, alias, referenca na element. Preduslovi: `5-izvedeni-signali.md`.
+- `klijent/1-angular/6-kontrola-toka.md` — Grananje i petlja u šablonu, alias. Preduslovi: `5-izvedeni-signali.md`.
 - `klijent/1-angular/7-sastavljanje-komponenti.md` — Ugnježdavanje, ulazi i izlazi, podaci naniže i događaji naviše. Preduslovi: `6-kontrola-toka.md`.
 - `klijent/1-angular/8-rutiranje.md` — Tabela ruta, mesto iscrtavanja, veze, parametar rute kao ulaz, tabela ruta modula. Preduslovi: `7-sastavljanje-komponenti.md`.
 - `klijent/1-angular/9-servisi-i-zavisnosti.md` — Servis koji kontejner pravi jednom, preuzimanje zavisnosti, servis sa prijavljenim korisnikom. Preduslovi: `8-rutiranje.md`, `server/1-aspnet/3-registracija-zavisnosti.md`.

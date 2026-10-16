@@ -25,9 +25,26 @@ export class BlogComments {
     required(path.text, { message: 'A comment cannot be empty.' });
   });
 
+  protected readonly editingCommentId = signal<string | null>(null);
+
+  protected readonly editForm = form(signal({ text: '' }), (path) => {
+    required(path.text, { message: 'A comment cannot be empty.' });
+  });
+
   protected submitComment(event: Event): void {
     event.preventDefault();
     this.addComment.emit(this.form.text().value());
     this.form().reset({ text: '' });
+  }
+
+  protected startEdit(comment: CommentDto): void {
+    this.editingCommentId.set(comment.id);
+    this.editForm().reset({ text: comment.text });
+  }
+
+  protected saveEdit(event: Event, commentId: string): void {
+    event.preventDefault();
+    this.editComment.emit({ commentId, text: this.editForm.text().value() });
+    this.editingCommentId.set(null);
   }
 }

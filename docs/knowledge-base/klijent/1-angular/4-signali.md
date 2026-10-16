@@ -10,22 +10,19 @@ constructor() {
 }
 ```
 
-Posle jedne sekunde polje `published` dobija vrednost `true`, ali dugme vezano za to polje (`[disabled]="published"`) ostaje omogućeno. Videli smo i suprotan slučaj: kada isto polje promeni klik na dugme, prikaz se osveži. Ovde objašnjavamo odakle ta razlika i kako se piše polje čiju promenu prikaz uvek prati.
+Posle jedne sekunde polje `published` dobija vrednost `true`, ali dugme vezano za to polje (`[disabled]="published"`) ostaje omogućeno. Videli smo i suprotan slučaj: kada isto polje promeni klik na dugme, prikaz se osveži. Ovde objašnjavamo odakle ta razlika i kako se piše polje čiju promenu prikaz može da isprati.
 
 ## Detekcija promena
 
-Nakon promene podataka radni okvir mora da odluči da li i koje delove stranice ponovo iscrtava. Taj postupak zovemo **detekcija promena** (engl. *change detection*). Postavlja se pitanje kako radni okvir uopšte sazna da se vrednost promenila?
+Nakon promene podataka Angular mora da odluči da li i koje delove stranice ponovo iscrtava. Taj postupak zovemo **detekcija promena** (engl. *change detection*). Postavlja se pitanje kako radni okvir uopšte sazna da se vrednost promenila?
 
-Događaj iz šablona je jedan takav znak. Kada korisnik klikne na dugme sa `(click)`, radni okvir sam poziva našu metodu, pa zna da odmah zatim treba da proveri prikaz. Zato se dugme iz prethodne lekcije onemogućilo kada je klik postavio polje. Promenu je pratio događaj o kome radni okvir zna.
+Događaj iz šablona je jedan takav znak. Kada korisnik klikne na dugme sa `(click)`, radni okvir sam poziva našu metodu, pa zna da odmah zatim treba da proveri prikaz. Zato se dugme iz prethodne lekcije onemogućilo kada je klik postavio polje. Promenu je pratio događaj koji radni okvir posmatra.
 
-Promena iz tajmera nema takav znak. Kada `setTimeout` postavi isto polje, radni okvir za to ne sazna, pa prikaz ostaje zaostao. Tu se vidi razlika u pristupu detekciji promena:
-
-- Angular je istorijski uz sebe držao biblioteku (Zone.js) koja presreće događaje, tajmere i mrežne pozive, i posle svakog od njih ponovo proverava svaki izraz u svakom šablonu. Uz taj pristup i promena iz tajmera bi osvežila prikaz, ali cena je provera cele stranice posle svake sitnice, što loše podnosi rast aplikacije.
-- Naš projekat koristi novije ponašanje, bez te biblioteke. Radni okvir tada sazna za promenu samo iz dva izvora: događaja iz šablona i signala. **Signal** (engl. *signal*) je omotač oko vrednosti koji beleži ko ga čita i obaveštava te čitaoce kada se vrednost promeni. Šablon koji pročita signal postaje njegov čitalac, pa radni okvir zna tačno koju komponentu da osveži kada se signal promeni, bez obzira odakle promena stiže, pa i iz tajmera.
+Radni okvir ne prati promene koje dolaze iz tajmera, mrežnog saobraćaja ili bilo kog izvora koji nije događaj koji podiže internet čitač. Posledično, kada `setTimeout` postavi vrednost polja, radni okvir ne ažurira prikaz. Rešenje za ovaj problem je **signal** (engl. *signal*), koji predstavlja omotač oko vrednosti koji beleži ko ga čita i obaveštava te čitaoce kada se vrednost promeni. Šablon koji pročita signal postaje njegov čitalac, pa radni okvir zna tačno koju komponentu da osveži kada se signal promeni, bez obzira odakle promena stiže.
 
 ## Signal
 
-Sledeći kod prikazuje popravljenu karticu:
+Sledeći kod prikazuje karticu koja koristi dva signala:
 
 ```ts
 export class TourCard {
@@ -49,8 +46,8 @@ export class TourCard {
 
 U datom kodu treba uočiti sledeće:
 - Poziv `signal(false)` pravi signal sa početnom vrednošću. Tip vrednosti prevodilac zaključuje iz početne vrednosti, pa `signal(0)` čuva broj.
-- Signal se čita pozivom, `published()` u šablonu i `this.published()` u klasi. Poziv vraća trenutnu vrednost i beleži čitaoca.
-- Metoda `set` zamenjuje vrednost novom. Metoda `update` prima funkciju koja od stare vrednosti pravi novu. Obe obaveštavaju čitaoce.
+- Signal se čita pozivom, `published()` u šablonu i `this.published()` u klasi. Poziv vraća trenutnu vrednost i govori signalu da ima novog čitaoca.
+- Metoda `set` direktno postavlja vrednost koju signal obavija. Metoda `update` prima funkciju koja od stare vrednosti pravi novu. Obe obaveštavaju čitaoce.
 - Polje je `readonly`, jer se sam signal ne menja. Menja se vrednost u njemu.
 
 Kada početna vrednost ne određuje tip, tip navodimo u uglastim zagradama iza naziva funkcije, isto kao parametar generičkog tipa. Sledeći kod prikazuje signal koji čuva identifikator izabrane ture:
@@ -97,10 +94,8 @@ export class TourCard {
 Kada korisnik klikne na drugo dugme, dešava se sledeće:
 1. Vezivanje događaja poziva metodu `like`.
 2. Metoda poziva `update` na signalu `likes`, koji dobija novu vrednost i obaveštava čitaoce.
-3. Šablon je čitalac signala `likes`, jer ga čita u interpolaciji, pa radni okvir ponovo iscrtava komponentu.
-4. Pri iscrtavanju šablon ponovo čita `likes` i ispisuje novu vrednost.
-
-Za razliku od običnog polja, signal obaveštava prikaz o promeni bez obzira odakle ona stiže. Da je `published` sa početka lekcije bio signal, i promena iz tajmera bi osvežila dugme.
+3. Šablon je čitalac signala `likes`, jer ga čita u interpolaciji `{{ likes() }}`, pa radni okvir ponovo iscrtava komponentu.
+4. Pri iscrtavanju šablon čita vrednost koju obavija signal `likes` i ispisuje je.
 
 Polje `name` je ostalo običan tekst, jer se nikada ne menja. Signal je potreban samo za stanje koje se menja dok komponenta živi.
 
@@ -113,4 +108,4 @@ Signali drže stanje koje se menja. Prikaz, međutim, često traži vrednost koj
 <span>{{ likes() >= 10 ? 'popularno' : '' }}</span>
 ```
 
-Za jedan ovako kratak uslov ovo je u redu. Ali kada izvedena vrednost postane složenija, koristi se na više mesta ili spaja više signala, ne želimo da logiku ponavljamo po šablonu niti da je pišemo u običnoj metodi. Metoda se izvršava iznova pri svakom iscrtavanju i nije ni sama signal. Treba nam vrednost koja čita druge signale, sama se preračunava kada se oni promene i pamti rezultat dok se ništa ne promeni. Takva vrednost zove se **izvedeni signal** (engl. *computed signal*) i njome se bavi [naredna lekcija o izvedenim signalima](5-izvedeni-signali.md).
+Za jedan ovako kratak uslov ovo je u redu. Ali kada izvedena vrednost postane složenija, koristi se na više mesta ili spaja više signala, ne želimo da logiku ponavljamo po šablonu niti da je pišemo u običnoj metodi. Metoda se izvršava iznova pri svakom iscrtavanju i nije ni sama signal. Treba nam vrednost koja čita druge signale, sama se preračunava kada se oni promene i pamti rezultat dok se ništa ne promeni. Takva vrednost zove se **izvedeni signal** (engl. *computed signal*) i nju ispitujemo sledeće.

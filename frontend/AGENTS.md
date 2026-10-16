@@ -106,7 +106,8 @@ construct means adding a lesson, so treat it as a platform decision.
   `@HostBinding`), `protected` members read by the template, `readonly` on
   framework-initialised properties.
 - Templates: built-in control flow (`@if`, `@for`, `@switch`), `class` and `style`
-  bindings. No `*ngIf`, `*ngFor`, `NgClass`, `NgStyle`.
+  bindings. No `*ngIf`, `*ngFor`, `NgClass`, `NgStyle`. No template reference
+  variables (`#name`); every value the user types goes through Signal Forms.
 - State: `signal()` and `computed()`. `effect()` only when a signal must
   drive something outside the component tree, and it needs a reason. Page-scoped state, including its read resources, lives in the page.
   State that outlives a page lives in a service holding signals, `providedIn: 'root'`.

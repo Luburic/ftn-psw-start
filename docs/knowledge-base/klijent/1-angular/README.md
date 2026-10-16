@@ -11,7 +11,7 @@ Klijentska aplikacija rešava tehničke probleme koji ne zavise od domena, isto 
 3. [Komponenta](3-komponenta.md) - Klasa, šablon i stil kao jedna celina. Ispis vrednosti u šablonu, vezivanje svojstava i događaja i reakcija na klik. Lekcija se završava primerom u kom se prikaz ne osvežava.
 4. [Signali](4-signali.md) - Zašto prikaz ne prati promenu običnog polja klase, signal kao stanje komponente i poređenje sa mehanizmom React-a koji čitalac poznaje.
 5. [Izvedeni signali](5-izvedeni-signali.md) - Signal čija se vrednost računa iz drugih signala i pravilo o signalu koji čuva niz ili objekat.
-6. [Kontrola toka](6-kontrola-toka.md) - Grananje i petlja u šablonu, alias za vrednost koja može da nedostaje i referenca na element šablona.
+6. [Kontrola toka](6-kontrola-toka.md) - Grananje i petlja u šablonu i alias za vrednost koja može da nedostaje.
 7. [Sastavljanje komponenti](7-sastavljanje-komponenti.md) - Ugnježdavanje komponenti, ulazi i izlazi, podaci putuju naniže, a događaji naviše.
 8. [Rutiranje](8-rutiranje.md) - Tabela ruta, mesto iscrtavanja, veze za navigaciju, parametar rute kao ulaz komponente i tabela ruta modula.
 9. [Servisi i zavisnosti](9-servisi-i-zavisnosti.md) - Servis kao klasa koju kontejner zavisnosti pravi jednom, preuzimanje zavisnosti u komponenti i servisu i servis koji drži prijavljenog korisnika.

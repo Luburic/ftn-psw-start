@@ -20,10 +20,6 @@ export class TourList { ... }
 }
 ```
 
-U datom kodu treba uočiti sledeće:
-- Bez klase `TourCard` u podešavanju `imports` prevodilac prijavljuje da element `app-tour-card` nije poznat. Klasu deteta najpre uvozimo naredbom `import` na vrhu datoteke, a zatim je navodimo u podešavanju `imports`. U šablonu roditelj dete pominje samo selektorom.
-- Element se piše kao samozatvarajući, jer kartica nema sadržaj između oznaka. Sve što prikazuje dolazi iz njenog šablona.
-
 Ovakva kartica u svakom prolazu petlje prikazuje isti naziv, onaj upisan u klasu. Da bi svaka kartica prikazala svoju turu, roditelj mora da joj prosledi podatak.
 
 ## Ulaz
@@ -116,7 +112,7 @@ Prethodna dva odeljka daju pravilo po kom se komponente sastavljaju. Podaci putu
 
 ## Stranica i kartica
 
-Povežimo pojmove u stranicu koja pretražuje ture, prikazuje ih kroz kartice i uklanja turu koju kartica javi. Kartica ima ulaz i izlaz:
+Povežimo pojmove u stranicu koja filtrira ture, prikazuje ih kroz kartice i uklanja turu koju kartica javi. Kartica ima ulaz i izlaz:
 
 ```ts
 import { Component, input, output } from '@angular/core';
@@ -141,12 +137,12 @@ export class TourCard {
 </article>
 ```
 
-Stranica zadržava pretragu iz prethodne lekcije i dodaje uklanjanje:
+Stranica zadržava filtriranje po težini iz prethodne lekcije i dodaje uklanjanje:
 
 ```ts
 import { Component, computed, signal } from '@angular/core';
 import { TourCard } from './tour-card/tour-card';
-import { TourDto } from './tour-dto';
+import { TourDifficulty, TourDto } from './tour-dto';
 
 @Component({
   selector: 'app-tour-list',
@@ -160,11 +156,11 @@ export class TourList {
     { id: '2', name: 'Fruška gora', description: 'Planinarenje do manastira.', difficulty: 'Hard', tags: ['priroda'] },
   ]);
 
-  protected readonly nameFilter = signal('');
+  protected readonly difficultyFilter = signal<TourDifficulty | null>(null);
 
   protected readonly visibleTours = computed(() => {
-    const name = this.nameFilter().toLowerCase();
-    return this.tours().filter((tour) => tour.name.toLowerCase().includes(name));
+    const difficulty = this.difficultyFilter();
+    return this.tours().filter((tour) => difficulty === null || tour.difficulty === difficulty);
   });
 
   protected remove(tourId: string): void {
@@ -174,19 +170,21 @@ export class TourList {
 ```
 
 ```html
-<input #nameInput type="search" [value]="nameFilter()" (input)="nameFilter.set(nameInput.value)" />
-<button type="button" (click)="nameFilter.set('')">Obriši pretragu</button>
+<button type="button" (click)="difficultyFilter.set(null)">Sve</button>
+<button type="button" (click)="difficultyFilter.set('Easy')">Lake</button>
+<button type="button" (click)="difficultyFilter.set('Moderate')">Srednje</button>
+<button type="button" (click)="difficultyFilter.set('Hard')">Teške</button>
 
 @for (tour of visibleTours(); track tour.id) {
   <app-tour-card [tour]="tour" (deleteTour)="remove($event)" />
 } @empty {
-  <p>Nijedna tura ne odgovara pretrazi.</p>
+  <p>Nijedna tura nema izabranu težinu.</p>
 }
 ```
 
 U datom kodu treba uočiti sledeće:
 - Polje `tours` ostaje `private`, jer ga šablon ne čita. Metoda `remove` menja `tours`, a šablon prikazuje `visibleTours`.
-- Izvedeni signal `visibleTours` čita i `tours` i `nameFilter`, pa se preračunava kada se promeni bilo koji od njih. Uklanjanje ture zato radi i dok je pretraga aktivna.
+- Izvedeni signal `visibleTours` čita i `tours` i `difficultyFilter`, pa se preračunava kada se promeni bilo koji od njih. Uklanjanje ture zato radi i dok je težina izabrana.
 
 Kada korisnik klikne na dugme za brisanje na kartici ture „Fruška gora“, dešava se sledeće:
 1. Vezivanje događaja na dugmetu poziva `deleteTour.emit('2')`.

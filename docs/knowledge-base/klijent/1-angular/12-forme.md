@@ -1,7 +1,7 @@
 
 Stranica za pravljenje ture prikuplja naziv, opis, težinu i oznake, a komandu za pravljenje sme da pošalje tek kada su naziv i opis uneti.
 
-Takvu formu bismo mogli da napravimo i onim što već znamo. U lekciji o kontroli toka vrednost polja za pretragu čitali smo preko reference na element i vezivanja događaja. Za formu sa četiri elementa to znači četiri reference, četiri vezivanja događaja i posebnu proveru svakog unosa pre slanja. Uz to bismo morali sami da pamtimo koje je polje korisnik već popunio, da ne bismo prikazivali greške pre nego što je išta uneo.
+Do sada je korisnik stanje stranice menjao samo klikom na dugme. Forma traži više od toga. Sadržaj svakog elementa za unos treba da stigne u stanje stranice pri svakoj promeni, a svaki unos treba proveriti pre slanja. Uz to bismo morali sami da pamtimo koje je polje korisnik već popunio, da ne bismo prikazivali greške pre nego što je išta uneo.
 
 Vrednosti forme su stanje stranice, pa po pravilu iz lekcije o signalima treba da žive u signalu. Angular oko tog signala gradi objekat koji elemente za unos povezuje sa vrednostima u signalu i za svaku vrednost prati da li je ispravna. Ovde upoznajemo taj objekat, bez slanja forme, koje dolazi u narednoj lekciji.
 
