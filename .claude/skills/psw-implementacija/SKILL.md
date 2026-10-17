@@ -90,8 +90,8 @@ Read the lessons of a prediction before framing it, from `docs/knowledge-base/`.
 |---|---|---|
 | Server | The path of the feature's main operation: which class in which layer does what, in order, from the HTTP request to the database and back. | `server/2-arhitektura-modula/5-čista-arhitektura.md`, `server/2-arhitektura-modula/2-aplikacioni-sloj/2-aplikacioni-servis.md` |
 | Server | When the domain model changes: what changes in the database, and whether a migration is needed and what it holds. Otherwise: the shape of the DTO the main query returns and how it gets filled. | `server/2-arhitektura-modula/3-infrastrukturni-sloj/2-efc-kontekst-i-model.md`, `3-migracije.md`; or `server/2-arhitektura-modula/2-aplikacioni-sloj/3-dto-i-mapiranje.md`, `server/2-arhitektura-modula/3-infrastrukturni-sloj/4-repozitorijumi.md` |
-| Klijent | Which parts of the flow become a page and which a presentational component, and in which group they live. | `klijent/2-arhitektura-modula/1-stranice-i-prikazne-komponente.md` |
-| Klijent | When the flow has a command: where the command lives and what the page does once it succeeds or fails. Otherwise: what the mirrored type of the main DTO looks like. | `klijent/2-arhitektura-modula/2-upiti-i-komande.md`, `klijent/1-angular/11-komande.md`; or `klijent/2-arhitektura-modula/3-preslikani-tipovi.md` |
+| Klijent | Which parts of the flow become a page and which a presentational component, and in which group they live. | `klijent/2-modularni-monolit/1-stranice-i-prikazne-komponente.md` |
+| Klijent | When the flow has a command: where the command lives and what the page does once it succeeds or fails. Otherwise: what the mirrored type of the main DTO looks like. | `klijent/1-angular/11-komande.md`; or `klijent/2-modularni-monolit/2-preslikani-tipovi.md` |
 
 Pacing:
 

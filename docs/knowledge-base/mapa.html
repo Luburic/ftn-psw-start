@@ -267,16 +267,15 @@ h1{font-size:18px;font-weight:600;margin:0 0 16px;letter-spacing:-.01em}
       <div class="module-shadow"></div>
       <div class="frame-title" style="margin:0 2px 10px">
         <span class="box-title title-node" data-note="klijent-arhitektura-modula">Feature modul <span class="box-sub">jedan od više</span></span>
-        <span class="pr" data-note="upit-u-stranici">upit u stranici, komanda u servisu</span>
       </div>
       <div class="layer"><div class="lname" data-note="javna-povrsina">Rute modula<span>routes, vidljive drugim modulima</span></div><div class="lbody"><span class="chip" data-note="rutiranje">Tabela ruta modula</span></div></div>
       <div class="group">
         <div class="frame-title" style="margin:0 2px 8px">
           <span class="box-title title-node" data-note="stranice-i-prikazne-komponente">Grupa slučajeva korišćenja <span class="box-sub">jedna od više</span></span>
         </div>
-        <div class="layer"><div class="lname" data-note="stranica-i-prikazna-komponenta">Stranice<span>vode interakciju</span></div><div class="lbody"><span class="chip" data-note="citanje-podataka">Resurs</span><span class="chip" data-note="forme">Forme</span><span class="chip" data-note="slanje-forme">Slanje forme</span><span class="pr" data-note="gde-stanje-zivi">gde stanje živi</span></div></div>
+        <div class="layer"><div class="lname" data-note="stranica-i-prikazna-komponenta">Stranice<span>vode interakciju</span></div><div class="lbody"><span class="chip" data-note="citanje-podataka">Resurs</span><span class="chip" data-note="forme">Forme</span><span class="chip" data-note="slanje-forme">Slanje forme</span></div></div>
         <div class="layer"><div class="lname" data-note="stranica-i-prikazna-komponenta">Prikazne komponente<span>primaju ulaze, prijavljuju izlaze</span></div><div class="lbody"><span class="chip" data-note="komponenta">Komponenta</span><span class="chip" data-note="signali">Signali</span><span class="chip" data-note="izvedeni-signali">Izvedeni signali</span><span class="chip" data-note="kontrola-toka">Kontrola toka</span><span class="chip" data-note="sastavljanje-komponenti">Ulazi i izlazi</span><span class="chip" data-note="stilovi-komponente">Stilovi komponente</span></div></div>
-        <div class="layer"><div class="lname" data-note="klijent-upiti-i-komande">Servis grupe<span>komande grupe</span></div><div class="lbody"><span class="chip" data-note="servisi-i-zavisnosti">Servisi i zavisnosti</span><span class="chip" data-note="komande">Komande</span></div></div>
+        <div class="layer"><div class="lname" data-note="komande">Servis grupe<span>komande grupe</span></div><div class="lbody"><span class="chip" data-note="servisi-i-zavisnosti">Servisi i zavisnosti</span><span class="chip" data-note="komande">Komande</span></div></div>
       </div>
       <div class="layer"><div class="lname" data-note="preslikani-tipovi">Preslikani tipovi<span>api, ugovor sa serverom</span></div><div class="lbody"><span class="tag" data-note="typescript">TypeScript</span><span class="chip" data-note="preslikani-tipovi">DTO strukture servera</span></div></div>
     </div>
@@ -379,20 +378,17 @@ const NOTES = {
   'slanje-forme':            { title: 'Slanje forme',                     path: 'klijent/1-angular/13-slanje-forme.md' },
   'stilovi-komponente':      { title: 'Stilovi komponente',               path: 'klijent/1-angular/14-stilovi.md', section: 'stilovi-komponente' },
   'globalni-stilovi':        { title: 'Globalni stilovi i tokeni',        path: 'klijent/1-angular/14-stilovi.md', section: 'globalni-stilovi' },
-  'klijent-arhitektura-modula': { title: 'Arhitektura modula na klijentu', path: 'klijent/2-arhitektura-modula/README.md' },
-  'stranice-i-prikazne-komponente': { title: 'Stranice i prikazne komponente', path: 'klijent/2-arhitektura-modula/1-stranice-i-prikazne-komponente.md' },
-  'stranica-i-prikazna-komponenta': { title: 'Stranica i prikazna komponenta', path: 'klijent/2-arhitektura-modula/1-stranice-i-prikazne-komponente.md', section: 'stranica-i-prikazna-komponenta' },
-  'klijent-upiti-i-komande': { title: 'Upiti i komande',                  path: 'klijent/2-arhitektura-modula/2-upiti-i-komande.md' },
-  'upit-u-stranici':         { title: 'Upit u stranici, komanda u servisu grupe', path: 'klijent/2-arhitektura-modula/2-upiti-i-komande.md', section: 'upit-u-stranici-komanda-u-servisu-grupe' },
-  'gde-stanje-zivi':         { title: 'Gde stanje živi',                  path: 'klijent/2-arhitektura-modula/2-upiti-i-komande.md', section: 'gde-stanje-zivi' },
-  'preslikani-tipovi':       { title: 'Preslikani tipovi',                path: 'klijent/2-arhitektura-modula/3-preslikani-tipovi.md' },
-  'klijent-modularni-monolit': { title: 'Modularni monolit na klijentu',  path: 'klijent/3-modularni-monolit/README.md' },
-  'javna-povrsina':          { title: 'Javna površina',                   path: 'klijent/3-modularni-monolit/1-javna-povrsina.md' },
-  'ucitavanje-modula':       { title: 'Ulazak modula u aplikaciju',       path: 'klijent/3-modularni-monolit/1-javna-povrsina.md', section: 'ulazak-modula-u-aplikaciju' },
-  'host-aplikacija':         { title: 'Host aplikacija',                  path: 'klijent/3-modularni-monolit/2-host-i-zajednicko-jezgro.md', section: 'host-aplikacija' },
-  'presretac':               { title: 'Presretač',                        path: 'klijent/3-modularni-monolit/2-host-i-zajednicko-jezgro.md', section: 'presretac' },
-  'zajednicko-jezgro':       { title: 'Zajedničko jezgro',                path: 'klijent/3-modularni-monolit/2-host-i-zajednicko-jezgro.md', section: 'zajednicko-jezgro' },
-  'staticka-analiza':        { title: 'Granica i statička analiza',       path: 'klijent/3-modularni-monolit/3-granica-i-staticka-analiza.md' }
+  'klijent-arhitektura-modula': { title: 'Arhitektura modula na klijentu', path: 'klijent/2-modularni-monolit/README.md' },
+  'stranice-i-prikazne-komponente': { title: 'Stranice i prikazne komponente', path: 'klijent/2-modularni-monolit/1-stranice-i-prikazne-komponente.md' },
+  'stranica-i-prikazna-komponenta': { title: 'Stranica i prikazna komponenta', path: 'klijent/2-modularni-monolit/1-stranice-i-prikazne-komponente.md', section: 'stranica-i-prikazna-komponenta' },
+  'preslikani-tipovi':       { title: 'Preslikani tipovi',                path: 'klijent/2-modularni-monolit/2-preslikani-tipovi.md' },
+  'klijent-modularni-monolit': { title: 'Modularni monolit na klijentu',  path: 'klijent/2-modularni-monolit/README.md' },
+  'javna-povrsina':          { title: 'Javna površina',                   path: 'klijent/2-modularni-monolit/3-javna-povrsina.md' },
+  'ucitavanje-modula':       { title: 'Ulazak modula u aplikaciju',       path: 'klijent/2-modularni-monolit/3-javna-povrsina.md', section: 'ulazak-modula-u-aplikaciju' },
+  'host-aplikacija':         { title: 'Host aplikacija',                  path: 'klijent/2-modularni-monolit/4-host-i-zajednicko-jezgro.md', section: 'host-aplikacija' },
+  'presretac':               { title: 'Presretač',                        path: 'klijent/2-modularni-monolit/4-host-i-zajednicko-jezgro.md', section: 'presretac' },
+  'zajednicko-jezgro':       { title: 'Zajedničko jezgro',                path: 'klijent/2-modularni-monolit/4-host-i-zajednicko-jezgro.md', section: 'zajednicko-jezgro' },
+  'staticka-analiza':        { title: 'Granica i statička analiza',       path: 'klijent/2-modularni-monolit/5-granica-i-staticka-analiza.md' }
 };
 
 const readerPane = document.getElementById('readerPane');

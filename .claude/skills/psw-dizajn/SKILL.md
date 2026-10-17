@@ -50,11 +50,11 @@ closes, write its section into the spec at once, leaving the status unchanged.
 
 ### 2.1 Tok korišćenja
 
-Lessons: `klijent/2-arhitektura-modula/1-stranice-i-prikazne-komponente.md`,
-`klijent/2-arhitektura-modula/2-upiti-i-komande.md`, `klijent/1-angular/8-rutiranje.md`,
+Lessons: `klijent/2-modularni-monolit/1-stranice-i-prikazne-komponente.md`,
+`klijent/1-angular/8-rutiranje.md`,
 `klijent/1-angular/10-citanje-podataka.md`, `klijent/1-angular/11-komande.md`,
 `klijent/1-angular/13-slanje-forme.md`. Add `klijent/1-angular/12-forme.md` when the
-feature has a form, and `klijent/3-modularni-monolit/1-javna-povrsina.md` when the flow
+feature has a form, and `klijent/2-modularni-monolit/3-javna-povrsina.md` when the flow
 touches another module's page or data.
 
 Frame with the module's existing pages: each address and what the user sees there.

@@ -28,22 +28,21 @@ Oba problema imaju isti uzrok. Kroz jednu klasu je implementiran ceo prikaz na e
 
 **Stranica** (engl. *page*) je komponenta koju imenuje tabela ruta i kojoj se ubrizgavaju servisi. **Prikazna komponenta** (engl. *presentational component*) je komponenta koja podatke prima kroz ulaze, akcije korisnika prijavljuje kroz izlaze i kojoj se ne ubrizgava ništa. Stranica zna odakle podaci dolaze i kome se komanda šalje. Prikazna komponenta ne zna ni jedno ni drugo, pa se može koristiti na svakom mestu koje joj popuni ulaze.
 
-Podela ne zabranjuje prikaznoj komponenti da ima stanje. Forma za nov komentar, izabrani red tabele ili otvoren panel su stanje prikaza, koje ne nadživljava komponentu i ne zanima nikoga van nje. Prikazna komponenta takvo stanje drži u signalu, kao i svaka druga. Granica je da joj se ne ubrizgava servis i da ne kontaktira servera.
+Podela ne zabranjuje prikaznoj komponenti da ima stanje. Forma za nov komentar, izabrani red tabele ili otvoren panel su stanje prikaza. Prikazna komponenta takvo stanje drži u signalu, kao i svaka druga. Granica je da joj se ne ubrizgavaju servisi i da se prikazuje u kontekstu drugih komponenti.
 
 Podela nije vidljiva u nazivu datoteke ni u nazivu direktorijuma. Vidi se u kodu: tabela ruta modula imenuje svaku stranicu, stranici se ubrizgava servis, a prikaznoj komponenti ništa. Sledeća tabela sažima razliku:
 
 | | Stranica | Prikazna komponenta |
 |---|---|---|
 | Ko je pravi | Radni okvir, kada se adresa poklopi sa rutom | Šablon roditelja, kroz selektor |
-| Odakle joj podaci | Sama ih dovlači sa servera, kroz resurs | Roditelj joj ih predaje kroz ulaze |
+| Odakle joj podaci | Sama ih dovlači sa servera, kroz resurs | Roditelj ih predaje kroz ulaze |
 | Gde završava klik korisnika | U metodi klase, koja šalje komandu servisu | U izlazu, a šta se dalje dešava odlučuje roditelj |
 | Šta joj se ubrizgava | Servisi koje koristi | Ništa |
-| Šta drži u signalima | Resurs, `pending` i `error` komande, filter spiska | Samo stanje prikaza, npr. formu za nov komentar |
 | Primer | `BlogDetail` | `BlogComments` |
 
 ## Grupa slučajeva korišćenja
 
-Aplikacioni sloj servera svoje klase deli po grupama slučajeva korišćenja. Klijent tu podelu preuzima kao raspored direktorijuma. **Grupa slučajeva korišćenja** na klijentu je skup stranica koje služe jednom cilju korisnika i nosi ime istoimene grupe aplikacionog sloja servera. Modul je ravna lista grupa. Grupa je ravna lista direktorijuma komponenti i najviše jedna datoteka servisa. Sledeće stablo prikazuje modul Social:
+Aplikacioni sloj servera svoje klase deli po grupama slučajeva korišćenja. Klijent tu podelu preuzima kao raspored direktorijuma. **Grupa slučajeva korišćenja** na klijentu je skup stranica koje služe jednom širem cilju korisnika i nosi ime istoimene grupe aplikacionog sloja servera. Modul je ravna lista grupa. Grupa je ravna lista direktorijuma komponenti i najviše jedna datoteka servisa. Sledeće stablo prikazuje modul Social:
 
 ```
 modules/social/
@@ -67,9 +66,8 @@ U datom stablu treba uočiti sledeće:
 - Server modula Social ima tri grupe, a klijent dve. Komande za komentare na serveru pripadaju grupi `BlogCommenting`, a na klijentu ih nosi servis grupe `blog-reading`, jer ih šalje stranica `BlogDetail`. Klijent grupiše ekrane, a ne operacije, pa obično ima manje grupa od servera.
 - Svaka komponenta ima sopstveni direktorijum sa tri datoteke: klasom, šablonom i stilovima. Prikazna komponenta stoji pored stranica koje je koriste, a ne u zasebnom direktorijumu.
 - Ne postoje direktorijumi `pages`, `components` ni `services`. Kod se grupiše po cilju korisnika, a ne po vrsti datoteke.
-- Direktorijum `api` ne pripada nijednoj grupi.
 
-## Mesto nove komponente
+## Definisanje nove komponente
 
 Kada pišemo novu komponentu, mesto joj određujemo odgovorom na tri pitanja, ovim redom:
 

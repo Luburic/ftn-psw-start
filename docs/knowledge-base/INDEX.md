@@ -78,19 +78,14 @@ Jedna linija po dokumentu: putanja, opis i preduslovi (dokumenti koje čitalac t
 - `klijent/1-angular/13-slanje-forme.md` — Slanje forme kao komanda, navigacija iz klase, vraćanje forme u početno stanje. Preduslovi: `12-forme.md`.
 - `klijent/1-angular/14-stilovi.md` — Stilovi ograničeni na komponentu, globalna datoteka, tokeni, izbor mesta za nov stil. Preduslovi: `3-komponenta.md`.
 
-## Arhitektura modula na klijentu
-
-- `klijent/2-arhitektura-modula/README.md` — Zašto je klijentska arhitektura tanja od serverske i koja tri pravila je čine. Uvod u segment. Preduslovi: `klijent/1-angular/README.md`.
-- `klijent/2-arhitektura-modula/1-stranice-i-prikazne-komponente.md` — Stranica vodi interakciju, prikazna komponenta prima vrednosti i prijavljuje događaje; grupe slučajeva korišćenja kao raspored modula; izbor strane i grupe za novu komponentu. Preduslovi: `klijent/1-angular/7-sastavljanje-komponenti.md`, `klijent/1-angular/8-rutiranje.md`.
-- `klijent/2-arhitektura-modula/2-upiti-i-komande.md` — Resurs u stranici, komande u servisu grupe, stranica osvežava svoj resurs; pravilo gde stanje živi. Preduslovi: `1-stranice-i-prikazne-komponente.md`, `klijent/1-angular/11-komande.md`.
-- `klijent/2-arhitektura-modula/3-preslikani-tipovi.md` — DTO struktura servera kao ugovor, tipovi modula preslikani sa servera po utvrđenim pravilima, datoteka se menja samo kada se promeni server. Preduslovi: `2-upiti-i-komande.md`, `server/2-arhitektura-modula/2-aplikacioni-sloj/3-dto-i-mapiranje.md`.
-
 ## Modularni monolit na klijentu
 
-- `klijent/3-modularni-monolit/README.md` — Ista podela na module kao na serveru, `core` kao glavna aplikacija, granica koju čuva statička analiza. Uvod u segment. Preduslovi: `klijent/2-arhitektura-modula/README.md`, `server/3-modularni-monolit/README.md`.
-- `klijent/3-modularni-monolit/1-javna-povrsina.md` — adrese stranica kao javna površina modula, ulazak modula u aplikaciju kroz `loadChildren`, navigacija ka drugom modulu, podaci se sastavljaju na serveru. Preduslovi: `README.md`, `klijent/1-angular/8-rutiranje.md`, `server/3-modularni-monolit/1-kontrakti.md`.
-- `klijent/3-modularni-monolit/2-host-i-zajednicko-jezgro.md` — `core` kao host i `shared` kao zajedničko jezgro, presretač, promocija, tabela vlasništva. Preduslovi: `1-javna-povrsina.md`, `server/3-modularni-monolit/2-gradivni-elementi.md`.
-- `klijent/3-modularni-monolit/3-granica-i-staticka-analiza.md` — Pravilo o uvozima kao arhitektonski test klijenta, čitanje prijave, zašto je granica slabija od serverske. Preduslovi: `2-host-i-zajednicko-jezgro.md`, `server/3-modularni-monolit/3-arhitektonski-testovi.md`.
+- `klijent/2-modularni-monolit/README.md` — Ista podela na module kao na serveru, tri pravila unutar modula, `core` kao glavna aplikacija, granica koju čuva statička analiza. Uvod u segment. Preduslovi: `klijent/1-angular/README.md`, `server/3-modularni-monolit/README.md`.
+- `klijent/2-modularni-monolit/1-stranice-i-prikazne-komponente.md` — Stranica vodi interakciju, prikazna komponenta prima vrednosti i prijavljuje događaje; grupe slučajeva korišćenja kao raspored modula; izbor strane i grupe za novu komponentu. Preduslovi: `klijent/1-angular/7-sastavljanje-komponenti.md`, `klijent/1-angular/8-rutiranje.md`.
+- `klijent/2-modularni-monolit/2-preslikani-tipovi.md` — DTO struktura servera kao ugovor, tipovi modula preslikani sa servera po utvrđenim pravilima, datoteka se menja samo kada se promeni server. Preduslovi: `1-stranice-i-prikazne-komponente.md`, `klijent/1-angular/11-komande.md`, `server/2-arhitektura-modula/2-aplikacioni-sloj/3-dto-i-mapiranje.md`.
+- `klijent/2-modularni-monolit/3-javna-povrsina.md` — Adrese stranica kao javna površina modula, ulazak modula u aplikaciju kroz `loadChildren`, navigacija ka drugom modulu, podaci se sastavljaju na serveru. Preduslovi: `2-preslikani-tipovi.md`, `klijent/1-angular/8-rutiranje.md`, `server/3-modularni-monolit/1-kontrakti.md`.
+- `klijent/2-modularni-monolit/4-host-i-zajednicko-jezgro.md` — `core` kao host i `shared` kao zajedničko jezgro, presretač, promocija, tabela vlasništva. Preduslovi: `3-javna-povrsina.md`, `server/3-modularni-monolit/2-gradivni-elementi.md`.
+- `klijent/2-modularni-monolit/5-granica-i-staticka-analiza.md` — Pravilo o uvozima kao arhitektonski test klijenta, čitanje prijave, zašto je granica slabija od serverske. Preduslovi: `4-host-i-zajednicko-jezgro.md`, `server/3-modularni-monolit/3-arhitektonski-testovi.md`.
 
 ## Testovi
 
