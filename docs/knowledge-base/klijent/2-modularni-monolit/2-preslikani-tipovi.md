@@ -1,4 +1,4 @@
-Svaki resurs i svaka komanda iz prethodnih lekcija ima tip podatka koji šalje ili prima, poput `TourDto` i `CreateTourDto`. Ti tipovi opisuju podatak koji ne nastaje na klijentu, nego na serveru, a klijent ih ipak drži zapisane kod sebe.
+Svaki resurs za upite i svaki servis komanda imaju tipove podataka koje šalju ili prihvataju, poput `TourDto` i `CreateTourDto`. Ti tipovi opisuju podatak koji definiše server i koji kontroleri servera prihvataju kroz parametre ili vraćaju kroz povratnu vrednost. Klijent kopira ove tipove kod sebe kako bi TS prevodilac ih ipak drži zapisane kod sebe.
 
 Posmatrajmo šta se dešava kada tim koji radi na serveru svojstvo `Description` strukture `TourDto` preimenuje u `Summary`.
 
@@ -89,6 +89,4 @@ export interface CommentEdit {
 }
 ```
 
-U datom kodu treba uočiti sledeće:
-
-- Tip živi u datoteci `blog-comments.ts`, pored izlaza koji ga koristi. Stranica uvozi tip iz iste datoteke iz koje uvozi komponentu.
+Tip živi u datoteci `blog-comments.ts`, pored izlaza koji ga koristi. Stranica uvozi tip iz iste datoteke iz koje uvozi komponentu.

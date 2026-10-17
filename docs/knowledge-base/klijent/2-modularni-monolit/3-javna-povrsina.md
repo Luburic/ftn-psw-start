@@ -1,4 +1,4 @@
-Klijentska aplikacija je podeljena na iste feature module kao i serverska, pa svaki tim poseduje i modul na klijentu. Posmatrajmo stranicu modula Payment koja prodaje turu i treba da prikaže naziv i težinu ture koju korisnik kupuje. Prvo što pada na pamet je da stranica uveze karticu ture iz modula Exploration:
+Klijentska aplikacija je podeljena na iste feature module kao i serverska, pa svaki razvojni tim poseduje i modul na klijentu. Posmatrajmo stranicu modula Payment koja prodaje turu i treba da prikaže naziv i težinu ture koju korisnik kupuje. Prvo što pada na pamet je da stranica uveze karticu ture iz modula Exploration:
 
 ```ts
 import { TourCard } from '../../../exploration/tour-browsing/tour-card/tour-card';
@@ -6,11 +6,11 @@ import { TourCard } from '../../../exploration/tour-browsing/tour-card/tour-card
 
 U datom kodu treba uočiti sledeće:
 
-- Putanja prolazi kroz unutrašnjost modula Exploration. Kada tim tog modula preimenuje direktorijum `tour-browsing` ili karticu, stranica modula Payment prestaje da se prevodi, a tim modula Payment za promenu saznaje tek tada.
+- Putanja prolazi kroz unutrašnjost modula Exploration. Kada tim tog modula preimenuje direktorijum `tour-browsing` ili karticu, stranica modula Payment prestaje da se prevodi i nastaje problem u modulu Payment tima.
 - Kartica je napravljena za spisak objavljenih tura, pa ima ulaze i izgled tog ekrana. Modul Payment sada zavisi od odluka donetih za tuđi ekran.
 - Dva tima dele jednu datoteku, a da se o tome nisu dogovorila.
 
-Isti problem je na serveru rešio kontrakt, javna površina modula namenjena drugim modulima. Na klijentu istu ulogu imaju adrese stranica modula, koje upoznajemo u narednom odeljku. Granicu modula ne prelazi nijedna datoteka, pa ni kartica ni bilo koji drugi deo tuđeg ekrana. Naziv i težina ture do stranice modula Payment stižu sasvim drugim putem, sa njenog sopstvenog servera, o čemu je odeljak o sastavljanju podataka.
+Isti problem je na serveru rešio kontrakt, javna površina modula namenjena drugim modulima. Na klijentu istu ulogu imaju adrese stranica modula. Granicu modula ne prelazi nijedna datoteka, pa ni kartica ni bilo koji drugi deo tuđeg ekrana. Naziv i težina ture do stranice modula Payment stižu kroz server.
 
 ## Javna površina
 
