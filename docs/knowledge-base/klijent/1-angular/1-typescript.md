@@ -86,7 +86,7 @@ U datom kodu treba uočiti sledeće:
 
 TS **interfejs** (engl. *interface*) opisuje oblik objekta, tj. koja polja objekat mora da sadrži i kog su tipa. Interfejse najčešće koristimo za model podataka na klijentskom delu veb aplikacije, koji odgovara podacima koji stižu sa servera. Takav model obično nazivamo **DTO** (engl. *Data Transfer Object*), otuda i naziv `TourDto`.
 
-Pre samog interfejsa, uvodimo još jedan oblik unije. Kada tip treba da bude „jedna od nekoliko tačno određenih tekstualnih vrednosti“, koristimo **imenovanu uniju literala** i dajemo joj naziv ključnom rečju `type`. Tako u projektu, umesto običnog `string`, težina ture ima svoj tip:
+Pre samog interfejsa, uvodimo još jedan oblik unije. Kada tip treba da bude „jedna od nekoliko tačno određenih tekstualnih vrednosti“, koristimo **imenovanu uniju literala** i dajemo joj naziv ključnom rečju `type`. Tako, umesto običnog `string`, težina ture ima svoj tip:
 
 ```ts
 export type TourDifficulty = 'Easy' | 'Moderate' | 'Hard';
@@ -96,7 +96,7 @@ export type TransportMode = 'Walking' | 'Bicycle' | 'Car';
 
 Vrednost tipa `TourDifficulty` može biti samo `'Easy'`, `'Moderate'` ili `'Hard'`, svaki drugi tekst prevodilac odbija. Time tip precizno opisuje šta je dozvoljeno, pa grešku hvatamo pri prevođenju, a ne u izvršavanju.
 
-Sledi interfejs koji opisuje turu, onako kako je definisan u početnom projektu (datoteka `modules/exploration/api/exploration-api-types.ts`):
+Sledi interfejs koji opisuje turu:
 
 ```ts
 export interface TransportTimeDto {

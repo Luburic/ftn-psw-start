@@ -6,13 +6,13 @@ Prvo imamo prevođenje servera. Ono prolazi, jer je tim preimenovao svojstvo i n
 
 Potom imamo prevođenje klijenta. I ono prolazi, jer klijentski interfejs `TourDto` i dalje ima svojstvo `description`, a nijedan alat ga ne poredi sa serverom. Zapis `httpResource<TourDto>(...)` je obećanje dato prevodiocu, ne provera koja se izvršava.
 
-Najzad, korisnik otvori stranicu ture. Odgovor nema ključ `description`, pa je `tour.description` vrednost `undefined`, a šablon `undefined` iscrtava kao prazan tekst. Nema poruke o grešci ni traga u konzoli, samo polje koje je juče imalo tekst. Greška je iste vrste kao kada se na serveru preimenuje svojstvo, a profil mapera ostane nedopunjen, i jedna i druga prođu prevođenje i sačekaju prvog korisnika, s tim što maper bar baci izuzetak, dok klijent ćuti.
+Najzad, korisnik otvori stranicu ture. Odgovor nema ključ `description`, pa je `tour.description` vrednost `undefined`, a šablon `undefined` iscrtava kao prazan tekst. Nema poruke o grešci ni traga u konzoli, samo polje koje je juče imalo tekst. Greška je iste vrste kao kada se na serveru preimenuje svojstvo, a profil mapera ostane nedopunjen. I jedna i druga prođu prevođenje i sačekaju prvog korisnika, s tim što maper bar baci izuzetak, dok klijent ćuti.
 
 DTO struktura servera je ugovor između dve strane, a klijentski tip sme da bude samo njena slika. Ovde upoznajemo preslikani tip, pravila po kojima se tipovi servera prevode u tipove klijenta i pravilo o tome kada se takav tip menja.
 
 ## Preslikani tip
 
-**Preslikani tip** je tip koji ima ista svojstva kao DTO struktura servera, sa tipovima prevedenim po utvrđenim pravilima. Preslikani tipovi jednog modula stoje u jednoj datoteci, u direktorijumu `api` tog modula. Strukture koje server vraća svim modulima, poput `PageResult` za spisak sa stranama, stoje van modula, u direktorijumu `shared/api` koji dele svi moduli. Svaki modul uvozi tipove iz sopstvenog direktorijuma `api`, pa granica između modula važi i za tipove.
+**Preslikani tip** je tip koji ima ista svojstva kao DTO struktura servera, sa tipovima prevedenim po utvrđenim pravilima. Preslikani tipovi jednog modula stoje u jednoj datoteci, u direktorijumu `api` tog modula. Svaki modul uvozi tipove iz sopstvenog direktorijuma `api`, pa granica između modula važi i za tipove.
 
 Sledeći kod prikazuje DTO strukturu `TourDto` sa servera i njen preslikani tip iz datoteke `exploration-api-types.ts`:
 
@@ -80,7 +80,7 @@ Time preimenovanje sa početka lekcije menja tok. Preslikani tip gubi svojstvo `
 
 ## Tip koji postoji samo na klijentu
 
-Postoje tipovi koje server ne poznaje. Izlaz `editComment` iz prethodne lekcije nosi identifikator komentara i nov tekst, pa mu treba tip sa dva svojstva. Takav tip nije DTO struktura, jer ne prelazi granicu sa serverom, i ne ulazi u direktorijum `api`. Izvozi se iz datoteke komponente koja ga prijavljuje:
+Postoje tipovi koje server ne poznaje. Izlaz `editComment` iz lekcije o stranicama i prikaznim komponentama nosi identifikator komentara i nov tekst, pa mu treba tip sa dva svojstva. Takav tip nije DTO struktura, jer ne prelazi granicu sa serverom, i ne ulazi u direktorijum `api`. Izvozi se iz datoteke komponente koja ga prijavljuje:
 
 ```ts
 export interface CommentEdit {
@@ -92,4 +92,3 @@ export interface CommentEdit {
 U datom kodu treba uočiti sledeće:
 
 - Tip živi u datoteci `blog-comments.ts`, pored izlaza koji ga koristi. Stranica uvozi tip iz iste datoteke iz koje uvozi komponentu.
-- U feature modulu tip koji postoji samo na klijentu stoji u komponenti čiji ga ulaz ili izlaz koristi, a tip koji dolazi sa servera stoji u direktorijumu `api`.

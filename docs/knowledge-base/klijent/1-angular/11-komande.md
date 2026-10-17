@@ -1,33 +1,40 @@
-Resurs iz prethodne lekcije čita podatke sa servera i ništa na njemu ne menja. Stranica sa turama korisnika ima i dugme za objavljivanje, a stranica za pravljenje ture šalje novu turu. Podela komandi i upita iz aplikacionog sloja servera važi i na klijentu. Resurs je klijentska strana upita. Ovde upoznajemo kako klijent šalje komandu, kako čeka odgovor i kako prikazuje grešku koju server prijavi.
+Resurs iz prethodne lekcije čita podatke sa servera i ništa na njemu ne menja. Stranica sa turama korisnika ima i dugme za objavljivanje, a stranica za pravljenje ture šalje novu turu. Podela komandi i upita iz aplikacionog sloja servera važi i na klijentu. Resurs je klijentska strana *upita*. Ovde upoznajemo kako klijent šalje *komandu*, kako čeka odgovor i kako prikazuje grešku koju server prijavi.
 
 ## Slanje zahteva
 
-Komandu šalje klasa `HttpClient`, koja se servisu ubrizgava isto kao komponenti. Sledeći kod prikazuje poziv koji objavljuje blog:
+Angular aplikacija formira HTTP zahteve za proizvoljne metode (npr. POST, PUT i DELETE) uz pomoć ugrađenog `HttpClient` servisa. Sledeći kod prikazuje isečak komponente koja koristi `HttpClient` servis i pravi HTTP POST zahtev uz pomoću njega:
 
 ```ts
-await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/publish`, {}));
+export class TourAuthoringComponent {
+  private readonly http = inject(HttpClient);
+
+  async publish(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`/api/tours/${id}/publish`, {}));
+  }
+}
 ```
 
 U datom kodu treba uočiti sledeće:
-- Metoda `post` prima adresu i telo zahteva, koje pretvara u JSON. Objavljivanje nema telo, pa šalje prazan objekat. Za ostale HTTP metode `HttpClient` ima istoimene metode, npr. `put` i `delete`.
+- Segment `http = inject(HttpClient)` injektuje `HttpClient` servis u komponentu.
+- Metoda `this.http.post` prima adresu i telo zahteva, koje pretvara u JSON. Objavljivanje ture nema telo, pa šalje prazan objekat. Za ostale HTTP metode `HttpClient` ima istoimene metode, npr. `put` i `delete`.
 - Parametar generičkog tipa, `post<void>`, je tip koji prevodilac dodeljuje telu odgovora. Objavljivanje ne vraća telo, pa je tip `void`.
-- Metoda `post` ne vraća obećanje, već `Observable`. **Observable** je vrednost koja stiže kasnije i može da stigne više puta. Odgovor na HTTP zahtev stiže tačno jednom, pa nam višestruko stizanje ne treba.
-- Funkcija `firstValueFrom`, iz biblioteke `rxjs` koju Angular koristi, prima `Observable` i vraća obećanje prve vrednosti koja stigne. U projektu je svaki poziv `HttpClient`-a obuhvaćen ovim pozivom, pa se čeka sa `await` kao svaki asinhroni poziv.
+- Metoda `post` vraća `Observable`. **Observable** je vrednost koja stiže kasnije i može da stigne više puta.
+- Odgovor na HTTP zahtev stiže tačno jednom, pa nam višestruko stizanje ne treba. Funkcija `firstValueFrom`, iz biblioteke `rxjs` koju Angular koristi, prima `Observable` i vraća obećanje prve vrednosti koja stigne. Poziv `HttpClient`-a zato obuhvatamo ovim pozivom, pa se čeka sa `await` kao svaki asinhroni poziv.
 - Za razliku od `fetch`, `HttpClient` odgovor sa statusnim kodom greške pretvara u izuzetak. Tada `await` baca izuzetak, a objekat izuzetka nosi telo odgovora.
 
 ## Servis sa komandama
 
-Komande ne stoje u stranici, već u servisu koji pripada stranicama za pisanje blogova, pa ih svaka od tih stranica poziva na isti način. Sledeći kod prikazuje, iz projekta, ceo taj servis:
+Komande koje izdajemo serveru uglavnom ne stoje u komponentama, već u servisu koji grupiše povezane komande (često odgovaraju kontrolerima servera). Komponenta zatim ubrizgava naš servis i preko njega šalje HTTP zahteve. Sledeći kod prikazuje primer takvog servisa:
 
 ```ts
-const BASE_URL = '/api/social/blogs';
+const BASE_URL = '/api/tours';
 
 @Injectable({ providedIn: 'root' })
-export class BlogAuthoring {
+export class TourAuthoring {
   private readonly http = inject(HttpClient);
 
-  async create(dto: CreateBlogDto): Promise<BlogDto> {
-    return firstValueFrom(this.http.post<BlogDto>(BASE_URL, dto));
+  async create(dto: CreateTourDto): Promise<TourDto> {
+    return firstValueFrom(this.http.post<TourDto>(BASE_URL, dto));
   }
 
   async publish(id: string): Promise<void> {
@@ -38,83 +45,32 @@ export class BlogAuthoring {
 
 U datom kodu treba uočiti sledeće:
 - Konstanta `BASE_URL` drži zajednički početak adrese, a svaka metoda na njega nadovezuje svoj deo. Ovo je klijentski pandan atributu `[Route]` na kontroleru.
-- Svaka metoda je jedna komanda i sastoji se od jednog poziva. Metoda `create` šalje DTO strukturu `CreateBlogDto`, koja nosi podatke novog bloga, i vraća `BlogDto` iz odgovora.
-- Razlika između `create` i `publish` je u tome da li metoda ima šta da vrati. Metoda `create` ima, pa obećanje prosleđuje naredbom `return`, bez `await`, jer asinhrona metoda sme da vrati obećanje, a pozivalac ga čeka isto. Metoda `publish` nema šta da vrati, ali i dalje mora da sačeka odgovor, pa stoji `await`. Pravilo je da se obećanje mora ili vratiti ili sačekati. Kada se izostavi i jedno i drugo, metoda se završava pre nego što odgovor stigne, a greška servera ostaje neuhvaćena.
+- Svaka metoda je jedna komanda i sastoji se od jednog poziva. Metoda `create` šalje DTO strukturu `CreateTourDto`, koja nosi podatke nove ture, i vraća `TourDto` iz odgovora.
+- Razlika između `create` i `publish` je u tome da li metoda ima šta da vrati. Metoda `create` ima, pa obećanje prosleđuje naredbom `return`, bez `await`. Ta metoda vraća obećanje, pa ga pozivalac može sačekati. Metoda `publish` nema šta da vrati, ali i dalje mora da sačeka odgovor, pa stoji `await`. Pravilo je da se obećanje mora ili vratiti ili sačekati.
 - Servis nema signal i ne zna ni za jedan resurs. Šalje zahtev i vraća odgovor, a obradu odgovora prepušta stranici.
-
-## Greška servera
-
-Na serveru middleware za obradu grešaka pretvara izuzetak u odgovor sa statusnim kodom greške i telom koje u polju `title` nosi poruku izuzetka. Poruka je namenjena korisniku, na primer da tura bez ijednog vremena obilaska ne može da se objavi. Stranica zato prikazuje poruku koju je server poslao, a unapred upisanu poruku samo kada telo nema `title`, na primer kada zahtev nije stigao do servera. Sledeći kod prikazuje potpis pomoćne funkcije iz projekta koja to radi:
-
-```ts
-export function serverMessage(error: unknown, fallback: string): string
-```
-
-U datom kodu treba uočiti sledeće:
-- Prvi parametar je tipa `unknown`, što znači bilo koja vrednost, jer blok `catch` ne zna tip onoga što je uhvatio. Funkcija proverava da li je uhvaćeni izuzetak odgovor servera i vraća `title` iz njegovog tela.
-- Drugi parametar je poruka koju funkcija vraća u svakom drugom slučaju.
-- Funkcija je zajednička za sve module. Njeno telo ovde izostavljamo.
 
 ## Stranica sa komandom
 
-Stranica mora da zna da komanda traje, da prikaže grešku ako komanda ne uspe i da nakon uspeha ponovo učita svoj resurs, jer se podaci na serveru razlikuju od prikazanih. Sledeći kod prikazuje, iz projekta, deo stranice sa blogovima korisnika koji objavljuje blog:
-
-```ts
-export class MyBlogs {
-  private readonly blogAuthoring = inject(BlogAuthoring);
-
-  protected readonly blogs = httpResource<BlogDto[]>(() => '/api/social/blogs/mine');
-  protected readonly pending = signal(false);
-  protected readonly error = signal<string | null>(null);
-
-  protected async publish(blogId: string): Promise<void> {
-    this.pending.set(true);
-    this.error.set(null);
-    try {
-      await this.blogAuthoring.publish(blogId);
-      this.blogs.reload();
-    } catch (failure) {
-      this.error.set(serverMessage(failure, 'Could not publish the blog.'));
-    } finally {
-      this.pending.set(false);
-    }
-  }
-}
-```
+Stranica mora da zna da komanda traje, da prikaže grešku ako komanda ne uspe i da nakon uspeha ponovo učita svoj resurs, jer se podaci na serveru razlikuju od prikazanih. Sledeći kod prikazuje deo stranice sa turama korisnika koji objavljuje turu:
 
 ```html
 @if (error()) {
   <p class="error">{{ error() }}</p>
 }
 
-@for (blog of blogs.value() ?? []; track blog.id) {
-  @if (blog.status === 'Draft') {
-    <button type="button" [disabled]="pending()" (click)="publish(blog.id)">Publish</button>
+@for (tour of tours.value() ?? []; track tour.id) {
+  <h3>{{ tour.name }}</h3>
+  @if (tour.status === 'Draft') {
+    <button type="button" [disabled]="pending()" (click)="publish(tour.id)">Objavi</button>
   }
 }
 ```
 
-U datom kodu treba uočiti sledeće:
-- Signal `pending` je tačan dok komanda traje. Sva dugmad su vezana za njega, pa korisnik ne može da pošalje drugu komandu dok prva traje. Blok `finally` ga vraća na netačno i kada komanda uspe i kada ne uspe.
-- Signal `error` drži poruku o grešci komande ili `null`, a `blogs.error()` grešku čitanja. Na početku svake komande se briše, da poruka od prethodnog pokušaja ne ostane na ekranu.
-- Poziv `reload` stoji iza `await`, pa se izvršava tek kada server potvrdi komandu. Ispred njega nema `await`, jer `reload` nije asinhron: on samo kaže resursu da ponovo dovuče podatke i odmah se vraća, a dok odgovor putuje, šablon prikazuje stanje učitavanja. Stranica ne menja niz sama, već ponovo čita spisak sa servera.
-- Kada zahtev ne uspe, izuzetak hvata blok `catch`, koji poruku servera upisuje u signal `error`.
-
-## Objavljivanje ture
-
-Povežimo pojmove u stranicu sa turama korisnika iz projekta, sada sa komandom za objavljivanje. Servis `TourAuthoring` ima isti oblik kao `BlogAuthoring`, sa adresom `/api/exploration/tours`, a projektni `TourDto` ima i svojstvo `status`:
-
 ```ts
-@Component({
-  imports: [RouterLink],
-  selector: 'app-my-tours',
-  styleUrl: './my-tours.scss',
-  templateUrl: './my-tours.html',
-})
 export class MyTours {
   private readonly tourAuthoring = inject(TourAuthoring);
 
-  protected readonly tours = httpResource<TourDto[]>(() => '/api/exploration/tours/mine');
+  protected readonly tours = httpResource<TourDto[]>(() => '/api/tours/mine');
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
 
@@ -125,7 +81,7 @@ export class MyTours {
       await this.tourAuthoring.publish(tourId);
       this.tours.reload();
     } catch (failure) {
-      this.error.set(serverMessage(failure, 'Could not publish the tour.'));
+      this.error.set(failure);
     } finally {
       this.pending.set(false);
     }
@@ -133,45 +89,17 @@ export class MyTours {
 }
 ```
 
-```html
-@if (error()) {
-  <p class="error">{{ error() }}</p>
-}
-
-@if (tours.isLoading()) {
-  <p>Loading your tours...</p>
-} @else if (tours.error()) {
-  <p class="error">Could not load your tours. Log in and try again.</p>
-} @else {
-  <table>
-    <tbody>
-      @for (tour of tours.value() ?? []; track tour.id) {
-        <tr>
-          <td>{{ tour.name }}</td>
-          <td>{{ tour.status }}</td>
-          <td>
-            @if (tour.status === 'Draft') {
-              <button type="button" [disabled]="pending()" (click)="publish(tour.id)">Publish</button>
-            }
-          </td>
-        </tr>
-      } @empty {
-        <tr>
-          <td colspan="3">You have no tours yet.</td>
-        </tr>
-      }
-    </tbody>
-  </table>
-}
-```
-
-> **Napomena o projektu:** Prava stranica `MyTours` ima i formu za dodavanje vremena obilaska — signal `selectedTourId`, formu sa signalima i metodu `addTransportTime`, drugu komandu istog oblika — pa u dekoratoru uvozi i `FormField`, a tabela ima pet kolona. Taj deo ovde izostavljamo, jer forme obrađujemo u narednim lekcijama. Obrazac komande je isti: `pending`, `try`/`catch`/`finally`, `reload` iza `await`.
+U datom kodu treba uočiti sledeće:
+- Signal `pending` je tačan dok komanda traje. Sva dugmad su vezana za njega, pa korisnik ne može da pošalje drugu komandu dok prva traje. Blok `finally` ga vraća na netačno i kada komanda uspe i kada ne uspe.
+- Signal `error` drži poruku o grešci komande ili `null`, a `tours.error()` grešku čitanja. Na početku svake komande se briše, da poruka od prethodnog pokušaja ne ostane na ekranu.
+- Poziv `reload` ponovo šalje zahtev resursa na trenutnu adresu. Stoji iza `await`, pa se izvršava tek kada server potvrdi komandu. Ispred njega nema `await`, jer `reload` nije asinhron i odmah se vraća. Stranica ne menja niz sama, već ponovo čita spisak sa servera.
+- Kada zahtev ne uspe, izuzetak hvata blok `catch`, koji poruku servera upisuje u signal `error`.
 
 Kada korisnik klikne na dugme za objavljivanje ture koja nema nijedno vreme obilaska, dešava se sledeće:
 1. Vezivanje događaja poziva `publish` sa identifikatorom ture. Signal `pending` postaje tačan i dugmad se onemogućavaju.
-2. Servis šalje zahtev na adresu `/api/exploration/tours/<id>/publish`, a `await` čeka odgovor.
+2. Servis šalje zahtev na adresu `/api/tours/<id>/publish`, a `await` čeka odgovor.
 3. Na serveru domenski sloj baca izuzetak, koji middleware pretvara u odgovor sa statusnim kodom 400 i porukom u polju `title`.
 4. Poziv `await` baca izuzetak, pa se `reload` preskače. Blok `catch` iz izuzetka čita poruku servera i upisuje je u signal `error`. Blok `finally` vraća `pending` na netačno.
-5. Šablon je čitalac oba signala, pa radni okvir ponovo proverava šablon stranice. Iznad tabele se prikazuje poruka servera, a dugmad su ponovo dostupna.
+5. Šablon je čitalac oba signala, pa radni okvir ponovo proverava šablon stranice. Iznad spiska se prikazuje poruka servera, a dugmad su ponovo dostupna.
 
-Kada tura ima vreme obilaska, server vraća odgovor bez greške. Tada se u četvrtom koraku izvršava `reload`, pa se umesto tabele prikazuje poruka o učitavanju, a kada odgovor stigne, tabela sa turom čiji je status `Published`, bez dugmeta.
+Kada tura ima vreme obilaska, server vraća odgovor bez greške. Tada se u četvrtom koraku izvršava `reload`, a kada odgovor stigne, tura ima status `Published` i prikazuje se bez dugmeta.

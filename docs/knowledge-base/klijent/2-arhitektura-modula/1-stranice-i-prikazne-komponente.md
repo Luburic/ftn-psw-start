@@ -22,11 +22,11 @@ U datom kodu treba uočiti sledeće:
 - Klasa se menja iz tri nepovezana razloga: kada server promeni adresu bloga, kada komentar treba da izgleda drugačije i kada se promeni pravilo za validnost komentara. Poslednja dva razloga nemaju nikakve veze sa blogom, a ipak teraju izmenu datoteke koja prvenstveno opisuje blog.
 - Spisak komentara ne može da se prikaže ni na jednom drugom ekranu. Izgled komentara, zajedno sa dugmadima i formom, zapisan je u šablonu ove klase, između naslova i opisa bloga.
 
-Oba problema imaju isti uzrok: kroj jednu klasu je implementiran ceo prikaz na ekranu. Nije sporno što komponenta i dovlači podatke i prikazuje ih. Sporno je što je u istoj klasi spisak komentara sa dugmadima i formom koji bi mogao sam za sebe da stoji na bilo kom ekranu. Isti problem na serveru ima kontroler koji sam učitava podatke, proverava pravila i upisuje izmene, i tamo se rešava slojevima. Na klijentu je odgovor jednostavniji, jer nema domenskih pravila koja treba izolovati: iz stranice izdvajamo delove koji samo prikazuju, a razgovor sa serverom ostaje u samoj stranici. Ovde upoznajemo dve vrste komponenti, raspored direktorijuma modula u grupe slučajeva korišćenja i postupak kojim novoj komponenti biramo mesto.
+Oba problema imaju isti uzrok. Kroz jednu klasu je implementiran ceo prikaz na ekranu. Nije sporno što komponenta i dovlači podatke i prikazuje ih. Sporno je što je u istoj klasi spisak komentara sa dugmadima i formom koji bi mogao sam za sebe da stoji na bilo kom ekranu. Isti problem na serveru ima kontroler koji sam učitava podatke, proverava pravila i upisuje izmene, i tamo se rešava slojevima. Na klijentu je odgovor jednostavniji, jer nema domenskih pravila koja treba izolovati. Iz stranice izdvajamo delove koji samo prikazuju, a razgovor sa serverom ostaje u samoj stranici. Ovde upoznajemo dve vrste komponenti, raspored direktorijuma modula u grupe slučajeva korišćenja i postupak kojim novoj komponenti biramo mesto.
 
 ## Stranica i prikazna komponenta
 
-**Stranica** (engl. *page*) je komponenta koja postoji u tabeli rutranja i kojoj se ubrizgavaju servisi. **Prikazna komponenta** (engl. *presentational component*) je komponenta koja podatke prima kroz ulaze, akcije korisnika prijavljuje kroz izlaze i kojoj se ne ubrizgava ništa. Stranica zna odakle podaci dolaze i kome se komanda šalje. Prikazna komponenta ne zna ni jedno ni drugo, pa se može koristiti na svakom mestu koje joj popuni ulaze.
+**Stranica** (engl. *page*) je komponenta koju imenuje tabela ruta i kojoj se ubrizgavaju servisi. **Prikazna komponenta** (engl. *presentational component*) je komponenta koja podatke prima kroz ulaze, akcije korisnika prijavljuje kroz izlaze i kojoj se ne ubrizgava ništa. Stranica zna odakle podaci dolaze i kome se komanda šalje. Prikazna komponenta ne zna ni jedno ni drugo, pa se može koristiti na svakom mestu koje joj popuni ulaze.
 
 Podela ne zabranjuje prikaznoj komponenti da ima stanje. Forma za nov komentar, izabrani red tabele ili otvoren panel su stanje prikaza, koje ne nadživljava komponentu i ne zanima nikoga van nje. Prikazna komponenta takvo stanje drži u signalu, kao i svaka druga. Granica je da joj se ne ubrizgava servis i da ne kontaktira servera.
 
@@ -38,12 +38,12 @@ Podela nije vidljiva u nazivu datoteke ni u nazivu direktorijuma. Vidi se u kodu
 | Odakle joj podaci | Sama ih dovlači sa servera, kroz resurs | Roditelj joj ih predaje kroz ulaze |
 | Gde završava klik korisnika | U metodi klase, koja šalje komandu servisu | U izlazu, a šta se dalje dešava odlučuje roditelj |
 | Šta joj se ubrizgava | Servisi koje koristi | Ništa |
-| Šta drži u signalima | Resurs, `pending` i `error` komande, filter spiska | Samo stanje prikaza, u projektu formu za nov komentar |
-| Primer iz projekta | `BlogDetail` | `BlogComments` |
+| Šta drži u signalima | Resurs, `pending` i `error` komande, filter spiska | Samo stanje prikaza, npr. formu za nov komentar |
+| Primer | `BlogDetail` | `BlogComments` |
 
 ## Grupa slučajeva korišćenja
 
-Aplikacioni sloj servera svoje klase deli po grupama slučajeva korišćenja. Klijent tu podelu preuzima kao raspored direktorijuma. **Grupa slučajeva korišćenja** na klijentu je skup stranica koje služe jednom cilju korisnika i nosi ime istoimene grupe aplikacionog sloja servera. Modul je ravna lista grupa. Grupa je ravna lista direktorijuma komponenti i najviše jedna datoteka servisa. Sledeće stablo prikazuje modul Social iz projekta:
+Aplikacioni sloj servera svoje klase deli po grupama slučajeva korišćenja. Klijent tu podelu preuzima kao raspored direktorijuma. **Grupa slučajeva korišćenja** na klijentu je skup stranica koje služe jednom cilju korisnika i nosi ime istoimene grupe aplikacionog sloja servera. Modul je ravna lista grupa. Grupa je ravna lista direktorijuma komponenti i najviše jedna datoteka servisa. Sledeće stablo prikazuje modul Social:
 
 ```
 modules/social/
@@ -66,8 +66,8 @@ U datom stablu treba uočiti sledeće:
 - Grupa `blog-authoring` sadrži dve stranice i servis. Grupa `blog-reading` sadrži dve stranice, dve prikazne komponente i servis. Koja je komponenta stranica saznaje se iz tabele ruta `social.routes.ts`, koja imenuje `BlogList`, `MyBlogs`, `CreateBlog` i `BlogDetail`.
 - Server modula Social ima tri grupe, a klijent dve. Komande za komentare na serveru pripadaju grupi `BlogCommenting`, a na klijentu ih nosi servis grupe `blog-reading`, jer ih šalje stranica `BlogDetail`. Klijent grupiše ekrane, a ne operacije, pa obično ima manje grupa od servera.
 - Svaka komponenta ima sopstveni direktorijum sa tri datoteke: klasom, šablonom i stilovima. Prikazna komponenta stoji pored stranica koje je koriste, a ne u zasebnom direktorijumu.
-- Ne postoje direktorijumi `pages`, `components` ni `services`. Zvanični vodič za stil Angular-a propisuje da se kod grupiše po funkcionalnosti, a ne po vrsti datoteke.
-- Direktorijum `api` ne pripada nijednoj grupi. U ovoj lekciji ga ne razmatramo.
+- Ne postoje direktorijumi `pages`, `components` ni `services`. Kod se grupiše po cilju korisnika, a ne po vrsti datoteke.
+- Direktorijum `api` ne pripada nijednoj grupi.
 
 ## Mesto nove komponente
 
@@ -83,10 +83,10 @@ Sledeći kod prikazuje stranicu `BlogDetail`, gde su tela metoda `edit` i `remov
 
 ```ts
 @Component({
-  imports: [BlogComments, RouterLink],
   selector: 'app-blog-detail',
-  styleUrl: './blog-detail.scss',
+  imports: [BlogComments, RouterLink],
   templateUrl: './blog-detail.html',
+  styleUrl: './blog-detail.scss',
 })
 export class BlogDetail {
   private readonly blogReading = inject(BlogReading);
@@ -104,7 +104,7 @@ export class BlogDetail {
       await this.blogReading.addComment(this.id(), { text });
       this.detail.reload();
     } catch (failure) {
-      this.error.set(serverMessage(failure, 'Could not add the comment.'));
+      this.error.set(serverMessage(failure, 'Komentar nije moguće dodati.'));
     }
   }
 
@@ -140,10 +140,10 @@ export interface CommentEdit {
 }
 
 @Component({
-  imports: [FormField],
   selector: 'app-blog-comments',
-  styleUrl: './blog-comments.scss',
+  imports: [FormField],
   templateUrl: './blog-comments.html',
+  styleUrl: './blog-comments.scss',
 })
 export class BlogComments {
   readonly comments = input.required<CommentDto[]>();
@@ -154,7 +154,7 @@ export class BlogComments {
   readonly deleteComment = output<string>();
 
   protected readonly form = form(signal({ text: '' }), (path) => {
-    required(path.text, { message: 'A comment cannot be empty.' });
+    required(path.text, { message: 'Komentar ne sme da bude prazan.' });
   });
 
   protected submitComment(event: Event): void {

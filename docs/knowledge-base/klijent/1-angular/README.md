@@ -4,16 +4,16 @@ Klijentska aplikacija rešava tehničke probleme koji ne zavise od domena, isto 
 
 ## Mapa direktorijuma
 
-1. [TypeScript](1-typescript.md) - Najmanji deo jezika TypeScript potreban za čitanje projekta: anotacije tipova, interfejs, generički tip, nepostojeća vrednost i klasni modifikatori. Preduslov je za sve naredne lekcije.
-2. [Angular](2-angular.md) - Najmanja aplikacija dovoljna za rad, pročitana datoteku po datoteku: pokretanje, konfiguracija aplikacije i korenska komponenta.
-3. [Komponenta](3-komponenta.md) - Klasa, šablon i stil kao jedna celina. Ispis vrednosti u šablonu, vezivanje svojstava i događaja i reakcija na klik. Lekcija se završava primerom u kom se prikaz ne osvežava.
-4. [Signali](4-signali.md) - Zašto prikaz ne prati promenu običnog polja klase, signal kao stanje komponente i poređenje sa mehanizmom React-a koji čitalac poznaje.
+1. [TypeScript](1-typescript.md) - Najmanji deo jezika TypeScript potreban za čitanje projekta: anotacije tipova, nepostojeća vrednost, interfejs, generički tip i klasni modifikatori. Preduslov je za sve naredne lekcije.
+2. [Angular](2-angular.md) - Najmanja aplikacija pročitana datoteku po datoteku: priprema okruženja, struktura radnog prostora, pokretanje i korenska komponenta.
+3. [Komponenta](3-komponenta.md) - Klasa, šablon i stil kao jedna celina, umesto ručne izmene DOM stabla. Interpolacija, vezivanje svojstava i događaja i upotreba komponente u šablonu druge komponente. Lekcija se završava primerom u kom se prikaz ne osvežava.
+4. [Signali](4-signali.md) - Zašto prikaz ne prati promenu običnog polja klase, detekcija promena i signal kao stanje komponente.
 5. [Izvedeni signali](5-izvedeni-signali.md) - Signal čija se vrednost računa iz drugih signala i pravilo o signalu koji čuva niz ili objekat.
 6. [Kontrola toka](6-kontrola-toka.md) - Grananje i petlja u šablonu i alias za vrednost koja može da nedostaje.
 7. [Sastavljanje komponenti](7-sastavljanje-komponenti.md) - Ugnježdavanje komponenti, ulazi i izlazi, podaci putuju naniže, a događaji naviše.
-8. [Rutiranje](8-rutiranje.md) - Tabela ruta, mesto iscrtavanja, veze za navigaciju, parametar rute kao ulaz komponente i tabela ruta modula.
-9. [Servisi i zavisnosti](9-servisi-i-zavisnosti.md) - Servis kao klasa koju kontejner zavisnosti pravi jednom, preuzimanje zavisnosti u komponenti i servisu i servis koji drži prijavljenog korisnika.
-10. [Čitanje podataka](10-citanje-podataka.md) - Resurs koji čita podatke sa servera: priprema za razmenu sa serverom, adresa kao funkcija signala, vrednost pre učitavanja, stanje učitavanja i greške, ponovno učitavanje.
+8. [Rutiranje](8-rutiranje.md) - Tabela ruta, element `router-outlet`, veze za navigaciju, parametar rute kao ulaz komponente i redosled ruta u tabeli.
+9. [Servisi i zavisnosti](9-servisi-i-zavisnosti.md) - Servis kao klasa koju kontejner zavisnosti pravi jednom, ubrizgavanje zavisnosti u komponentu i servis koji drži prijavljenog korisnika.
+10. [Čitanje podataka](10-citanje-podataka.md) - Resurs koji čita podatke sa servera, adresa kao funkcija signala, vrednost pre učitavanja i stanje učitavanja i greške.
 11. [Komande](11-komande.md) - Slanje komande kroz servis, čekanje odgovora, greška koju server prijavi i obrazac stranice sa komandom koja nakon uspeha ponovo učitava svoj resurs.
 12. [Forme](12-forme.md) - Forma izgrađena oko signala, šema sa pravilima validacije, tri oblika zapisa forme, vezivanje elementa za polje i prikaz grešaka.
 13. [Slanje forme](13-slanje-forme.md) - Slanje forme kao komanda, navigacija nakon uspeha iz klase i vraćanje forme koja ostaje na ekranu u početno stanje.

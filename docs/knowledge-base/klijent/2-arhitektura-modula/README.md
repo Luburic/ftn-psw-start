@@ -6,7 +6,7 @@ Klijentska arhitektura je namerno tanja od serverske. Na klijentu nema domenskih
 
 ## Mapa direktorijuma
 
-1. [Stranice i prikazne komponente](1-stranice-i-prikazne-komponente.md) - Stranica preuzima zavisnosti i vodi interakciju, prikazna komponenta prima ulaze i prijavljuje izlaze. Grupa slučajeva korišćenja kao direktorijum modula i postupak kojim se novoj komponenti bira mesto.
+1. [Stranice i prikazne komponente](1-stranice-i-prikazne-komponente.md) - Stranici se ubrizgavaju servisi, a ona vodi interakciju, prikazna komponenta prima ulaze i prijavljuje izlaze. Grupa slučajeva korišćenja kao direktorijum modula i postupak kojim se novoj komponenti bira mesto.
 2. [Upiti i komande](2-upiti-i-komande.md) - Zašto resurs živi u stranici, a komande u servisu grupe, i šta time dobijamo kada stranica nakon komande osvežava svoj resurs. Pravilo o tome gde stanje živi.
 3. [Preslikani tipovi](3-preslikani-tipovi.md) - DTO struktura aplikacionog sloja servera kao ugovor između dve strane, datoteka sa tipovima po modulu koja preslikava serverske DTO strukture, pravila preslikavanja serverskih tipova u TypeScript i pravilo da se datoteka menja samo kada se promeni server.
 

@@ -14,7 +14,7 @@ Isti problem je na serveru rešio kontrakt, javna površina modula namenjena dru
 
 ## Javna površina
 
-**Javna površina** (engl. *public API*) modula na klijentu je skup adresa njegovih stranica. Drugi modul do ekrana modula stiže adresom, a ne uvozom, pa nijedna datoteka modula ne sme da uveze datoteku drugog modula. Adrese modula određuje njegova tabela ruta. Sledeći kod prikazuje tabelu ruta modula Social iz projekta:
+**Javna površina** (engl. *public API*) modula na klijentu je skup adresa njegovih stranica. Drugi modul do ekrana modula stiže adresom, a ne uvozom, pa nijedna datoteka modula ne sme da uveze datoteku drugog modula. Adrese modula određuje njegova tabela ruta. Sledeći kod prikazuje tabelu ruta modula Social:
 
 ```ts
 export const socialRoutes: Routes = [
@@ -66,8 +66,6 @@ Kada stranici jednog modula treba nešto iz drugog modula, postoje dva načina:
 
 Trećeg načina nema. Modul ne uzima komponentu drugog modula. Delovi ekrana ostaju unutar modula koji ih je napravio, jer su napravljeni za njegove ekrane: `TourList` je stranica i ima svoju adresu, a `TourCard` čeka gotov `TourDto`, pa bi ga modul Payment morao sam da dovuče i time saznao tuđu adresu i tuđi tip. Kada modulu Payment treba naziv ture, ne uzima tuđu karticu, nego traži da mu naziv stigne u njegovom odgovoru.
 
-> **Napomena o projektu:** U početnom projektu nijedan modul ne koristi drugi. Veze ka svim modulima postoje samo u zaglavlju korenske komponente, koja ne pripada nijednom modulu.
-
 ## Sastavljanje podataka na serveru
 
 Stranica modula Payment prikazuje kupovine, a uz svaku treba i naziv ture. Kupovine dolaze sa adrese modula Payment, a nazivi tura pripadaju modulu Exploration. Prvo rešenje koje pada na pamet jeste da stranica dovuče oboje i spoji sama:
@@ -103,6 +101,6 @@ Korisnik je na početnoj stranici i otvara adresu `/social/42`. Dešava se slede
 2. Radni okvir u tabeli aplikacije nalazi stavku sa prefiksom `social` i poziva njenu funkciju `loadChildren`.
 3. Poziv `import` učitava kod modula Social ako već nije učitan, a funkcija prosleđena pozivu `then` izdvaja `socialRoutes`.
 4. Radni okvir ostatak adrese, `42`, poklapa u tabeli modula. Stavke `''`, `mine` i `create` ne odgovaraju, a `:id` odgovara, pa bira komponentu `BlogDetail` i parametar `id` dobija vrednost `'42'`.
-5. Na mestu iscrtavanja uništava početnu stranicu i pravi `BlogDetail`. Zahvaljujući podešavanju `withComponentInputBinding()` iz lekcije o rutiranju, parametar upisuje u ulaz `id` te komponente.
+5. Na mestu elementa `router-outlet` uništava početnu stranicu i pravi `BlogDetail`, a parametar upisuje u ulaz `id` te komponente, kao u lekciji o rutiranju.
 
 Nijedna datoteka van modula Social nije pomenula stranicu `BlogDetail`. Aplikacija zna samo da modul Social postoji na prefiksu `social` i u kojoj se datoteci nalazi njegova tabela ruta.

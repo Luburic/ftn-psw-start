@@ -62,18 +62,18 @@ Jedna linija po dokumentu: putanja, opis i preduslovi (dokumenti koje čitalac t
 
 ## Angular
 
-- `klijent/1-angular/README.md` — Šta radni okvir preuzima od klijentske aplikacije i koji deo Angular-a projekat koristi. Uvod u segment. Preduslovi: nema.
+- `klijent/1-angular/README.md` — Šta radni okvir preuzima od klijentske aplikacije. Uvod u segment. Preduslovi: nema.
 - `klijent/1-angular/1-typescript.md` — Najmanji deo TypeScript-a potreban za čitanje projekta: anotacije, nepostojeća vrednost, interfejs, generički tip, klasni modifikatori. Preduslovi: nema.
-- `klijent/1-angular/2-angular.md` — Najmanja Angular aplikacija pročitana datoteku po datoteku: pokretanje, konfiguracija, korenska komponenta. Preduslovi: `1-typescript.md`.
-- `klijent/1-angular/3-komponenta.md` — Komponenta kao klasa, šablon i stil; ispis, vezivanje svojstava i događaja; prikaz koji se ne osvežava. Preduslovi: `2-angular.md`.
-- `klijent/1-angular/4-signali.md` — Zašto prikaz ne prati obično polje, signal kao stanje, poređenje sa React-om. Preduslovi: `3-komponenta.md`.
+- `klijent/1-angular/2-angular.md` — Najmanja Angular aplikacija pročitana datoteku po datoteku: priprema okruženja, struktura radnog prostora, pokretanje, korenska komponenta. Preduslovi: `1-typescript.md`.
+- `klijent/1-angular/3-komponenta.md` — Komponenta umesto ručne izmene DOM stabla: klasa, šablon i stil; interpolacija, vezivanje svojstava i događaja; prikaz koji se ne osvežava. Preduslovi: `2-angular.md`.
+- `klijent/1-angular/4-signali.md` — Zašto prikaz ne prati obično polje, detekcija promena, signal kao stanje. Preduslovi: `3-komponenta.md`.
 - `klijent/1-angular/5-izvedeni-signali.md` — Signal izračunat iz drugih signala; nizovi i objekti u signalu. Preduslovi: `4-signali.md`.
 - `klijent/1-angular/6-kontrola-toka.md` — Grananje i petlja u šablonu, alias. Preduslovi: `5-izvedeni-signali.md`.
 - `klijent/1-angular/7-sastavljanje-komponenti.md` — Ugnježdavanje, ulazi i izlazi, podaci naniže i događaji naviše. Preduslovi: `6-kontrola-toka.md`.
-- `klijent/1-angular/8-rutiranje.md` — Tabela ruta, mesto iscrtavanja, veze, parametar rute kao ulaz, tabela ruta modula. Preduslovi: `7-sastavljanje-komponenti.md`.
-- `klijent/1-angular/9-servisi-i-zavisnosti.md` — Servis koji kontejner pravi jednom, preuzimanje zavisnosti, servis sa prijavljenim korisnikom. Preduslovi: `8-rutiranje.md`, `server/1-aspnet/3-registracija-zavisnosti.md`.
-- `klijent/1-angular/10-citanje-podataka.md` — Priprema za razmenu sa serverom, resurs, adresa kao funkcija signala, stanja resursa, ponovno učitavanje. Preduslovi: `9-servisi-i-zavisnosti.md`.
-- `klijent/1-angular/11-komande.md` — Slanje komande kroz servis, Observable i obećanje, greška servera, obrazac stranice sa komandom. Preduslovi: `10-citanje-podataka.md`, `server/1-aspnet/2-kontroleri.md`.
+- `klijent/1-angular/8-rutiranje.md` — Tabela ruta, element `router-outlet` i veze, parametar rute kao ulaz, redosled ruta. Preduslovi: `7-sastavljanje-komponenti.md`.
+- `klijent/1-angular/9-servisi-i-zavisnosti.md` — Servis koji kontejner pravi jednom, ubrizgavanje zavisnosti, servis sa prijavljenim korisnikom. Preduslovi: `8-rutiranje.md`, `server/1-aspnet/3-registracija-zavisnosti.md`.
+- `klijent/1-angular/10-citanje-podataka.md` — Resurs, adresa kao funkcija signala, stanja resursa. Preduslovi: `9-servisi-i-zavisnosti.md`.
+- `klijent/1-angular/11-komande.md` — Slanje komande kroz servis, Observable i obećanje, greška servera, obrazac stranice sa komandom i ponovno učitavanje resursa. Preduslovi: `10-citanje-podataka.md`, `server/1-aspnet/2-kontroleri.md`.
 - `klijent/1-angular/12-forme.md` — Forma i šema, tri oblika zapisa, vezivanje elementa za polje, prikaz grešaka. Preduslovi: `11-komande.md`.
 - `klijent/1-angular/13-slanje-forme.md` — Slanje forme kao komanda, navigacija iz klase, vraćanje forme u početno stanje. Preduslovi: `12-forme.md`.
 - `klijent/1-angular/14-stilovi.md` — Stilovi ograničeni na komponentu, globalna datoteka, tokeni, izbor mesta za nov stil. Preduslovi: `3-komponenta.md`.

@@ -1,8 +1,8 @@
-Na serveru je svaki sloj modula zaseban projekat, a kompajler odbija build kada projekat koristi tip iz projekta koji ne referencira. Modul tako ne može da posegne u unutrašnjost drugog modula, jer referenca ka njoj ne postoji. Na klijentu je cela aplikacija jedan projekat, pa naredba `import` sa bilo kojom putanjom prolazi prevođenje. Uvoz kartice ture iz unutrašnjosti modula Exploration, sa početka lekcije o javnoj površini, prevodilac prihvata bez primedbe. Granicu modula na klijentu zato ne može da čuva prevodilac, nego alat koji se pokreće pored njega. Slično kao što na serveru pravila koja kompajler ne vidi čuva arhitektonski test.
+Na serveru je svaki sloj modula zaseban projekat, a kompajler odbija build kada projekat koristi tip iz projekta koji ne referencira. Modul tako ne može da posegne u unutrašnjost drugog modula, jer referenca ka njoj ne postoji. Na klijentu je cela aplikacija jedan projekat, pa naredba `import` sa bilo kojom putanjom prolazi prevođenje. Uvoz kartice ture iz unutrašnjosti modula Exploration, sa početka lekcije o javnoj površini, prevodilac prihvata bez primedbe. Granicu modula na klijentu zato ne može da čuva prevodilac, nego alat koji se pokreće pored njega, slično kao što na serveru pravila koja kompajler ne vidi čuva arhitektonski test.
 
 ## Statička analiza
 
-**Statička analiza** (engl. *static analysis*) je provera izvornog koda bez njegovog izvršavanja. **Linter** (engl. *linter*) je alat za statičku analizu koji prijavljuje svako mesto u kodu koje krši neko od zadatih pravila. U projektu je to ESLint, a pravila stoje u datoteci `eslint.config.js` u korenu klijentske aplikacije. Sledeći kod prikazuje deo te datoteke koji čuva granicu modula Exploration:
+**Statička analiza** (engl. *static analysis*) je provera izvornog koda bez njegovog izvršavanja. **Linter** (engl. *linter*) je alat za statičku analizu koji prijavljuje svako mesto u kodu koje krši neko od zadatih pravila. Klijentska aplikacija koristi ESLint, a pravila stoje u datoteci `eslint.config.js` u korenu klijentske aplikacije. Sledeći kod prikazuje deo te datoteke koji čuva granicu modula Exploration:
 
 ```js
 {
@@ -37,7 +37,7 @@ Sledeći ispis prikazuje šta komanda `npm run lint` prijavljuje kada stranica m
 
 ```
 src/app/modules/payment/tour-purchasing/purchase-tour/purchase-tour.ts
-  2:1  error  '../../../exploration/tour-browsing/tour-card/tour-card' import is restricted from being used by a pattern. Modules never import from each other; link to their routes instead  no-restricted-imports
+  2:1  error  '../../../exploration/tour-browsing/tour-card/tour-card' import is restricted from being used by a pattern. Modules never import from each other; link to their routes instead.  no-restricted-imports
 
 ✖ 1 problem (1 error, 0 warnings)
 ```
@@ -50,6 +50,6 @@ U datom ispisu treba uočiti sledeće:
 
 ## Kada se pravilo proverava
 
-Pravilo se proverava na dva mesta. Lokalno ga proverava komanda `npm run lint`, koju pokrećemo pre nego što izmene pošaljemo na repozitorijum. Na serveru za kontinuiranu integraciju, pri svakom push-u na granu `main` i pri svakom pull request-u, pokreću se dva odvojena posla: posao `frontend`, koji redom izvršava `npm ci`, `npm run lint` i `npm run build`, i posao koji prevodi i testira serversku aplikaciju. Oba moraju da prođu, pa prekršaj pravila obara proveru za ceo tim, kao i arhitektonski test na serveru.
+Pravilo se proverava na dva mesta. Lokalno ga proverava komanda `npm run lint`, koju pokrećemo pre nego što izmene pošaljemo na repozitorijum. Na serveru za kontinuiranu integraciju, pri svakom push-u na grane `main` i `development` i pri svakom pull request-u, pokreću se odvojeni poslovi. Posao `frontend` redom izvršava `npm ci`, `npm run lint` i `npm run build`, a ostali poslovi prevode i proveravaju serversku aplikaciju. Svi moraju da prođu, pa prekršaj pravila obara proveru za ceo tim, kao i arhitektonski test na serveru.
 
 Kada build padne, u zapisu izvršavanja treba naći posao `frontend` i u njemu korak `Lint`. Njegov ispis je isti kao ispis komande `npm run lint` iz prethodnog odeljka i čita se na isti način. Sve provere koje se pokreću lokalno pre otvaranja pull request-a navodi protokol [Rad sa granama i pull request-ovima](../../../protocols/rad-sa-granama.md).

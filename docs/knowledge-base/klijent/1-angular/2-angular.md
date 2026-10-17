@@ -20,10 +20,10 @@ Da bi se Angular projekat pokrenuo na računaru, neophodno je instalirati tri al
 
 Komanda `ng new [naziv-projekta]` pravi nov Angular projekat. U korenu projekta dobijamo dve bitne datoteke:
 
-1. `package.json` sadrži spisak biblioteka koje projekat koristi. Kada u korenu projekta instaliramo novu biblioteku putem komande `npm install <ime biblioteke>`, automatski se ažurira spisak zaivnosti. Kada preuzimamo aplikaciju, potrebno je da izvršimo `npm install` kako bi se preuzeli svi paketi od kojih zavisimo i oni se smeštaju u direktorijum `node_modules`.
+1. `package.json` sadrži spisak biblioteka koje projekat koristi. Kada u korenu projekta instaliramo novu biblioteku putem komande `npm install <ime biblioteke>`, automatski se ažurira spisak zavisnosti. Kada preuzimamo aplikaciju, potrebno je da izvršimo `npm install` kako bi se preuzeli svi paketi od kojih zavisimo i oni se smeštaju u direktorijum `node_modules`.
 2. `angular.json` je konfiguracija Angular projekta koja usmerava kako Angular CLI radi i kako se različite komande, poput onih za izgradnju (`ng build`) i serviranje Angular aplikacije (`ng serve`), ponašaju.
 
-Datoteke u okviru direktorijuma `src` sadrži kod naše Angular aplikacije:
+Datoteke u okviru direktorijuma `src` sadrže kod naše Angular aplikacije:
 
 1. `index.html` je korenska HTML stranica aplikacije, jedina koju internet čitač učitava.
 2. `main.ts` je ulazna tačka od koje kreće izvršavanje aplikacije.
@@ -34,9 +34,7 @@ Datoteke u okviru direktorijuma `src` sadrži kod naše Angular aplikacije:
     - `app.html`, šablon korenske komponente.
     - `app.scss`, stilovi korenske komponente.
 
-Pored navedenih datoteka, naš početni projekat u `app/` sadrži i direktorijume `core/`, `modules/` i `shared/`, u kojima je smešten najveći deo koda, njima se bavimo u zasebnoj lekciji o strukturi aplikacije. Postoji i nekoliko stavki koje za sada zanemarujemo, npr. definicija ruta (u našem projektu u `core/app.routes.ts`, tj. koja se stranica prikazuje za koju adresu) i direktorijum `public/` (statičke datoteke, npr. ikonica sajta).
-
-> **Napomena:** Ukoliko budete sami pokretali komandu `ng new` dobićete `app.routes.ts` u korenu `app/`, kao i test-datoteke sa nastavkom `.spec.ts`. Naš početni projekat rute drži u `core/app.routes.ts`, a test-datoteke ne sadrži, jer se jedinično testiranje na klijentu ne obrađuje u ovom kursu.
+Postoji i nekoliko stavki koje za sada zanemarujemo, npr. direktorijum `public/` (statičke datoteke, npr. ikonica sajta).
 
 ## Pokretanje projekta
 
@@ -78,7 +76,6 @@ Komponentu čine tri datoteke istog naziva: `.ts` (klasa), `.html` (šablon) i `
 
 ```ts
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -103,5 +100,5 @@ Sledeći kod prikazuje njen šablon, iz datoteke `app.html`:
 U datom kodu treba uočiti sledeće:
 
 - Zapis `@Component({ ... })` je **dekorator** (engl. *decorator*), što je oznaka iznad klase kojom radni okvir prepoznaje ulogu klase, slično kao atribut `[ApiController]` na serveru. Objekat u zagradi nosi podešavanja komponente:
-   - `selector` određuje naziv HTML elementa pod kojim se komponenta koristi. U primeru je to `app-root`, što je HTML tag koji se navodi u `index.html` iznad.
+   - `selector` određuje naziv HTML elementa pod kojim se komponenta koristi. U primeru je to `app-root`, što je element koji se navodi u `index.html` iznad.
    - `templateUrl` i `styleUrl` vezuju klasu za šablon i za datoteku stilova.
