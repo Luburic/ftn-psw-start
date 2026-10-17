@@ -1,11 +1,11 @@
-Komponentu čine tri datoteke, a treću, sa stilovima, do sada smo samo kratko pomenuli. Ovde upoznajemo gde stilovi žive i kako se za nov stil bira mesto. Datoteke stilova imaju ekstenziju `.scss`. SCSS je proširenje CSS-a koje alat za prevođenje aplikacije pretvara u običan CSS.
+Komponentu čine tri datoteke, gde smo datoteku sa stilovima za sada samo pomenuli. Ovde ispitujemo gde se stilovi definišu, odnosno u koju datoteku treba da ih smestimo. Datoteke stilova imaju ekstenziju `.scss`. SCSS je proširenje CSS-a koje alat za prevođenje aplikacije pretvara u običan CSS.
 
 ## Stilovi komponente
 
 Stilovi iz datoteke na koju dekorator upućuje podešavanjem `styleUrl` važe samo za šablon te komponente. Sledeći kod prikazuje jedno pravilo iz datoteke stilova komponente koja prikazuje spisak komentara:
 
 ```scss
-.comments > li + li {
+.comments > li {
   border-top: 1px solid gray;
   padding-top: 12px;
 }
@@ -20,11 +20,11 @@ Stilovi iz datoteke na koju dekorator upućuje podešavanjem `styleUrl` važe sa
 
 U datom kodu treba uočiti sledeće:
 
-- Radni okvir selektor prepisuje u oblik `.comments[_ngcontent-x] > li[_ngcontent-x] + li[_ngcontent-x]`, gde je `_ngcontent-x` atribut koji imaju samo elementi ovog šablona. Druga komponenta sme da ima klasu `comments` sa drugim pravilima, bez sudara.
+- Radni okvir selektor prepisuje u oblik `.comments[_ngcontent-x] > li[_ngcontent-x]`, gde je `_ngcontent-x` atribut koji imaju samo elementi ovog šablona. Druga komponenta sme da ima klasu `comments` sa drugim pravilima, bez preklapanja.
 
 ## Globalni stilovi
 
-Stilovi koji važe za ceo dokument žive u datoteci `styles.scss`, koju alat za prevođenje uključuje u dokument kao običnu CSS datoteku, bez ikakve oznake u komponentama. Sledeći kod prikazuje datoteku `styles.scss` koja globalne stilove deli na četiri dela:
+Stilovi koji važe za ceo dokument žive u datoteci `styles.scss`, koju alat za prevođenje uključuje u dokument kao običnu CSS datoteku. Sledeći kod prikazuje datoteku `styles.scss` koja globalne stilove deli na četiri dela:
 
 ```scss
 @use 'styles/tokens';
@@ -33,7 +33,7 @@ Stilovi koji važe za ceo dokument žive u datoteci `styles.scss`, koju alat za 
 @use 'styles/components';
 ```
 
-Naredba `@use` učitava drugu datoteku iz direktorijuma `styles` pored ove datoteke i njen sadržaj ugrađuje na ovo mesto. Datoteka čiji naziv počinje donjom crtom postoji samo da bi je druga datoteka učitala, a u naredbi se navodi bez donje crte i bez nastavka. Četiri učitane datoteke drže redom:
+Naredba `@use` učitava drugu datoteku iz direktorijuma `styles` pored ove datoteke i njen sadržaj ugrađuje na ovo mesto. Četiri učitane datoteke drže redom:
 
 1. `_tokens.scss`, vrednosti zajedničke za celu aplikaciju.
 2. `_base.scss`, pravila za osnovne HTML elemente, poput `body` i naslova.
@@ -42,9 +42,10 @@ Naredba `@use` učitava drugu datoteku iz direktorijuma `styles` pored ove datot
 
 ## Tokeni
 
-**Token** (engl. *design token*) je vrednost boje, razmaka, poluprečnika ili veličine fonta imenovana kao CSS promenljiva na korenskom elementu dokumenta, koju sva ostala pravila čitaju umesto da vrednost ponavljaju. Sledeći kod prikazuje deo datoteke `_tokens.scss` i pravilo iz datoteke `_components.scss` koje tokene čita:
+**Token** (engl. *design token*) je vrednost boje, razmaka, poluprečnika ili veličine fonta imenovana kao CSS promenljiva na korenskom elementu dokumenta, koju sva ostala pravila čitaju umesto da vrednost ponavljaju. Sa ovim globalnim promenljivama možemo na jednom mestu da izmenimo elemente stila cele aplikacije i osiguravamo konzistentnost (npr. da se svuda uvede margina od 12px, a ne negde 10px ili 14px). Sledeći kod prikazuje deo datoteke `_tokens.scss` i pravilo iz datoteke `_components.scss` koje tokene čita:
 
 ```scss
+// _tokens.scss
 :root {
   --color-surface: #ffffff;
   --color-border: #e2e2e6;
@@ -56,6 +57,7 @@ Naredba `@use` učitava drugu datoteku iz direktorijuma `styles` pored ove datot
 ```
 
 ```scss
+// _components.scss
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -71,15 +73,12 @@ U datom kodu treba uočiti sledeće:
 
 ## Izbor mesta za nov stil
 
-Kada elementu treba izgled koji još nema, pitanje je jedno: **postoji li već globalna klasa za taj izgled?**
+Kada elementu treba određen izgled, postavljamo pitanje: **postoji li globalna klasa za taj izgled?**
+- Ako postoji, na element se stavlja ta klasa.
+- Ako ne postoji, a izgled treba samo toj komponenti, pravilo se piše u njenu datoteku stilova. Tamo ne može da dotakne nikog drugog, jer radni okvir selektor sužava na njen šablon.
+- Ako ne postoji, a isti izgled treba na više mesta, definiše se nova globalna klasa. To više nije izmena jedne komponente, nego izmena koja menja izgled cele aplikacije, pa se donosi kao i svako proširenje zajedničkog koda, u dogovoru sa timom koji te datoteke održava. Isto važi i za nov token.
 
-Ako postoji, ne piše se nijedno pravilo tj. na element se stavlja ta klasa. Tako `article` u kartici dobija `class="card"`, a dugme `class="button"`.
-
-Ako ne postoji, a izgled treba samo toj komponenti, pravilo se piše u njenu datoteku stilova. Tamo ne može da dotakne nikog drugog, jer radni okvir selektor sužava na njen šablon.
-
-Ako ne postoji, a isti izgled treba na više mesta, u igri je nova globalna klasa. To više nije izmena jedne komponente, nego izmena koja menja izgled cele aplikacije, pa se donosi kao i svako proširenje zajedničkog koda, u dogovoru sa timom koji te datoteke održava. Isto važi i za nov token.
-
-U sva tri slučaja vrednosti se čitaju iz postojećih tokena. Umesto `padding: 12px` piše `padding: var(--space-3)`, a umesto `color: #2f6df6` piše `color: var(--color-accent)`. Upisana vrednost na prvi pogled radi isto, ali ispada iz sistema: kada se token promeni, ona ostaje stara.
+U sva tri slučaja vrednosti se čitaju iz postojećih tokena. Umesto `padding: 12px` piše `padding: var(--space-3)`, a umesto `color: #2f6df6` piše `color: var(--color-accent)`.
 
 ## Kartica ture
 

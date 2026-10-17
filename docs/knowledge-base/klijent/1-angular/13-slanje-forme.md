@@ -35,7 +35,7 @@ protected async submit(event: Event): Promise<void> {
       tags: this.form.tags().value().split(',').map((tag) => tag.trim()).filter((tag) => tag !== ''),
     });
   } catch (failure) {
-    this.error.set(serverMessage(failure, 'Turu nije moguće napraviti.'));
+    this.error.set(failure);
   } finally {
     this.pending.set(false);
   }

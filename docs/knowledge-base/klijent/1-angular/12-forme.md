@@ -1,24 +1,18 @@
-Stranica za pravljenje ture prikuplja naziv, opis, težinu i oznake, a komandu za pravljenje sme da pošalje tek kada su naziv i opis uneti.
-
-Do sada je korisnik stanje stranice menjao samo klikom na dugme. Forma traži više od toga. Sadržaj svakog elementa za unos treba da stigne u stanje stranice pri svakoj promeni, a svaki unos treba proveriti pre slanja. Uz to bismo morali sami da pamtimo koje je polje korisnik već popunio, da ne bismo prikazivali greške pre nego što je išta uneo.
+Stranica za pravljenje ture prikuplja naziv, opis, težinu i oznake, a komandu za pravljenje sme da pošalje tek kada su naziv i opis uneti. Do sada je korisnik stanje stranice menjao samo klikom na dugme. Forma traži više od toga. Sadržaj svakog elementa za unos treba da stigne u stanje stranice pri svakoj promeni, a svaki unos treba proveriti pre slanja. Uz to bismo morali sami da pamtimo koje je polje korisnik već popunio, da ne bismo prikazivali greške pre nego što je išta uneo.
 
 Vrednosti forme su stanje stranice, pa po pravilu iz lekcije o signalima treba da žive u signalu. Angular oko tog signala gradi objekat koji elemente za unos povezuje sa vrednostima u signalu i za svaku vrednost prati da li je ispravna. Ovde upoznajemo taj objekat.
 
-## Model i forma
+## Signal forma
 
-Formu čine tri stvari: **model**, sama **forma** i njena **polja**.
+Formu čine sledeći elementi:
+- **Model** je signal koji drži vrednosti forme. Za formu pravljenja ture to su `name`, `description`, `difficulty` i `tags`. Model je jedini izvor tih vrednosti. Kada korisnik nešto otkuca, menja se model.
+- **Forma** (engl. *form*) je objekat koji Angular gradi oko modela, pozivom `form(model, schema)`. Za svako svojstvo modela ona pravi po jedno **polje forme** (engl. *form field*).
+- **Šema** (engl. *schema*) je drugi argument koji predajemo pozivu `form` tj. funkcija koja pojedinim poljima dodeljuje pravila validacije (na primer, da `name` ne sme da bude prazno). Angular ta pravila proverava pri svakoj promeni modela.
+- U HTML šablonu polje forme vezujemo za jedan element za unos. Tada polje forme zna tri stvari: trenutnu vrednost svojstva modela, koje greške validacije trenutno ima i da li je korisnik dodirnuo povezani HTML element.
 
-**Model** je signal koji drži vrednosti forme. Za formu pravljenja ture to su `name`, `description`, `difficulty` i `tags`. Model je jedini izvor tih vrednosti. Kada korisnik nešto otkuca, menja se model.
-
-**Forma** (engl. *form*) je objekat koji Angular gradi oko modela, pozivom `form(...)`. Za svako svojstvo modela ona pravi po jedno **polje forme** (engl. *form field*). U šablonu polje forme vezujemo za jedan element za unos. Polje o svom svojstvu zna tri stvari: trenutnu vrednost, da li ga je korisnik dodirnuo i koje greške validacije trenutno ima.
-
-**Šema** (engl. *schema*) je drugi argument koji predajemo pozivu `form` tj. funkcija koja pojedinim poljima dodeljuje pravila validacije (na primer, da `name` ne sme da bude prazno). Angular ta pravila proverava pri svakoj promeni modela.
-
-Sledeći kod prikazuje formu stranice za pravljenje ture. Signal-model se predaje funkciji `form` direktno, na licu mesta:
+Sledeći kod prikazuje formu stranice za pravljenje ture:
 
 ```ts
-import { FormField, form, required } from '@angular/forms/signals';
-
 export class CreateTour {
   protected readonly form = form(
     signal({ name: '', description: '', difficulty: 'Easy' as TourDifficulty, tags: '' }),
@@ -32,10 +26,9 @@ export class CreateTour {
 
 U datom kodu treba uočiti sledeće:
 
-- Funkcije `form` i `required` i klasa `FormField` uvoze se iz paketa `@angular/forms/signals`.
-- Model je objekat koji predajemo funkciji `form`, ovde `signal({ name: '', ... })`. Njegov oblik prevodilac zaključuje iz početnih vrednosti, poseban interfejs za model ne pišemo.
+- Model je objekat koji predajemo funkciji `form`, gde navodimo signal direktno `signal({ name: '', ... })`.
 - Tip težine je `TourDifficulty`, imenovana unija literala `'Easy' | 'Moderate' | 'Hard'`. Zapis `'Easy' as TourDifficulty` prevodiocu kaže da je početna vrednost baš te unije, a ne običan `string`; za npr. `'Lako'` prijavio bi grešku.
-- Šema prima `path`, objekat sa istim svojstvima kao model, kroz koji se pravilo vezuje za jedno polje forme. Poziv `required(path.name, ...)` polju `name` dodaje pravilo da vrednost ne sme da bude prazna. Drugi argument je poruka koju forma čuva uz grešku.
+- Šema se definiše kao arrow funkcija koja prima `path`, objekat koji dobija ista svojstva kao model. Kroz njega se pravilo vezuje za jedno polje forme. Poziv `required(path.name, ...)` polju `name` dodaje pravilo da vrednost ne sme da bude prazna. Drugi argument je poruka koju forma čuva uz grešku.
 - Pravila se proveravaju pri svakoj promeni modela. Polja bez pravila, `difficulty` i `tags`, uvek su ispravna.
 
 Model može da stoji i kao **zasebno polje klase**, kada nam treba i van poziva `form`. Sledeći kod prikazuje takav model u formi za dodavanje vremena obilaska ture. Jedno polje forme sme da ima i više pravila, npr. `min` broju dodaje najmanju dozvoljenu vrednost:
@@ -75,10 +68,11 @@ Element za unos vezuje se za polje forme vezivanjem svojstva `[formField]`, a kl
 ```ts
 @Component({
   selector: 'app-create-tour',
-  imports: [FormField],
+  imports: [FormField],    // Bitno
   templateUrl: './create-tour.html',
   styleUrl: './create-tour.scss',
 })
+// Kod komponente
 ```
 
 ```html
@@ -98,7 +92,6 @@ U datom kodu treba uočiti sledeće:
 - Ako `FormField` nije naveden u podešavanju `imports`, prevodilac prijavljuje grešku da `formField` nije poznato svojstvo elementa.
 - Desna strana vezivanja je polje forme, `form.name`, bez zagrada. Angular upisuje vrednost polja u element, a pri svakom događaju `input` upisuje sadržaj elementa u model. Model je signal, pa sve što ga čita dobija obaveštenje o promeni.
 - Isto vezivanje radi na elementima `input`, `textarea` i `select`. Za `select` u model upisuje `value` izabrane opcije, npr. `'Easy'`, a ne tekst `Laka` koji korisnik vidi.
-- Kada je element `input` tipa `number`, a svojstvo modela broj, Angular u model upisuje broj, a ne tekst. Element za minute iz forme za vreme obilaska, `<input id="minutes" type="number" [formField]="form.minutes" />`, zato kada korisnik unese 45 upisuje broj `45`, pa pravilo `min` poredi brojeve.
 
 ## Prikaz grešaka
 
