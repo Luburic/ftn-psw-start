@@ -2,14 +2,14 @@ Resurs iz prethodne lekcije čita podatke sa servera i ništa na njemu ne menja.
 
 ## Slanje zahteva
 
-Komandu šalje klasa `HttpClient`, koja se servisu ubrizgava. Sledeći kod prikazuje poziv koji objavljuje blog:
+Komandu šalje klasa `HttpClient`, koja se servisu ubrizgava isto kao komponenti. Sledeći kod prikazuje poziv koji objavljuje blog:
 
 ```ts
 await firstValueFrom(this.http.post<void>(`${BASE_URL}/${id}/publish`, {}));
 ```
 
 U datom kodu treba uočiti sledeće:
-- Metoda `post` prima adresu i telo zahteva, koje pretvara u JSON. Objavljivanje nema telo, pa šalje prazan objekat.
+- Metoda `post` prima adresu i telo zahteva, koje pretvara u JSON. Objavljivanje nema telo, pa šalje prazan objekat. Za ostale HTTP metode `HttpClient` ima istoimene metode, npr. `put` i `delete`.
 - Parametar generičkog tipa, `post<void>`, je tip koji prevodilac dodeljuje telu odgovora. Objavljivanje ne vraća telo, pa je tip `void`.
 - Metoda `post` ne vraća obećanje, već `Observable`. **Observable** je vrednost koja stiže kasnije i može da stigne više puta. Odgovor na HTTP zahtev stiže tačno jednom, pa nam višestruko stizanje ne treba.
 - Funkcija `firstValueFrom`, iz biblioteke `rxjs` koju Angular koristi, prima `Observable` i vraća obećanje prve vrednosti koja stigne. U projektu je svaki poziv `HttpClient`-a obuhvaćen ovim pozivom, pa se čeka sa `await` kao svaki asinhroni poziv.
@@ -39,7 +39,7 @@ export class BlogAuthoring {
 U datom kodu treba uočiti sledeće:
 - Konstanta `BASE_URL` drži zajednički početak adrese, a svaka metoda na njega nadovezuje svoj deo. Ovo je klijentski pandan atributu `[Route]` na kontroleru.
 - Svaka metoda je jedna komanda i sastoji se od jednog poziva. Metoda `create` šalje DTO strukturu `CreateBlogDto`, koja nosi podatke novog bloga, i vraća `BlogDto` iz odgovora.
-- Razlika između `create` i `publish` je u tome da li metoda ima šta da vrati. Metoda `create` ima, pa obećanje prosleđuje naredbom `return`, bez `await`, jer asinhrona metoda sme da vrati obećanje, a pozivalac ga čeka isto. Metoda `publish` nema šta da vrati, ali i dalje mora da sačeka odgovor, pa stoji `await`. Pravilo je da se obećanje mora ili vratiti ili sačekati, kada se izostavi i jedno i drugo, metoda se završava pre nego što odgovor stigne, a greška servera ostaje neuhvaćena.
+- Razlika između `create` i `publish` je u tome da li metoda ima šta da vrati. Metoda `create` ima, pa obećanje prosleđuje naredbom `return`, bez `await`, jer asinhrona metoda sme da vrati obećanje, a pozivalac ga čeka isto. Metoda `publish` nema šta da vrati, ali i dalje mora da sačeka odgovor, pa stoji `await`. Pravilo je da se obećanje mora ili vratiti ili sačekati. Kada se izostavi i jedno i drugo, metoda se završava pre nego što odgovor stigne, a greška servera ostaje neuhvaćena.
 - Servis nema signal i ne zna ni za jedan resurs. Šalje zahtev i vraća odgovor, a obradu odgovora prepušta stranici.
 
 ## Greška servera

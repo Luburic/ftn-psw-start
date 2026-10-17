@@ -1,8 +1,6 @@
 # Angular
 
-Klijentska aplikacija rešava tehničke probleme koji ne zavise od domena, isto kao i serverska. Mora da prikaže podatke u HTML dokumentu i da prikaz osveži kada se podaci promene, da reaguje na akcije korisnika, da po adresi u internet čitaču odluči koji ekran prikazuje, da razmenjuje podatke sa serverom i da sastavlja objekte od kojih se sastoji. Ove probleme rešava radni okvir, a naš projekat koristi Angular.
-
-Čitalac je gradio veb aplikacije u čistom JavaScript-u i poznaje osnove React-a. Angular rešava iste probleme, ali propisuje kako se aplikacija strukturira i kako se elementi koda označavaju da bi ih radni okvir pronašao. Ovde upoznajemo onaj deo Angular-a koji projekat koristi i ništa van njega. Angular nudi više načina za većinu poslova, a mi biramo jedan i njega koristimo svuda.
+Klijentska aplikacija rešava tehničke probleme koji ne zavise od domena, isto kao i serverska. Mora da prikaže podatke u HTML dokumentu i da prikaz osveži kada se podaci promene, da reaguje na akcije korisnika, da po adresi u internet čitaču odluči koji ekran prikazuje, da razmenjuje podatke sa serverom i da sastavlja objekte od kojih se sastoji. Ove probleme rešava radni okvir, a naš projekat koristi Angular. Ovde se upoznajemo sa njegovim osnovnim komponentama.
 
 ## Mapa direktorijuma
 

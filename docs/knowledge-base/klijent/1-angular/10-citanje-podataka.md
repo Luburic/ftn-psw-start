@@ -1,4 +1,3 @@
-
 Spisak tura iz lekcije o sastavljanju komponenti upisan je u klasu, a u pravoj aplikaciji ture stižu sa servera. Time dolazimo do petog problema iz lekcije o Angularu: razmene podataka sa serverom.
 
 Sam zahtev nije teško poslati. Dovoljno je pozvati `fetch`, sačekati odgovor i pročitati JSON. Međutim, stranici je oko tog poziva potrebno još mnogo toga. Dok odgovor putuje, treba da prikaže da se podaci učitavaju. Ako server vrati grešku, treba da prikaže poruku umesto podataka. Kada se promeni podatak od kog zahtev zavisi, na primer identifikator bloga u adresi, treba da pošalje nov zahtev. Na kraju, prevodilac mora da zna tip odgovora, da bi šablon mogao da koristi njegova svojstva.
@@ -140,7 +139,7 @@ U datom kodu treba uočiti sledeće:
 - Signal `isLoading` je tačan dok zahtev putuje, i pri svakom ponovnom slanju.
 - Signal `error` drži grešku kada zahtev ne uspe, na primer kada server vrati odgovor sa statusnim kodom greške, a `undefined` u svakom drugom slučaju.
 - Sva tri signala menja resurs, pa Angular ponovo proverava šablon pri svakoj promeni stanja.
-- Poziv `this.tours.reload()`, ponovo šalje zahtev na trenutnu adresu. Klasa je poziva nakon što sama promeni podatke na serveru.
+- Poziv `this.tours.reload()` ponovo šalje zahtev na trenutnu adresu. Klasa je poziva nakon što sama promeni podatke na serveru.
 
 Resurs služi samo za čitanje podataka. Zahtevi koji menjaju podatke na serveru, poput pravljenja ili brisanja ture, šalju se direktno kroz `HttpClient`, a nakon njih klasa poziva `reload` da bi resurs pročitao nove podatke.
 
