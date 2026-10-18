@@ -36,6 +36,14 @@ public sealed class TourAuthoringService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task AddKeyPointAsync(Guid tourId, Guid authorId, AddKeyPointDto dto)
+    {
+        var tour = await GetOwnedTourAsync(tourId, authorId);
+
+        tour.AddKeyPoint(dto.Narration, dto.Latitude, dto.Longitude, dto.MediaUrl, dto.MediaDescription);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
     public async Task PublishAsync(Guid tourId, Guid authorId)
     {
         var tour = await GetOwnedTourAsync(tourId, authorId);

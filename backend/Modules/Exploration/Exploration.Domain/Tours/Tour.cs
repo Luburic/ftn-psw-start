@@ -8,6 +8,7 @@ public sealed class Tour : AggregateRoot
     private const int MinimumDescriptionLengthForPublishing = 100;
 
     private readonly List<TransportTime> _transportTimes = [];
+    private readonly List<KeyPoint> _keyPoints = [];
 
     public Guid AuthorId { get; private set; }
     public string Name { get; private set; }
@@ -17,6 +18,7 @@ public sealed class Tour : AggregateRoot
     public TourStatus Status { get; private set; }
     public DateTime? PublishedAt { get; private set; }
     public IReadOnlyList<TransportTime> TransportTimes => _transportTimes;
+    public IReadOnlyList<KeyPoint> KeyPoints => _keyPoints;
 
     private Tour()
     {
@@ -59,6 +61,15 @@ public sealed class Tour : AggregateRoot
         _transportTimes.Add(new TransportTime(transport, minutes));
     }
 
+    public void AddKeyPoint(string narration, double latitude, double longitude, string mediaUrl, string mediaDescription)
+    {
+        var order = _keyPoints.Count + 1;
+        var location = new Coordinates(latitude, longitude);
+        var media = new MediaItem(mediaUrl, mediaDescription);
+
+        _keyPoints.Add(new KeyPoint(order, narration, location, media));
+    }
+
     public void Publish()
     {
         if (Status == TourStatus.Published)
@@ -76,5 +87,32 @@ public sealed class Tour : AggregateRoot
 
         Status = TourStatus.Published;
         PublishedAt = DateTime.UtcNow;
+    }
+
+    public List<TransportTime> GetEstimatedDurations()
+    {
+        var breakPercentage = GetBreakPercentage();
+        var estimates = new List<TransportTime>();
+
+        foreach (var time in _transportTimes)
+        {
+            var minutes = time.Minutes + time.Minutes * breakPercentage / 100;
+            estimates.Add(new TransportTime(time.Transport, minutes));
+        }
+
+        return estimates;
+    }
+
+    private int GetBreakPercentage()
+    {
+        if (Difficulty == TourDifficulty.Hard)
+        {
+            return 30;
+        }
+        if (Difficulty == TourDifficulty.Moderate)
+        {
+            return 15;
+        }
+        return 0;
     }
 }

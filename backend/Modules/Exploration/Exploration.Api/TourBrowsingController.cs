@@ -19,8 +19,17 @@ public sealed class TourBrowsingController : ControllerBase
     }
 
     [HttpGet("published")]
-    public async Task<ActionResult<PageResult<TourDto>>> GetPublished([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    public async Task<ActionResult<PageResult<TourDto>>> GetPublished(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? search = null)
     {
-        return await _browsingQueries.GetPublishedAsync(page, pageSize);
+        return await _browsingQueries.GetPublishedAsync(page, pageSize, search);
+    }
+
+    [HttpGet("{id:guid}/estimated-durations")]
+    public async Task<ActionResult<List<TransportTimeDto>>> GetEstimatedDurations(Guid id)
+    {
+        return await _browsingQueries.GetEstimatedDurationsAsync(id);
     }
 }

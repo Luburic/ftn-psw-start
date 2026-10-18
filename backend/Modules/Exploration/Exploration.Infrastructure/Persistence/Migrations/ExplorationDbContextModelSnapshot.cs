@@ -24,6 +24,51 @@ namespace Exploration.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Exploration.Domain.Tours.KeyPoint", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Narration")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TourId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TourId");
+
+                    b.ToTable("KeyPoints", "exploration");
+                });
+
+            modelBuilder.Entity("Exploration.Domain.Tours.MediaItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("KeyPointId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KeyPointId");
+
+                    b.ToTable("MediaItems", "exploration");
+                });
+
             modelBuilder.Entity("Exploration.Domain.Tours.Tour", b =>
                 {
                     b.Property<Guid>("Id")
@@ -64,6 +109,46 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                     b.ToTable("Tours", "exploration");
                 });
 
+            modelBuilder.Entity("Exploration.Domain.Tours.KeyPoint", b =>
+                {
+                    b.HasOne("Exploration.Domain.Tours.Tour", null)
+                        .WithMany("KeyPoints")
+                        .HasForeignKey("TourId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("Exploration.Domain.Tours.Coordinates", "Location", b1 =>
+                        {
+                            b1.Property<Guid>("KeyPointId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("double precision");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("double precision");
+
+                            b1.HasKey("KeyPointId");
+
+                            b1.ToTable("KeyPoints", "exploration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("KeyPointId");
+                        });
+
+                    b.Navigation("Location")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Exploration.Domain.Tours.MediaItem", b =>
+                {
+                    b.HasOne("Exploration.Domain.Tours.KeyPoint", null)
+                        .WithMany("Media")
+                        .HasForeignKey("KeyPointId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Exploration.Domain.Tours.Tour", b =>
                 {
                     b.OwnsMany("Exploration.Domain.Tours.TransportTime", "TransportTimes", b1 =>
@@ -91,6 +176,16 @@ namespace Exploration.Infrastructure.Persistence.Migrations
                         });
 
                     b.Navigation("TransportTimes");
+                });
+
+            modelBuilder.Entity("Exploration.Domain.Tours.KeyPoint", b =>
+                {
+                    b.Navigation("Media");
+                });
+
+            modelBuilder.Entity("Exploration.Domain.Tours.Tour", b =>
+                {
+                    b.Navigation("KeyPoints");
                 });
 #pragma warning restore 612, 618
         }

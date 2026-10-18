@@ -19,10 +19,11 @@ internal sealed class TourReadRepository : ITourReadRepository
         return ProjectToDtos(_dbContext.Tours.Where(tour => tour.AuthorId == authorId)).ToListAsync();
     }
 
-    public async Task<PageResult<TourDto>> GetPublishedAsync(int page, int pageSize)
+    public async Task<PageResult<TourDto>> GetPublishedAsync(int page, int pageSize, string? search)
     {
         var published = _dbContext.Tours
             .Where(tour => tour.Status == TourStatus.Published)
+            .Where(tour => string.IsNullOrWhiteSpace(search) || tour.Name.ToLower().Contains(search.ToLower()))
             .OrderByDescending(tour => tour.PublishedAt);
 
         var totalCount = await published.CountAsync();

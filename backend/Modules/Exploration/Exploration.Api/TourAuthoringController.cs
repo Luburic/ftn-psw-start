@@ -35,6 +35,13 @@ public sealed class TourAuthoringController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("{id:guid}/key-points")]
+    public async Task<ActionResult> AddKeyPoint(Guid id, AddKeyPointDto dto)
+    {
+        await _authoringService.AddKeyPointAsync(id, User.GetUserId(), dto);
+        return NoContent();
+    }
+
     [HttpPost("{id:guid}/publish")]
     public async Task<ActionResult> Publish(Guid id)
     {
