@@ -7,6 +7,7 @@ using Exploration.Infrastructure.Persistence.Tours;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Infrastructure;
+using Exploration.Domain.Tours;
 
 namespace Exploration.Infrastructure;
 
