@@ -25,6 +25,7 @@ public static class ExplorationModuleExtensions
         services.AddScoped<TourAuthoringService>();
         services.AddScoped<TourAuthoringQueries>();
         services.AddScoped<TourBrowsingQueries>();
+        services.AddScoped<TourNameUniquenessChecker>(); 
 
         return services;
     }

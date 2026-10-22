@@ -22,4 +22,9 @@ internal sealed class TourRepository : ITourRepository
     {
         _dbContext.Tours.Add(tour);
     }
+    
+    public Task<List<Tour>> GetByAuthorAsync(Guid authorId)
+    {
+        return _dbContext.Tours.Where(tour => tour.AuthorId == authorId).ToListAsync();
+    }
 }

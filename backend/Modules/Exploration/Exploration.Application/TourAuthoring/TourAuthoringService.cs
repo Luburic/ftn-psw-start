@@ -10,18 +10,22 @@ public sealed class TourAuthoringService
     private readonly ITourRepository _tourRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly TourNameUniquenessChecker _nameChecker;
 
-    public TourAuthoringService(ITourRepository tourRepository, IUnitOfWork unitOfWork, IMapper mapper)
+    public TourAuthoringService(ITourRepository tourRepository, IUnitOfWork unitOfWork, IMapper mapper,
+        TourNameUniquenessChecker nameChecker)
     {
         _tourRepository = tourRepository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _nameChecker = nameChecker;
     }
 
     public async Task<TourDto> CreateAsync(Guid authorId, CreateTourDto dto)
     {
         var tour = new Tour(authorId, dto.Name, dto.Description, dto.Difficulty, dto.Tags);
-
+        var authorsTours = await _tourRepository.GetByAuthorAsync(authorId); 
+        _nameChecker.EnsureUnique(tour, authorsTours); 
         _tourRepository.Add(tour);
         await _unitOfWork.SaveChangesAsync();
 
