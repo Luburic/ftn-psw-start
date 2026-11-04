@@ -61,7 +61,7 @@ Pri otvaranju i svakoj izmeni PR-a pokreću se automatske provere, koje rezultat
 | Provera | Šta proverava |
 |---|---|
 | `Build i testovi` | Rešenje se prevodi i svi testovi prolaze |
-| `Pokrivenost novog koda` | Koliki deo novih izvršivih linija je pokriven testovima (preporuka je bar 80%) |
+| `Pokrivenost novog koda` | Koliki deo novih izvršivih linija je pokriven testovima (preporuka je bar 70%) |
 | `Lakoća održavanja` | Metrike lakoće održavanja na izmenjenom kodu; 🟡 označava sumnjivu, a 🔴 kritičnu vrednost |
 
 Ako `Build i testovi` ne prolaze, pratite odeljak [Kada CI padne](#kada-ci-padne).
@@ -82,7 +82,7 @@ Revizija ima dva cilja. Kratkoročno, da kod koji ulazi u `development` ispunjav
 
    - **Funkcionalna pogodnost (ispunjenost zahteva):** da li se rešenje ponaša onako kako je opisano u sekciji Change goal opisa PR-a. Ovo se ne može izmeriti i procenjujete isključivo vi, zato prođite korake iz sekcije Testiranje funkcionalnosti u opisu PR-a.
    
-   - **Besprekornost:** da li softver radi ispravno i da li je nov kod pokriven testovima. Pokrivenost novog koda meri analizator; ako je ispod 80%, predložite koje slučajeve još treba pokriti. Smislenost testova procenjujete vi: dobar test za konkretan ulaz proverava očekivani izlaz i pokriva granične slučajeve (nula, prazan skup, prekoračenje), dok test koji samo pozove metodu i proveri da nije bacila izuzetak podiže pokrivenost, a ne tvrdi ništa.
+   - **Besprekornost:** da li softver radi ispravno i da li je nov kod pokriven testovima. Pokrivenost novog koda meri analizator; ako je ispod 70%, predložite koje slučajeve još treba pokriti. Smislenost testova procenjujete vi: dobar test za konkretan ulaz proverava očekivani izlaz i pokriva granične slučajeve (nula, prazan skup, prekoračenje), dok test koji samo pozove metodu i proveri da nije bacila izuzetak podiže pokrivenost, a ne tvrdi ništa.
    
    - **Lakoća održavanja:** koliko je kod lako razumeti, izmeniti i proširiti. Proverite da li su menjane samo datoteke koje ima smisla menjati, da li su poštovane timske konvencije i nazivi, i za svaku metriku označenu sa 🟡 ili 🔴 odlučite da li je vrednost opravdana. Značenje metrika i pragovi su u komentaru „Stanje PR-a”. Metoda koja redom prepisuje dvadeset polja sme da bude duga, jer nema grananja i čita se odozgo nadole; metoda koja u sebi radi i proveru podataka i obračun i upis ima previše odgovornosti, i tada predložite kako da se refaktoriše.
 
